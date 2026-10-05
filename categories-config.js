@@ -1,16 +1,16 @@
 /* =====================================================================
    categories-config.js  —  Standard Emergency Category list
-   Is file ko Notepad / VS Code main kholein aur change karein.
-   HTML page (emergency-category-checker.html) isi folder main rakhein.
+   Open this file in Notepad / VS Code to change the rules.
+   Keep it in the same folder as emergency-category-checker.html.
    ===================================================================== */
 
 window.CATEGORY_CONFIG = {
 
-  /* ---- 1) STANDARD LIST (JPG ke mutabiq) ----------------------------
-     Kisi emergency ko dusri category main move karna ho to uska naam
-     ek list se kaat kar dusri list main paste kar dein.
-     Agar ek naam do lists main ho (jaise "Domestic Injury") to dono
-     categories ko SAHI maana jayega.
+  /* ---- 1) STANDARD LIST (as per the reference sheet) ----------------------------
+     To move an emergency to another category, cut its name from one
+     list and paste it into another.
+     If a name appears in two lists (e.g. "Domestic Injury"), both
+     categories are treated as correct.
   ------------------------------------------------------------------ */
   categories: {
 
@@ -72,7 +72,7 @@ window.CATEGORY_CONFIG = {
       "Animal Hit",
       "Scorpion Bite / Other Animal / Insect Bite",
       "Sports Injury",
-      "Snake Emergency"
+      "Snake Emergency"            // crossed out in Cat-II and handwritten under Cat-III on the sheet
     ],
 
     "Non-emergency": [             // CATEGORY-IV
@@ -91,11 +91,11 @@ window.CATEGORY_CONFIG = {
     ]
   },
 
-  /* ---- 2) ALIASES (CSV ka naam  ->  standard list ka naam) ----------
-     CSV main kuch subtypes ka naam list se thora mukhtalif hota hai.
-     Yahan batayein ke CSV wala naam kis standard naam ke barabar hai.
-     Naya mapping add karna ho to ek line barha dein:
-        "CSV wala naam": "Standard list wala naam",
+  /* ---- 2) ALIASES (CSV name  ->  standard list name) ----------
+     Some subtype names in the CSV differ slightly from the standard list.
+     Say here which standard name a CSV name is equal to.
+     To add a mapping, add one line:
+        "CSV name": "Standard list name",
   ------------------------------------------------------------------ */
   aliases: {
     "Anxiety / Psychiatric Disorder":  "Anxiety",
@@ -108,8 +108,8 @@ window.CATEGORY_CONFIG = {
     "Physical Assault/Violence":       "Crime Case",
     "Joints Pain":                     "Joints Pain/Muscular Pain"
 
-    /* Neeche wale CSV subtypes abhi standard list main nahi hain
-       ("Not in list" dikhayen ge). Inhain map karna ho to comment hata dein:
+    /* The CSV subtypes below are not in the standard list yet
+       (they show as "Not in list"). To map them, remove the comment:
     ,"Bleeding":       "Severe Trauma"
     ,"Minor Injuries": "Sports Injury"
     ,"Bullet Injury":  "Severe Trauma"
@@ -117,11 +117,11 @@ window.CATEGORY_CONFIG = {
     */
   },
 
-  /* ---- 3) CHECK SE BAHAR (skip) ------------------------------------ */
+  /* ---- 3) EXCLUDED FROM THE CHECK (skipped) ------------------------------------ */
   skipEmergencyTypes: ["Patient Transfer Service"],
   skipCategories:     ["PTS-Emergency"],
 
-  /* ---- 4) CSV ke column ke naam ------------------------------------ */
+  /* ---- 4) CSV column names ------------------------------------ */
   columns: {
     subtype:  "Emergency Subtype",
     category: "Emergency Category",
@@ -133,7 +133,7 @@ window.CATEGORY_CONFIG = {
     received: "Call Received at"
   },
 
-  /* ---- 5) Naye CSV columns ke naam --------------------------------- */
+  /* ---- 5) Names of the new CSV columns --------------------------------- */
   outputColumns: {
     status:  "Category Check",
     correct: "Correct Category (Standard)"
