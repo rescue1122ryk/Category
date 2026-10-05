@@ -6,6 +6,7 @@
 <title>Emergency Category Checker</title>
 <script src="categories-config.js"></script>
 <script src="vehicles-config.js"></script>
+<script src="reports-config.js"></script>
 <style>
 :root{--bg:#f3f5f9;--card:#fff;--tx:#18202e;--mu:#6b7686;--bd:#e1e6ee;--ac:#1f5eff;--hd1:#0f2a5c;--hd2:#1f5eff;
 --ok:#12803f;--okb:#e0f4e8;--bad:#c2281c;--badb:#fdecea;--warn:#8a5a00;--warnb:#fff1cf;--sk:#566;--skb:#eceff3}
@@ -49,6 +50,11 @@ tr.WRONG td{background:var(--badb)}
 .act{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0;align-items:center}.pill{background:var(--ac);color:#fff;border-radius:16px;padding:3px 12px;cursor:pointer}
 .sub{margin:16px 0 0;font-weight:700;color:var(--mu);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
 .note{background:var(--warnb);color:var(--warn);border-radius:10px;padding:8px 12px;margin-top:8px}
+.tabs{display:flex;gap:8px;margin:0 0 6px}.tabs button{border-radius:20px;font-weight:600}.tabs button.on{background:var(--ac);border-color:var(--ac);color:#fff}
+.s2{border-left:4px solid var(--c)}.s2 b{display:block;font-size:26px;color:var(--c)}.s2 span{color:var(--mu)}
+.xl{border-collapse:collapse;width:100%;white-space:nowrap}.xl th,.xl td{border:1px solid #000;padding:6px 8px;text-align:center}
+.xl th{background:#008000;color:#fff}.xl th.ttl{background:transparent;color:var(--tx);font-size:22px;border:1px solid #000}.xl td.y{background:#ff0;color:#000}
+@media print{body *{visibility:hidden}#bikeSheet,#bikeSheet *{visibility:visible}#bikeSheet{position:absolute;left:0;top:0;width:100%;max-height:none;overflow:visible}.xl th,.xl td{color:#000}.xl th{color:#fff}}
 </style>
 </head>
 <body>
@@ -66,11 +72,13 @@ tr.WRONG td{background:var(--badb)}
 
   <div id="drop" class="card">
     <p><b>Drop the CSV file here</b> or <button class="p" id="pick">Choose file</button></p>
-    <p class="mu" id="fname">Upload the CSV file from the <a href="https://punjab.rescue1122.org/dashboard/report/detailed_emergency_statistics" target="_blank" rel="noopener" id="lnk">All-In-One Emergency Detailed Report</a></p>
+    <p class="mu" id="fname">Upload the CSV file from the <a href="https://punjab.rescue1122.org/dashboard/report/detailed_emergency_statistics_v2" target="_blank" rel="noopener" id="lnk">All-In-One Emergency Detailed Report</a></p>
     <input type="file" id="file" accept=".csv,text/csv" hidden>
   </div>
 
   <div id="result" hidden>
+    <div class="tabs"><button class="on" data-tab="check">Category &amp; Vehicle Check</button><button data-tab="bike" id="tabBikeBtn">Bike Late Finish</button></div>
+    <div id="tabCheck">
     <div class="sub">Category check</div><div class="grid" id="stats"></div>
     <div class="sub">Vehicle &amp; tehsil check</div><div class="grid" id="vstats"></div><div id="vnote"></div>
     <div class="card acc"><div class="t"><b>Category accuracy</b><span id="accTxt"></span></div><div class="meter" id="meter"></div></div>
@@ -89,6 +97,14 @@ tr.WRONG td{background:var(--badb)}
     </div>
     <div class="act" id="act"></div>
     <div class="wrap"><table id="tbl"></table></div>
+    </div>
+    <div id="tabBike" hidden>
+      <div class="grid" id="bikeSum"></div>
+      <div id="bikeWarn"></div>
+      <div class="bar"><span class="mu" id="bikeRule"></span><span style="flex:1"></span>
+        <button class="p" id="bikeXls">Download Excel (.xls)</button><button id="bikeCsv">Download CSV</button><button id="bikePrint">Print</button></div>
+      <div class="wrap" id="bikeSheet"></div>
+    </div>
   </div>
 </main>
 
@@ -118,6 +134,27 @@ function buildLookup() {
     for (const it of items) { const k = norm(it); (std[k] = std[k] || { name: it, cats: [] }).cats.push(cat); }
   for (const [k, v] of Object.entries(CFG.aliases || {})) ali[norm(k)] = norm(v);
   return k => std[k] || std[ali[k]];
+}
+
+const BIKE_COLS = ['EC No', 'Tehsil Name', 'Emergency Type', 'Emergency Subtype', 'Emergency Address', 'Emergency Place', 'Dispatched Vehicles Type',
+  'Dispatched Vehicles', 'Total Mileage', 'Start Time', 'End Time', 'Response Time (HH:MM:SS)', 'Elapsed Time (HH:MM:SS)', 'Emergency Status', 'Fate Of Patient'];
+function secs(t) { const m = String(t || '').trim().match(/^(\d+):(\d{2}):(\d{2})$/); return m ? +m[1] * 3600 + +m[2] * 60 + +m[3] : -1; }
+function bikeLate(rows) {
+  const R = Object.assign({ title: 'Motor Bike Late Finish Report', filePrefix: 'Bike Late Finish', vehicleTypes: ['bike', 'buddy,bike'], fate: 'First Aid', minElapsed: '00:40:00' },
+    (window.REPORTS_CONFIG || {}).bikeLateFinish || {});
+  const head = rows[0].map(h => h.trim()), ix = n => head.indexOf(n), missing = BIKE_COLS.filter(c => ix(c) < 0);
+  const flat = s => String(s).toLowerCase().replace(/\s+/g, ''), types = R.vehicleTypes.map(flat), min = secs(R.minElapsed), seen = new Set(), recs = [];
+  for (const r of rows.slice(1)) {
+    const g = n => ix(n) < 0 ? '' : (r[ix(n)] || '').trim();
+    if (!types.includes(flat(g('Dispatched Vehicles Type')))) continue;
+    if (g('Fate Of Patient').toLowerCase() !== R.fate.toLowerCase()) continue;
+    if (secs(g('Elapsed Time (HH:MM:SS)')) < min) continue;
+    const ec = g('EC No'); if (seen.has(ec)) continue; seen.add(ec);
+    recs.push(BIKE_COLS.map(g));
+  }
+  const m = recs.length && String(recs[0][9]).match(/(\d{4})[\/-](\d{1,2})[\/-](\d{1,2})/), p2 = v => String(v).padStart(2, '0'), d = new Date();
+  const date = m ? p2(m[3]) + '-' + p2(m[2]) + '-' + m[1] : p2(d.getDate()) + '-' + p2(d.getMonth() + 1) + '-' + d.getFullYear();
+  return { R, recs, date, missing };
 }
 
 const VOUT = () => Object.assign({ status: 'Vehicle Check', correct: 'Correct Tehsil (Vehicle)' }, (window.VEHICLE_CONFIG || {}).outputColumns || {});
@@ -162,7 +199,7 @@ function analyse(rows) {
     out.push({ r, sub, cat, status, correct, id: get(r, C.id), type: get(r, C.type), agent: get(r, C.agent),
       agentId: get(r, C.agentId), tehsil, recv: get(r, C.received), ...VCk.check(get(r, VCol), tehsil) });
   }
-  return { head, out, O, VO: VOUT(), vTotal: VCk.total };
+  return { head, out, O, VO: VOUT(), vTotal: VCk.total, bike: bikeLate(rows) };
 }
 // CORE END
 
@@ -230,6 +267,31 @@ function render() {
     (list.length ? '' : '<tr><td colspan="12" class="mu">No matching records.</td></tr>') + '</tbody>';
 }
 
+function renderBike() {
+  const b = D.bike, n = BIKE_COLS.length;
+  $('bikeSum').innerHTML = `<div class="card s2" style="--c:var(--bad)"><b>${b.recs.length}</b><span>Late finish trips</span></div>` +
+    tally(b.recs, r => r[1]).map(([t, v]) => `<div class="card s2" style="--c:var(--ac)"><b>${v}</b><span>${esc(t)}</span></div>`).join('');
+  $('bikeWarn').innerHTML = b.missing.length ? `<div class="note">These columns were not found in the CSV: ${esc(b.missing.join(', '))}</div>` : '';
+  $('bikeRule').textContent = 'Vehicle type: ' + b.R.vehicleTypes.join(' / ') + '  |  Fate: ' + b.R.fate + '  |  Elapsed >= ' + b.R.minElapsed;
+  $('bikeSheet').innerHTML = `<table class="xl"><thead><tr><th class="ttl" colspan="${n}">${esc(b.R.title)} Date: ${b.date}</th></tr><tr>${BIKE_COLS.map(c => `<th>${c}</th>`).join('')}</tr></thead><tbody>` +
+    (b.recs.length ? b.recs.map(r => '<tr>' + r.map((v, i) => `<td class="${i === 7 || i === 12 ? 'y' : ''}">${esc(v)}</td>`).join('') + '</tr>').join('') : `<tr><td colspan="${n}">No matching records found.</td></tr>`) + '</tbody></table>';
+}
+function bikeXLS() {
+  const b = D.bike, n = BIKE_COLS.length, bd = 'border:1px solid #000;text-align:center;vertical-align:middle;font-family:Calibri,Arial;';
+  const rows = b.recs.map(r => '<tr>' + r.map((v, i) => `<td style="${bd}${i === 7 || i === 12 ? 'background:#ffff00;' : ''}">${esc(v)}</td>`).join('') + '</tr>').join('');
+  return `<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="utf-8"></head><body><table style="border-collapse:collapse"><tr><td colspan="${n}" style="${bd}font-size:22pt;font-weight:bold;height:36px">${esc(b.R.title)} Date: ${b.date}</td></tr>` +
+    `<tr>${BIKE_COLS.map(c => `<td style="${bd}background:#008000;color:#ffffff;font-weight:bold;height:50px">${c}</td>`).join('')}</tr>${rows || `<tr><td colspan="${n}" style="${bd}">No matching records found.</td></tr>`}</table></body></html>`;
+}
+function bikeCSV() {
+  const q = v => '"' + String(v).replace(/"/g, '""') + '"';
+  return '\ufeff' + [BIKE_COLS, ...D.bike.recs].map(r => r.map(q).join(',')).join('\r\n');
+}
+function showTab(t) {
+  $('tabCheck').hidden = t !== 'check'; $('tabBike').hidden = t !== 'bike';
+  document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
+  if (t === 'bike') renderBike();
+}
+
 function load(file) {
   $('msg').textContent = '';
   const rd = new FileReader();
@@ -239,7 +301,7 @@ function load(file) {
       const t = [...new Set(D.out.map(x => x.tehsil).filter(Boolean))].sort();
       $('teh').innerHTML = '<option value="">All tehsils</option>' + t.map(v => `<option>${esc(v)}</option>`).join('');
       $('fname').innerHTML = 'Loaded: <b>' + esc(file.name) + '</b> - drop another file to replace it.';
-      $('result').hidden = false; render();
+      $('result').hidden = false; render(); showTab('check'); $('tabBikeBtn').textContent = 'Bike Late Finish (' + D.bike.recs.length + ')';
     } catch (e) { $('msg').textContent = e.message; }
   };
   rd.readAsText(file, 'utf-8');
@@ -254,12 +316,17 @@ $('file').onchange = e => e.target.files[0] && load(e.target.files[0]);
 ['dragleave', 'drop'].forEach(ev => $('drop').addEventListener(ev, e => { e.preventDefault(); $('drop').classList.remove('over'); }));
 $('drop').addEventListener('drop', e => e.dataTransfer.files[0] && load(e.dataTransfer.files[0]));
 $('result').addEventListener('click', e => {
-  const t = e.target, ag = t.closest('[data-agent]'), st = t.closest('.stat'), cl = t.closest('[data-clear]'), th = t.closest('th[data-k]');
+  const t = e.target, tb = t.closest('[data-tab]');
+  if (tb) return showTab(tb.dataset.tab);
+  const ag = t.closest('[data-agent]'), st = t.closest('.stat'), cl = t.closest('[data-clear]'), th = t.closest('th[data-k]');
   if (ag) { agentF = ag.dataset.agent; render(); $('act').scrollIntoView({ behavior: 'smooth', block: 'center' }); }
   else if (cl) { const k = cl.dataset.clear; if (k === 'agent') agentF = ''; else if (k === 'f') filter = 'ALL'; else vf = 'ALL'; render(); }
   else if (st) { if (st.dataset.f !== undefined) filter = st.dataset.f; else vf = st.dataset.v; render(); }
   else if (th) { const k = th.dataset.k; sortDir = sortK === k ? -sortDir : 1; sortK = k; render(); }
 });
+$('bikeXls').onclick = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([bikeXLS()], { type: 'application/vnd.ms-excel' })); a.download = D.bike.R.filePrefix + ' ' + D.bike.date + '.xls'; a.click(); };
+$('bikeCsv').onclick = () => download(D.bike.R.filePrefix + ' ' + D.bike.date + '.csv', bikeCSV());
+$('bikePrint').onclick = () => window.print();
 $('q').oninput = render; $('teh').onchange = render;
 $('dlAll').onclick = () => download('emergency_trips_checked.csv', toCSV(D.out));
 $('dlBad').onclick = () => download('emergency_trips_WRONG_only.csv', toCSV(D.out.filter(x => x.status === 'WRONG' || x.vstatus === 'WRONG')));
