@@ -32,7 +32,7 @@ window.VEHICLE_CONFIG = {
       "RYB-27", "RYB-29"
     ],
     "Khanpur": [
-      "RYB-18", "RYA-05", "RYA-28", "RYA-35", "RYA-09", "RYA-25", "RYA-16", "RYA-17",
+      "RYB-18", "RYA-05", "RYA-28", "RYA-35", "RYA-25", "RYA-16", "RYA-17",
       "RYA-26", "RYA-27", "KPF-01", "KPR-01"
     ],
     "Liaqatpur": [
