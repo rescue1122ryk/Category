@@ -6,61 +6,78 @@
 <title>Emergency Category Checker</title>
 <script src="categories-config.js"></script>
 <style>
-:root{--bg:#f5f6f8;--card:#fff;--tx:#1b1f27;--mu:#667085;--bd:#e2e5ea;--ac:#2457d6;
---ok:#137a3d;--okb:#e3f5ea;--bad:#b42318;--badb:#fde8e6;--warn:#8a5a00;--warnb:#fff3d6;--sk:#555;--skb:#ececec}
-@media(prefers-color-scheme:dark){:root{--bg:#12151b;--card:#1b2029;--tx:#e9ecf1;--mu:#98a2b3;--bd:#2c3340;--ac:#6d96ff;
---ok:#59d98a;--okb:#16372a;--bad:#ff8b80;--badb:#4a1f1b;--warn:#ffcc66;--warnb:#44350f;--sk:#bbb;--skb:#2c3038}}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.45 system-ui,Segoe UI,Roboto,sans-serif}
-header{padding:20px 20px 4px;max-width:1300px;margin:auto}h1{margin:0;font-size:22px}header p{margin:4px 0 0;color:var(--mu)}
-main{max-width:1300px;margin:auto;padding:12px 20px 40px}
-.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px}
-#drop{border:2px dashed var(--bd);text-align:center;padding:28px;cursor:pointer}
-#drop.over{border-color:var(--ac);background:var(--card)}
-button{font:inherit;cursor:pointer;border:1px solid var(--bd);background:var(--card);color:var(--tx);padding:7px 12px;border-radius:8px}
+:root{--bg:#f3f5f9;--card:#fff;--tx:#18202e;--mu:#6b7686;--bd:#e1e6ee;--ac:#1f5eff;--hd1:#0f2a5c;--hd2:#1f5eff;
+--ok:#12803f;--okb:#e0f4e8;--bad:#c2281c;--badb:#fdecea;--warn:#8a5a00;--warnb:#fff1cf;--sk:#566;--skb:#eceff3}
+@media(prefers-color-scheme:dark){:root{--bg:#0f131a;--card:#181e28;--tx:#e8ecf2;--mu:#97a2b3;--bd:#2a3240;--ac:#6d96ff;--hd1:#0b1b3d;--hd2:#1d3f9e;
+--ok:#5fdb8c;--okb:#15382a;--bad:#ff8f84;--badb:#3f1b18;--warn:#ffcf70;--warnb:#44350f;--sk:#bbb;--skb:#2a2f38}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.5 system-ui,Segoe UI,Roboto,sans-serif}
+header{background:linear-gradient(120deg,var(--hd1),var(--hd2));color:#fff;padding:26px 20px 30px}
+.in{max-width:1300px;margin:auto}h1{margin:0;font-size:24px}header p{margin:6px 0 0;opacity:.85}
+main{max-width:1300px;margin:-18px auto 0;padding:0 20px 40px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-bottom:14px}
+.step{display:flex;gap:12px;align-items:flex-start}.step i{flex:none;width:28px;height:28px;border-radius:50%;background:var(--ac);color:#fff;display:grid;place-items:center;font-style:normal;font-weight:700}
+.step b{display:block}.step span{color:var(--mu);font-size:13px}
+a{color:var(--ac);font-weight:600}
+#drop{border:2px dashed var(--bd);text-align:center;padding:30px;cursor:pointer;transition:.15s}
+#drop:hover,#drop.over{border-color:var(--ac);background:var(--badb)}
+#drop.over{background:var(--card)}
+button,select{font:inherit;cursor:pointer;border:1px solid var(--bd);background:var(--card);color:var(--tx);padding:7px 12px;border-radius:9px}
 button.p{background:var(--ac);border-color:var(--ac);color:#fff}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:14px 0}
-.stat b{display:block;font-size:26px}.stat span{color:var(--mu)}
-.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:10px;margin-bottom:14px}
-.two h3{margin:0 0 8px;font-size:14px}.two table{width:100%}.two td{padding:3px 0;border:0}.two td:last-child{text-align:right;font-weight:600}
+.stat{cursor:pointer;border-left:4px solid var(--c,var(--bd))}.stat:hover{transform:translateY(-1px)}.stat.on{outline:2px solid var(--ac)}
+.stat b{display:block;font-size:26px;color:var(--c)}.stat span{color:var(--mu)}
+.acc{margin:0 0 14px}.acc .t{display:flex;justify-content:space-between;margin-bottom:6px}
+.meter{height:12px;border-radius:8px;background:var(--badb);overflow:hidden;display:flex}
+.meter div{height:100%}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px;margin-bottom:14px}
+.two h3{margin:0 0 8px;font-size:14px}.two table{width:100%;border-collapse:collapse}.two td{padding:4px 0;border-bottom:1px solid var(--bd)}.two td:last-child{text-align:right;font-weight:700}
 .bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0}
-.chip{border-radius:20px;padding:5px 12px}.chip.on{background:var(--ac);border-color:var(--ac);color:#fff}
-input[type=search]{flex:1;min-width:180px;padding:8px 10px;border:1px solid var(--bd);border-radius:8px;background:var(--card);color:var(--tx);font:inherit}
-.wrap{overflow:auto;max-height:70vh;border:1px solid var(--bd);border-radius:12px;background:var(--card)}
+input[type=search]{flex:1;min-width:200px;padding:8px 12px;border:1px solid var(--bd);border-radius:9px;background:var(--card);color:var(--tx);font:inherit}
+.wrap{overflow:auto;max-height:70vh;border:1px solid var(--bd);border-radius:14px;background:var(--card)}
 #tbl{border-collapse:collapse;width:100%;white-space:nowrap}
-#tbl th{position:sticky;top:0;background:var(--card);text-align:left;padding:9px 10px;border-bottom:1px solid var(--bd);z-index:1}
-#tbl td{padding:7px 10px;border-bottom:1px solid var(--bd)}
+#tbl th{position:sticky;top:0;background:var(--card);text-align:left;padding:10px;border-bottom:2px solid var(--bd);z-index:1;cursor:pointer;user-select:none}
+#tbl td{padding:8px 10px;border-bottom:1px solid var(--bd)}#tbl tbody tr:hover td{filter:brightness(.97)}
 tr.WRONG td{background:var(--badb)}
-.tag{padding:2px 9px;border-radius:12px;font-weight:600;font-size:12px}
+.tag{padding:2px 10px;border-radius:12px;font-weight:700;font-size:12px}
 .tag.OK{background:var(--okb);color:var(--ok)}.tag.WRONG{background:var(--bad);color:#fff}
 .tag.NOTLIST{background:var(--warnb);color:var(--warn)}.tag.SKIP{background:var(--skb);color:var(--sk)}
 .fix{font-weight:700;color:var(--ok)}.mu{color:var(--mu)}
-#msg{margin:10px 0;color:var(--bad)}
+#msg{margin:10px 0;color:var(--bad);font-weight:600}
 </style>
 </head>
 <body>
-<header>
+<header><div class="in">
   <h1>Emergency Category Checker</h1>
-  <p>CSV upload karein — har trip ki category standard list se check hogi. Standard list <code>categories-config.js</code> main hai.</p>
-</header>
+  <p>Verify that every trip's emergency category matches the standard category list.</p>
+</div></header>
 <main>
   <div id="msg"></div>
+  <div class="steps">
+    <div class="card step"><i>1</i><div><b>Get the report</b><span>Open the <a href="https://punjab.rescue1122.org/dashboard/report/detailed_emergency_statistics_v2" target="_blank" rel="noopener">All-In-One Emergency Detailed Report</a> and download the CSV.</span></div></div>
+    <div class="card step"><i>2</i><div><b>Upload the CSV</b><span>Drop the file below. Nothing leaves your computer.</span></div></div>
+    <div class="card step"><i>3</i><div><b>Review &amp; export</b><span>Wrong categories are highlighted with the correct one. Download the fixed CSV.</span></div></div>
+  </div>
+
   <div id="drop" class="card">
-    <p><b>CSV file yahan drop karein</b> ya <button class="p" id="pick">File select karein</button></p>
-    <p class="mu" id="fname"></p>
+    <p><b>Drop the CSV file here</b> or <button class="p" id="pick">Choose file</button></p>
+    <p class="mu" id="fname">Upload the CSV file from the <a href="https://punjab.rescue1122.org/dashboard/report/detailed_emergency_statistics_v2" target="_blank" rel="noopener" id="lnk">All-In-One Emergency Detailed Report</a></p>
     <input type="file" id="file" accept=".csv,text/csv" hidden>
   </div>
 
   <div id="result" hidden>
     <div class="grid" id="stats"></div>
+    <div class="card acc"><div class="t"><b>Category accuracy</b><span id="accTxt"></span></div><div class="meter" id="meter"></div></div>
     <div class="two">
-      <div class="card"><h3>Agent wise WRONG category</h3><table id="agents"></table></div>
-      <div class="card"><h3>Subtypes jo standard list main nahi mile</h3><table id="unmapped"></table></div>
+      <div class="card"><h3>Wrong categories by agent</h3><table id="agents"></table></div>
+      <div class="card"><h3>Most common mistakes (selected &rarr; correct)</h3><table id="pairs"></table></div>
+      <div class="card"><h3>Subtypes not found in the standard list</h3><table id="unmapped"></table></div>
     </div>
     <div class="bar">
-      <span id="chips"></span>
-      <input type="search" id="q" placeholder="Search: EC No, subtype, agent, tehsil...">
+      <select id="teh"></select>
+      <input type="search" id="q" placeholder="Search EC No, subtype, agent...">
       <button class="p" id="dlAll">Download full CSV</button>
-      <button id="dlBad">Download WRONG only</button>
+      <button id="dlBad">Download wrong only</button>
     </div>
     <div class="wrap"><table id="tbl"></table></div>
   </div>
@@ -98,7 +115,7 @@ function analyse(rows) {
   const C = CFG.columns, O = CFG.outputColumns, head = rows[0].map(h => h.trim());
   const ix = n => head.indexOf(n);
   const iSub = ix(C.subtype), iCat = ix(C.category);
-  if (iSub < 0 || iCat < 0) throw new Error('CSV main "' + C.subtype + '" ya "' + C.category + '" column nahi mila.');
+  if (iSub < 0 || iCat < 0) throw new Error('Columns "' + C.subtype + '" and/or "' + C.category + '" were not found in this CSV.');
   const find = buildLookup(), skipT = CFG.skipEmergencyTypes.map(norm), skipC = CFG.skipCategories.map(norm);
   const get = (r, n) => { const i = ix(n); return i < 0 ? '' : (r[i] || '').trim(); };
   const out = [];
@@ -119,10 +136,11 @@ function analyse(rows) {
 }
 // CORE END
 
-const LABEL = { OK: 'Correct', WRONG: 'WRONG', NOTLIST: 'Not in list', SKIP: 'Skipped (PTS)' };
+const LABEL = { OK: 'Correct', WRONG: 'Wrong', NOTLIST: 'Not in list', SKIP: 'Skipped (PTS)' };
+const COL = { OK: 'var(--ok)', WRONG: 'var(--bad)', NOTLIST: 'var(--warn)', SKIP: 'var(--mu)' };
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-let D = null, filter = 'ALL';
+let D = null, filter = 'ALL', sortK = null, sortDir = 1;
 
 function toCSV(head, items, O) {
   const q = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
@@ -139,29 +157,29 @@ function tally(items, key) {
   const m = {}; items.forEach(x => { const k = key(x); m[k] = (m[k] || 0) + 1; });
   return Object.entries(m).sort((a, b) => b[1] - a[1]);
 }
-function rowsHTML(list) {
-  return list.length ? list.map(([k, v]) => `<tr><td>${esc(k)}</td><td>${v}</td></tr>`).join('') : '<tr><td class="mu">Koi nahi</td></tr>';
-}
+const rowsHTML = l => l.length ? l.map(([k, v]) => `<tr><td>${esc(k)}</td><td>${v}</td></tr>`).join('') : '<tr><td class="mu">None</td></tr>';
 
 function render() {
   const { out } = D, n = s => out.filter(x => x.status === s).length, checked = out.length - n('SKIP');
-  $('stats').innerHTML = [
-    ['Total trips', out.length, ''], ['Checked', checked, ''],
-    ['Correct', n('OK'), 'color:var(--ok)'], ['WRONG', n('WRONG'), 'color:var(--bad)'],
-    ['Not in list', n('NOTLIST'), 'color:var(--warn)'], ['Skipped (PTS)', n('SKIP'), 'color:var(--mu)']
-  ].map(([l, v, s]) => `<div class="card stat"><b style="${s}">${v}</b><span>${l}</span></div>`).join('');
-  $('agents').innerHTML = rowsHTML(tally(out.filter(x => x.status === 'WRONG'), x => (x.agent || '—') + (x.agentId ? ' (' + x.agentId + ')' : '')).slice(0, 10));
+  const pct = checked ? Math.round(n('OK') / checked * 1000) / 10 : 0;
+  const cards = [['ALL', 'Total trips', out.length], ['OK', 'Correct', n('OK')], ['WRONG', 'Wrong', n('WRONG')], ['NOTLIST', 'Not in list', n('NOTLIST')], ['SKIP', 'Skipped (PTS)', n('SKIP')]];
+  $('stats').innerHTML = cards.map(([f, l, v]) => `<div class="card stat ${filter === f ? 'on' : ''}" data-f="${f}" style="--c:${COL[f] || 'var(--ac)'}"><b>${v}</b><span>${l}</span></div>`).join('');
+  $('accTxt').textContent = pct + '% correct (' + n('OK') + ' of ' + checked + ' checked)';
+  $('meter').innerHTML = ['OK', 'NOTLIST', 'WRONG'].map(s => `<div style="width:${checked ? n(s) / checked * 100 : 0}%;background:${COL[s]}"></div>`).join('');
+  const wr = out.filter(x => x.status === 'WRONG');
+  $('agents').innerHTML = rowsHTML(tally(wr, x => (x.agent || '-') + (x.agentId ? ' (' + x.agentId + ')' : '')).slice(0, 10));
+  $('pairs').innerHTML = rowsHTML(tally(wr, x => x.sub + ': ' + x.cat + ' \u2192 ' + x.correct).slice(0, 10));
   $('unmapped').innerHTML = rowsHTML(tally(out.filter(x => x.status === 'NOTLIST'), x => x.sub || '(empty)'));
-  $('chips').innerHTML = ['ALL', 'WRONG', 'OK', 'NOTLIST', 'SKIP'].map(f =>
-    `<button class="chip ${filter === f ? 'on' : ''}" data-f="${f}">${f === 'ALL' ? 'All' : LABEL[f]}</button>`).join(' ');
-  const term = $('q').value.trim().toLowerCase();
-  const list = out.filter(x => (filter === 'ALL' || x.status === filter) &&
+  const term = $('q').value.trim().toLowerCase(), teh = $('teh').value;
+  let list = out.filter(x => (filter === 'ALL' || x.status === filter) && (!teh || x.tehsil === teh) &&
     (!term || [x.id, x.sub, x.cat, x.agent, x.agentId, x.tehsil, x.correct].join(' ').toLowerCase().includes(term)));
-  $('tbl').innerHTML = '<thead><tr><th>#</th><th>EC No</th><th>Tehsil</th><th>Subtype</th><th>Selected category</th><th>Correct category</th><th>Result</th><th>Agent</th><th>Call received</th></tr></thead><tbody>' +
+  if (sortK) list = [...list].sort((a, b) => String(a[sortK]).localeCompare(String(b[sortK]), undefined, { numeric: true }) * sortDir);
+  const H = [['id', 'EC No'], ['tehsil', 'Tehsil'], ['sub', 'Subtype'], ['cat', 'Selected category'], ['correct', 'Correct category'], ['status', 'Result'], ['agent', 'Agent'], ['recv', 'Call received']];
+  $('tbl').innerHTML = '<thead><tr><th>#</th>' + H.map(([k, l]) => `<th data-k="${k}">${l}${sortK === k ? (sortDir > 0 ? ' \u25B2' : ' \u25BC') : ''}</th>`).join('') + '</tr></thead><tbody>' +
     list.map((x, i) => `<tr class="${x.status}"><td class="mu">${i + 1}</td><td>${esc(x.id)}</td><td>${esc(x.tehsil)}</td><td>${esc(x.sub)}</td><td>${esc(x.cat)}</td>
     <td class="fix">${esc(x.correct)}</td><td><span class="tag ${x.status}">${LABEL[x.status]}</span></td>
     <td>${esc(x.agent)} <span class="mu">${esc(x.agentId)}</span></td><td class="mu">${esc(x.recv)}</td></tr>`).join('') +
-    (list.length ? '' : '<tr><td colspan="9" class="mu">Koi record nahi mila.</td></tr>') + '</tbody>';
+    (list.length ? '' : '<tr><td colspan="9" class="mu">No matching records.</td></tr>') + '</tbody>';
 }
 
 function load(file) {
@@ -169,22 +187,27 @@ function load(file) {
   const rd = new FileReader();
   rd.onload = () => {
     try {
-      D = analyse(parseCSV(rd.result)); filter = 'ALL'; $('q').value = '';
-      $('fname').textContent = file.name; $('result').hidden = false; render();
+      D = analyse(parseCSV(rd.result)); filter = 'ALL'; sortK = null; $('q').value = '';
+      const t = [...new Set(D.out.map(x => x.tehsil).filter(Boolean))].sort();
+      $('teh').innerHTML = '<option value="">All tehsils</option>' + t.map(v => `<option>${esc(v)}</option>`).join('');
+      $('fname').innerHTML = 'Loaded: <b>' + esc(file.name) + '</b> - drop another file to replace it.';
+      $('result').hidden = false; render();
     } catch (e) { $('msg').textContent = e.message; }
   };
   rd.readAsText(file, 'utf-8');
 }
 
-if (!CFG) $('msg').textContent = 'categories-config.js load nahi hui. Dono files ek hi folder main rakhein.';
+if (!CFG) $('msg').textContent = 'categories-config.js could not be loaded. Keep both files in the same folder.';
 $('pick').onclick = e => { e.stopPropagation(); $('file').click(); };
+$('lnk').onclick = e => e.stopPropagation();
 $('drop').onclick = () => $('file').click();
 $('file').onchange = e => e.target.files[0] && load(e.target.files[0]);
 ['dragover', 'dragenter'].forEach(ev => $('drop').addEventListener(ev, e => { e.preventDefault(); $('drop').classList.add('over'); }));
 ['dragleave', 'drop'].forEach(ev => $('drop').addEventListener(ev, e => { e.preventDefault(); $('drop').classList.remove('over'); }));
 $('drop').addEventListener('drop', e => e.dataTransfer.files[0] && load(e.dataTransfer.files[0]));
-$('chips').onclick = e => { if (e.target.dataset.f) { filter = e.target.dataset.f; render(); } };
-$('q').oninput = render;
+$('stats').onclick = e => { const c = e.target.closest('.stat'); if (c) { filter = c.dataset.f; render(); } };
+$('tbl').onclick = e => { const k = e.target.dataset.k; if (k) { sortDir = sortK === k ? -sortDir : 1; sortK = k; render(); } };
+$('q').oninput = render; $('teh').onchange = render;
 $('dlAll').onclick = () => download('emergency_trips_checked.csv', toCSV(D.head, D.out, D.O));
 $('dlBad').onclick = () => download('emergency_trips_WRONG_only.csv', toCSV(D.head, D.out.filter(x => x.status === 'WRONG'), D.O));
 </script>
