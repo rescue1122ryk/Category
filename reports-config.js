@@ -64,5 +64,35 @@ window.REPORTS_CONFIG = {
       "RS-03": "Rescue 1122 Station, Near by TMA office shahi road khanpur",
       "RS-04": "Liaquatpur, Rahim Yar Khan"
     }
+  },
+
+  /* ---- Pin Emergencies report (HotSpot macro) -----------------------
+     Columns are taken BY POSITION from the raw file (1 = column A), the
+     same columns the original macro keeps after deleting the others.
+     keepColumns   : raw columns kept as A, B, C, D, E in the report
+                     (the 5th one is shown as a time, h:mm:ss AM/PM)
+     latLngColumn  : raw column holding "lat,long" (split into F and G)
+     sortKeptColumn: report column used for the descending sort (3 = C)
+     lats / lons   : default pin locations. A row is highlighted (and
+                     moved to the top) when its lat (4 decimals) is in
+                     lats OR its long (4 decimals) is in lons.
+     Duplicates are removed using the first kept column.
+  ------------------------------------------------------------------ */
+  pinEmergencies: {
+    keepColumns:    [1, 3, 5, 8, 12],
+    latLngColumn:   25,
+    sortKeptColumn: 3,
+    lats: [28.4189, 28.421, 28.311, 28.6469, 28.9374, 28.79908, 28.7991],
+    lons: [69.9194, 70.3108, 70.1267, 70.6634, 70.9406, 70.53368, 70.5337]
+  },
+
+  /* ---- Late Accept report (vehicle response file) ------------------
+     Included: Acknowledge duration is at least minMinutes.
+     A repeated EC No + vehicle pair is shown once.
+  ------------------------------------------------------------------ */
+  lateAccept: {
+    minMinutes: 5,
+    district:   "Rahim Yar Khan",
+    title:      "Late Accept emergency by operational staff"
   }
 };
