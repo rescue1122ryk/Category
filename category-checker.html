@@ -67,28 +67,21 @@ tr.WRONG td{background:var(--badb)}
   <div id="msg"></div>
   <div class="steps">
     <div class="card step"><i>1</i><div><b>Get the report</b><span>Open the <a href="https://punjab.rescue1122.org/dashboard/report/detailed_emergency_statistics_v2" target="_blank" rel="noopener">All-In-One Emergency Detailed Report</a> and download the CSV.</span></div></div>
-    <div class="card step"><i>2</i><div><b>Upload the CSV files</b><span>Emergency trips CSV for most reports, Staff App CSV for the Staff App report. Nothing leaves your computer.</span></div></div>
+    <div class="card step"><i>2</i><div><b>Upload your CSV files</b><span>Select all files in one go: trips, Staff App, Pin Emergencies, Late Accept. Nothing leaves your computer.</span></div></div>
     <div class="card step"><i>3</i><div><b>Review &amp; export</b><span>Wrong categories are highlighted with the correct one. Download the fixed CSV.</span></div></div>
   </div>
 
-  <div class="two">
-    <div id="drop" class="card drop">
-      <p><b>1. Emergency trips CSV</b></p>
-      <p>Drop the file here or <button class="p" id="pick">Choose file</button></p>
-      <p class="mu" id="fname">Upload the CSV file from the <a href="https://punjab.rescue1122.org/dashboard/report/detailed_emergency_statistics_v2" target="_blank" rel="noopener" id="lnk">All-In-One Emergency Detailed Report</a></p>
-      <input type="file" id="file" accept=".csv,text/csv" multiple hidden>
-    </div>
-    <div id="drop2" class="card drop">
-      <p><b>2. Staff App CSV</b> <span class="mu">(optional)</span></p>
-      <p>Drop the file here or <button class="p" id="pick2">Choose file</button></p>
-      <p class="mu" id="fname2">Upload the vehicle availability CSV used for the Staff App Not Sync report.</p>
-      <input type="file" id="file2" accept=".csv,text/csv" multiple hidden>
-    </div>
+  <div id="drop" class="card drop">
+    <p><b>Drop all your CSV files here</b> or <button class="p" id="pick">Choose files</button></p>
+    <p class="mu">Select several files at once. Each file is recognised by its columns.</p>
+    <p class="mu">Emergency trips CSV: download it from the <a href="https://punjab.rescue1122.org/dashboard/report/detailed_emergency_statistics_v2" target="_blank" rel="noopener" id="lnk">All-In-One Emergency Detailed Report</a></p>
+    <input type="file" id="file" accept=".csv,text/csv" multiple hidden>
+    <div id="files" class="act" style="justify-content:center"></div>
   </div>
-  <p class="mu">You can drop both files together. The page recognises each file by its columns, so the box you use does not matter.</p>
+  <div id="ask"></div>
 
   <div id="result" hidden>
-    <div class="tabs"><button class="on" data-tab="check" id="tab_check">Category &amp; Vehicle Check</button><button data-tab="bike" id="tab_bike">Bike Late Finish</button><button data-tab="delivery" id="tab_delivery">Delivery Case</button><button data-tab="long" id="tab_long">Long Duration</button><button data-tab="staff" id="tab_staff">Staff App Not Sync</button></div>
+    <div class="tabs"><button class="on" data-tab="check" id="tab_check">Category &amp; Vehicle Check</button><button data-tab="bike" id="tab_bike">Bike Late Finish</button><button data-tab="delivery" id="tab_delivery">Delivery Case</button><button data-tab="long" id="tab_long">Long Duration</button><button data-tab="staff" id="tab_staff">Staff App Not Sync</button><button data-tab="pin" id="tab_pin">Pin Emergencies</button><button data-tab="late" id="tab_late">Late Accept</button></div>
     <div id="tabCheck">
     <div class="sub">Category check</div><div class="grid" id="stats"></div>
     <div class="sub">Vehicle &amp; tehsil check</div><div class="grid" id="vstats"></div><div id="vnote"></div>
@@ -317,6 +310,90 @@ function staffApp(rows) {
   };
 }
 
+function ackSecs(s) {
+  s = String(s || '').toLowerCase().trim(); if (!s || s === 'n/a') return 0;
+  let t = 0, m;
+  if ((m = s.match(/(\d+)\s*h/))) t += +m[1] * 3600;
+  if ((m = s.match(/(\d+)\s*m/))) t += +m[1] * 60;
+  if ((m = s.match(/(\d+)\s*s/))) t += +m[1];
+  if (t === 0 && s !== '' && !isNaN(s)) t = Math.round(+s);
+  if (t === 0) t = Math.max(0, secs(s));
+  return t;
+}
+function fmtTime12(s) {
+  const m = String(s).match(/(\d{1,2}):(\d{2}):(\d{2})\s*([AP]M)?/i); if (!m) return s;
+  let h = +m[1], ap = (m[4] || '').toUpperCase();
+  if (!ap) { ap = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12; }
+  return h + ':' + m[2] + ':' + m[3] + ' ' + ap;
+}
+function detectKind(rows) {
+  const H = (rows[0] || []).map(h => String(h).trim().toLowerCase());
+  if (H.some(h => h.includes('station call sign'))) return 'staff';
+  if (H.includes('acknowledge') && (H.includes('emergency no') || H.includes('ec no') || H.includes('emergency no.'))) return 'late';
+  if (H.includes('emergency category') && H.includes('emergency subtype')) return 'trips';
+  if (H.length >= 26 && /^\s*-?\d+(\.\d+)?\s*,\s*-?\d+(\.\d+)?\s*$/.test(String((rows[1] || [])[24] || ''))) return 'pin';
+  return '';
+}
+
+function pinEmergencies(rows) {
+  const R = Object.assign({ keepColumns: [1, 3, 5, 8, 12], latLngColumn: 25, sortKeptColumn: 3,
+    lats: [28.4189, 28.421, 28.311, 28.6469, 28.9374, 28.79908, 28.7991], lons: [69.9194, 70.3108, 70.1267, 70.6634, 70.9406, 70.53368, 70.5337] }, RC('pinEmergencies'));
+  const need = Math.max(R.latLngColumn, ...R.keepColumns);
+  if (rows[0].length < need) throw new Error('Pin Emergencies file: expected at least ' + need + ' columns but found ' + rows[0].length + '.');
+  const pick = (r, n) => String(r[n - 1] == null ? '' : r[n - 1]).trim(), K = R.keepColumns.length;
+  const HD = [...R.keepColumns.map(n => pick(rows[0], n)), pick(rows[0], R.latLngColumn), 'Long'];
+  const seen = new Set(), data = [];
+  for (const r of rows.slice(1)) {
+    const kept = R.keepColumns.map(n => pick(r, n)); if (seen.has(kept[0])) continue; seen.add(kept[0]);
+    const ll = pick(r, R.latLngColumn).split(','), lat = parseFloat(ll[0]), lng = parseFloat(ll[1]), r4 = v => Math.round(v * 1e4) / 1e4;
+    const hit = (!isNaN(lat) && R.lats.some(v => Math.abs(r4(lat) - v) < 1e-9)) || (!isNaN(lng) && R.lons.some(v => Math.abs(r4(lng) - v) < 1e-9));
+    data.push({ kept, lat, lng, raw: ll, hit });
+  }
+  const sk = R.sortKeptColumn - 1;
+  data.sort((a, b) => String(b.kept[sk]).localeCompare(String(a.kept[sk]), undefined, { numeric: true, sensitivity: 'base' }));
+  const ordered = [...data.filter(x => x.hit), ...data.filter(x => !x.hit)];
+  const lines = ordered.map(x => { const kept = [...x.kept]; if (K >= 5) kept[4] = fmtTime12(kept[4]); return { x, cells: [...kept, isNaN(x.lat) ? (x.raw[0] || '') : x.lat.toFixed(5), isNaN(x.lng) ? (x.raw[1] || '').trim() : x.lng.toFixed(5)] }; });
+  const hits = ordered.filter(x => x.hit).length, B = 'font-weight:bold;font-size:14pt;';
+  return {
+    name: 'Pin Emergencies ' + dmy(new Date()), count: ordered.length, cards: [['Pin emergencies', ordered.length], ['Hotspot matches', hits]], warn: '',
+    rule: 'Duplicates removed by "' + HD[0] + '"  |  sorted by "' + HD[sk] + '" (descending)  |  gold rows = default pin locations, moved to the top',
+    widths: [22.86, 19, 22.86, 20.14, 13.86, 16, 8.43].map(w => Math.round(w * 7)),
+    rows: [HD.map(x => cl(x, 'font-weight:bold;background:#f2f2f2;')),
+      ...(lines.length ? lines.map(({ x, cells }) => cells.map((v, i) => cl(v, 'height:22px;' + (i === 0 || i === 2 ? B : '') + (x.hit ? 'background:#e1c864;' : '')))) : [[cl('No data found.', '', { cs: HD.length })]])],
+    csv: [[...HD, 'Hotspot'], ...lines.map(({ x, cells }) => [...cells, x.hit ? 'Yes' : ''])]
+  };
+}
+
+function lateAccept(rows) {
+  const R = Object.assign({ minMinutes: 5, district: 'Rahim Yar Khan', title: 'Late Accept emergency by operational staff' }, RC('lateAccept'));
+  const H = rows[0].map(h => String(h).trim().toLowerCase()), last = names => { let r = -1; H.forEach((h, i) => { if (names.includes(h)) r = i; }); return r; };
+  const c = { ec: last(['emergency no', 'ec no', 'emergency no.']), type: last(['emergency type']), sub: last(['emergency subtype']), veh: last(['vehicle']), station: last(['station name']),
+    call: last(['call time']), ack: last(['acknowledge']), disp: last(['dispatch']), resp: last(['response time']), status: last(['status']) };
+  if (c.ec < 0 || c.ack < 0) throw new Error('Late Accept file: the "EC No" or "Acknowledge" column was not found.');
+  const g = (r, k) => c[k] < 0 ? '' : String(r[c[k]] == null ? '' : r[c[k]]).trim();
+  const m0 = rows[1] && c.call >= 0 ? fmtDT(g(rows[1], 'call')).match(/^(\d{2})\/(\d{2})\/(\d{4})/) : null;
+  const date = m0 ? m0[1] + '-' + m0[2] + '-' + m0[3] : dmy(new Date()), seen = new Set(), recs = [];
+  for (const r of rows.slice(1)) {
+    const ec = g(r, 'ec'); if (!ec || ['N/A', 'NOT ASSIGNED'].includes(ec.toUpperCase())) continue;
+    const key = ec + '|' + g(r, 'veh'); if (seen.has(key)) continue; seen.add(key);
+    const a = ackSecs(g(r, 'ack')); if (a < R.minMinutes * 60) continue;
+    const veh = g(r, 'veh').toUpperCase(), p = veh.slice(0, 3), vt = p === 'RYA' ? 'Ambulance' : p === 'RYB' ? 'Bike' : p === 'RYR' ? 'Rescue' : 'Other';
+    recs.push([ec, R.district, g(r, 'station'), g(r, 'type'), g(r, 'sub'), vt, veh, g(r, 'ack'), g(r, 'disp'), '0:' + p2(Math.floor(a / 60)) + ':' + p2(a % 60), '', g(r, 'resp'), '', '', '', g(r, 'status')]);
+  }
+  const HD = ['EC no', 'District Name', 'Tehsil Name', 'Emergency Type', 'Emergency Subtype', 'Dispatched Vehicle Type', 'Dispatched Vehicle', 'Acknowledgement', 'Dispatch', 'Late Accept', 'On Location', 'Response time', 'Remarks by Vehicle Staff', 'Ignition On', 'Trip Start', 'Emergency status'];
+  const n = recs.length, G = 'color:#ffffff;font-weight:bold;background:#00b050;';
+  const data = recs.map((r, i) => r.map((v, j) => cl(v, 'height:18px;' + (j === 9 ? 'color:#ff0000;' : ''), j === 1 && i === 0 ? { rs: n } : {})).filter((_, j) => j !== 1 || i === 0));
+  return {
+    name: 'Late Accept ' + date, count: n, cards: [['Late accepts', n], ...countBy(recs, r => r[5])], warn: '',
+    rule: 'Acknowledge duration >= ' + R.minMinutes + ' minutes  |  one row per EC No + vehicle',
+    widths: [10, 14, 10, 16, 16, 14, 12, 12, 12, 11, 12, 12, 18, 11, 11, 12].map(w => w * 7),
+    rows: [[cl(R.title + ', ' + date, G + 'font-size:14pt;', { cs: 16 })], [cl(R.district, G + 'font-size:12pt;', { cs: 16 })],
+      [cl('', 'border:none;', { cs: 13 }), cl('Tracker', 'font-weight:bold;background:#b4c6e7;', { cs: 2 })],
+      HD.map(x => cl(x, 'font-weight:bold;background:#b4c6e7;height:30px;')), ...(n ? data : [[cl('No matching records found.', '', { cs: 16 })]])],
+    csv: [HD, ...recs]
+  };
+}
+
 const VOUT = () => Object.assign({ status: 'Vehicle Check', correct: 'Correct Tehsil (Vehicle)' }, (window.VEHICLE_CONFIG || {}).outputColumns || {});
 function buildVehicles() {
   const map = {}; let total = 0;
@@ -427,9 +504,9 @@ function render() {
     (list.length ? '' : '<tr><td colspan="12" class="mu">No matching records.</td></tr>') + '</tbody>';
 }
 
-const REPS = [['bike', 'Bike Late Finish'], ['delivery', 'Delivery Case'], ['long', 'Long Duration'], ['staff', 'Staff App Not Sync']];
-let S = null;
-const ALLREP = () => Object.assign({}, D ? D.reports : {}, S ? { staff: S } : {});
+const REPS = [['bike', 'Bike Late Finish'], ['delivery', 'Delivery Case'], ['long', 'Long Duration'], ['staff', 'Staff App Not Sync'], ['pin', 'Pin Emergencies'], ['late', 'Late Accept']];
+const X = {};
+const ALLREP = () => Object.assign({}, D ? D.reports : {}, X);
 let curRep = 'bike';
 const BD = 'border:1px solid #000;text-align:center;vertical-align:middle;font-family:Calibri,Arial;';
 const cellHTML = c => `<td${c.cs ? ` colspan="${c.cs}"` : ''}${c.rs ? ` rowspan="${c.rs}"` : ''} style="${BD}${c.s}">${c.rot ? `<span class="rot">${esc(c.v)}</span>` : esc(c.v)}</td>`;
@@ -449,27 +526,47 @@ function showTab(t) {
   if (t !== 'check') renderReport(t);
 }
 
+const KINDS = { trips: 'Emergency trips', staff: 'Staff App', pin: 'Pin Emergencies', late: 'Late Accept' }, FILES = {}, ASKQ = [];
+const HINT = { staff: 'Staff App', pin: 'Pin Emergencies (HotSpot)', late: 'Late Accept (vehicle response)' };
+function renderFiles() {
+  $('files').innerHTML = Object.entries(KINDS).map(([k, l]) => FILES[k] ? `<span class="pill" style="background:var(--ok);color:#fff;cursor:default">\u2713 ${l}: ${esc(FILES[k])}</span>` : `<span class="mu">${l}: not uploaded</span>`).join(' ');
+}
+function renderAsk() {
+  const a = ASKQ[0];
+  $('ask').innerHTML = a ? `<div class="note">"${esc(a.name)}" was not recognised. What kind of file is it? ${Object.entries(KINDS).map(([k, l]) => `<button data-kind="${k}">${l}</button>`).join(' ')} <button data-kind="skip">Ignore</button></div>` : '';
+}
 function afterLoad(t) {
   $('result').hidden = false; if (D) render();
   const R = ALLREP();
-  REPS.forEach(([k, l]) => { const b = $('tab_' + k); b.textContent = l + (R[k] ? ' (' + R[k].count + ')' : ''); b.disabled = !R[k]; b.title = R[k] ? '' : 'Upload the ' + (k === 'staff' ? 'Staff App' : 'Emergency trips') + ' CSV first'; });
+  REPS.forEach(([k, l]) => { const b = $('tab_' + k); b.textContent = l + (R[k] ? ' (' + R[k].count + ')' : ''); b.disabled = !R[k]; b.title = R[k] ? '' : 'Upload the ' + (HINT[k] || 'Emergency trips') + ' CSV first'; });
   $('tab_check').disabled = !D; showTab(t);
+}
+function processFile(kind, rows, name) {
+  if (kind === 'trips') {
+    D = analyse(rows); filter = 'ALL'; vf = 'ALL'; agentF = ''; sortK = null; $('q').value = '';
+    const t = [...new Set(D.out.map(x => x.tehsil).filter(Boolean))].sort();
+    $('teh').innerHTML = '<option value="">All tehsils</option>' + t.map(v => `<option>${esc(v)}</option>`).join('');
+  } else X[kind] = { staff: staffApp, pin: pinEmergencies, late: lateAccept }[kind](rows);
+  FILES[kind] = name; renderFiles(); afterLoad(kind === 'trips' ? 'check' : kind);
 }
 function load(file) {
   $('msg').textContent = '';
   const rd = new FileReader();
   rd.onload = () => {
     try {
-      const rows = parseCSV(rd.result), loaded = 'Loaded: <b>' + esc(file.name) + '</b> - drop another file to replace it.';
-      if (rows[0] && rows[0].some(x => /station call sign/i.test(x))) { S = staffApp(rows); $('fname2').innerHTML = loaded; afterLoad('staff'); return; }
-      D = analyse(rows); filter = 'ALL'; vf = 'ALL'; agentF = ''; sortK = null; $('q').value = '';
-      const t = [...new Set(D.out.map(x => x.tehsil).filter(Boolean))].sort();
-      $('teh').innerHTML = '<option value="">All tehsils</option>' + t.map(v => `<option>${esc(v)}</option>`).join('');
-      $('fname').innerHTML = loaded; afterLoad('check');
+      const rows = parseCSV(rd.result); if (!rows.length) throw new Error(file.name + ' is empty.');
+      const kind = detectKind(rows);
+      if (kind) processFile(kind, rows, file.name); else { ASKQ.push({ name: file.name, rows }); renderAsk(); }
     } catch (e) { $('msg').textContent = e.message; }
   };
   rd.readAsText(file, 'utf-8');
 }
+$('ask').onclick = e => {
+  const b = e.target.closest('[data-kind]'); if (!b) return; const a = ASKQ.shift();
+  try { if (b.dataset.kind !== 'skip') processFile(b.dataset.kind, a.rows, a.name); } catch (err) { $('msg').textContent = err.message; }
+  renderAsk();
+};
+renderFiles();
 
 if (!CFG) $('msg').textContent = 'categories-config.js could not be loaded. Keep all files in the same folder.';
 $('pick').onclick = e => { e.stopPropagation(); $('file').click(); };
@@ -479,12 +576,6 @@ $('file').onchange = e => [...e.target.files].forEach(load);
 ['dragover', 'dragenter'].forEach(ev => $('drop').addEventListener(ev, e => { e.preventDefault(); $('drop').classList.add('over'); }));
 ['dragleave', 'drop'].forEach(ev => $('drop').addEventListener(ev, e => { e.preventDefault(); $('drop').classList.remove('over'); }));
 $('drop').addEventListener('drop', e => [...e.dataTransfer.files].forEach(load));
-$('pick2').onclick = e => { e.stopPropagation(); $('file2').click(); };
-$('drop2').onclick = () => $('file2').click();
-$('file2').onchange = e => [...e.target.files].forEach(load);
-['dragover', 'dragenter'].forEach(ev => $('drop2').addEventListener(ev, e => { e.preventDefault(); $('drop2').classList.add('over'); }));
-['dragleave', 'drop'].forEach(ev => $('drop2').addEventListener(ev, e => { e.preventDefault(); $('drop2').classList.remove('over'); }));
-$('drop2').addEventListener('drop', e => [...e.dataTransfer.files].forEach(load));
 $('result').addEventListener('click', e => {
   const t = e.target, tb = t.closest('[data-tab]');
   if (tb) return showTab(tb.dataset.tab);
