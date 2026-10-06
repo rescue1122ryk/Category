@@ -94,5 +94,65 @@ window.REPORTS_CONFIG = {
     minMinutes: 5,
     district:   "Rahim Yar Khan",
     title:      "Late Accept emergency by operational staff"
+  },
+
+  /* ---- Crime Report (Crime_Emergency macro) -------------------------
+     Included: Emergency Type equals emergencyType and EC No assigned.
+     statuses: leave [] for all (the macro clears that filter), or e.g.
+               ["Called Back", "Finished", "On Location"] to restrict.
+     columns : [label shown in report, header in the trips CSV]
+     leftCols: report columns (0 = first) that are left aligned.
+     The sheet date is yesterday (same as the macro =TODAY()-1).
+  ------------------------------------------------------------------ */
+  crimeReport: {
+    title:        "Crime Emergencies Breakup of District Rahim Yar Khan",
+    emergencyType:"Crime",
+    statuses:     [],
+    leftCols:     [6, 7],
+    columns: [
+      ["Tehsil",                  "Tehsil Name"],
+      ["Nature of Emergency",     "Emergency Subtype"],
+      ["R.Time",                  "Response Time (HH:MM:SS)"],
+      ["Time",                    "Start Time"],
+      ["Vehicle",                 "Dispatched Vehicles"],
+      ["First Aid/ Shifted/ Dead","Fate Of Patient"],
+      ["Emergency Address",       "Emergency Address"],
+      ["Emergency Place",         "Emergency Place"]
+    ]
+  },
+
+  /* ---- Dead Report (Dead_Victim macro) ------------------------------
+     Included: Fate Of Patient is Dead and the trip is not Discarded.
+     "@nature" = Subtype (Emergency Type);  "@agent" = agent column from
+     categories-config.js.  A Sr. # column is added automatically.
+     The sheet date is yesterday (same as the macro =TODAY()-1).
+  ------------------------------------------------------------------ */
+  deadVictim: {
+    title:   "Rahim Yar Khan Report of All Dead Victim",
+    fate:    "Dead",
+    leftCols:[6],
+    rowH:    36,
+    columns: [
+      ["Tehsil",                   "Tehsil Name"],
+      ["Nature of Emergency",      "@nature"],
+      ["Age",                      "Age"],
+      ["Time of Incident",         "Start Time"],
+      ["Response Time (HH:MM:SS)", "Response Time (HH:MM:SS)"],
+      ["Vehicle",                  "Dispatched Vehicles"],
+      ["Location",                 "Emergency Address"],
+      ["Staff Name",               "@agent"]
+    ]
+  },
+
+  /* ---- JCO Emg Count (Emergencies_Count macro) ----------------------
+     Type the name in the tab. Counted per day (Call Received at):
+     agent name contains the typed text, Call Type is one of callTypes,
+     not PTS, EC No assigned (each EC No counted once).
+     categories: the Emergency Type columns shown; others go in "Other".
+  ------------------------------------------------------------------ */
+  jcoCount: {
+    title:      "JCO Emergency Count",
+    callTypes:  ["App Call", "EMDS Call"],
+    categories: ["Medical Emergency", "RTA", "Crime", "Miscellaneous", "Fire", "Drowning", "Fall", "Building Collapse"]
   }
 };
