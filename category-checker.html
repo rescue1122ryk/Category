@@ -52,9 +52,9 @@ tr.WRONG td{background:var(--badb)}
 .note{background:var(--warnb);color:var(--warn);border-radius:10px;padding:8px 12px;margin-top:8px}
 .tabs{display:flex;gap:8px;margin:0 0 6px}.tabs button{border-radius:20px;font-weight:600}.tabs button.on{background:var(--ac);border-color:var(--ac);color:#fff}
 .s2{border-left:4px solid var(--c)}.s2 b{display:block;font-size:26px;color:var(--c)}.s2 span{color:var(--mu)}
-.xl{border-collapse:collapse;width:100%;white-space:nowrap}.xl th,.xl td{border:1px solid #000;padding:6px 8px;text-align:center}
-.xl th{background:#008000;color:#fff}.xl th.ttl{background:transparent;color:var(--tx);font-size:22px;border:1px solid #000}.xl td.y{background:#ff0;color:#000}
-@media print{body *{visibility:hidden}#bikeSheet,#bikeSheet *{visibility:visible}#bikeSheet{position:absolute;left:0;top:0;width:100%;max-height:none;overflow:visible}.xl th,.xl td{color:#000}.xl th{color:#fff}}
+.xl{border-collapse:collapse;white-space:nowrap;table-layout:fixed}.xl td{padding:5px 8px;background:#fff;color:#000;white-space:normal;word-break:break-word}
+.rot{display:inline-block;writing-mode:vertical-rl;transform:rotate(180deg)}
+@media print{body *{visibility:hidden}#bikeSheet,#bikeSheet *{visibility:visible}#bikeSheet{position:absolute;left:0;top:0;width:100%;max-height:none;overflow:visible}}
 </style>
 </head>
 <body>
@@ -77,7 +77,7 @@ tr.WRONG td{background:var(--badb)}
   </div>
 
   <div id="result" hidden>
-    <div class="tabs"><button class="on" data-tab="check">Category &amp; Vehicle Check</button><button data-tab="bike" id="tabBikeBtn">Bike Late Finish</button></div>
+    <div class="tabs"><button class="on" data-tab="check">Category &amp; Vehicle Check</button><button data-tab="bike" id="tab_bike">Bike Late Finish</button><button data-tab="delivery" id="tab_delivery">Delivery Case</button><button data-tab="long" id="tab_long">Long Duration</button></div>
     <div id="tabCheck">
     <div class="sub">Category check</div><div class="grid" id="stats"></div>
     <div class="sub">Vehicle &amp; tehsil check</div><div class="grid" id="vstats"></div><div id="vnote"></div>
@@ -136,12 +136,25 @@ function buildLookup() {
   return k => std[k] || std[ali[k]];
 }
 
+const p2 = v => String(v).padStart(2, '0');
+const dmy = d => p2(d.getDate()) + '-' + p2(d.getMonth() + 1) + '-' + d.getFullYear();
+function dateFrom(s) { const m = String(s || '').match(/(\d{4})[\/-](\d{1,2})[\/-](\d{1,2})/); return m ? p2(m[3]) + '-' + p2(m[2]) + '-' + m[1] : dmy(new Date()); }
+const RC = k => Object.assign({}, (window.REPORTS_CONFIG || {})[k] || {});
+const cl = (v, s, o) => Object.assign({ v, s: s || '' }, o || {});
+const countBy = (a, f) => { const m = {}; a.forEach(x => { const k = f(x); m[k] = (m[k] || 0) + 1; }); return Object.entries(m).sort((x, y) => y[1] - x[1]); };
+function secs(t) { const m = String(t || '').trim().match(/^(\d+):(\d{2}):(\d{2})$/); return m ? +m[1] * 3600 + +m[2] * 60 + +m[3] : -1; }
+function callTime(s) {
+  const m = String(s).match(/(\d{4})[\/-](\d{1,2})[\/-](\d{1,2})[ T]+(\d{1,2}):(\d{2})(?::\d{2})?\s*([AP]M)?/i);
+  if (!m) return s;
+  let h = +m[4]; const ap = (m[6] || '').toUpperCase();
+  if (ap === 'PM' && h < 12) h += 12; if (ap === 'AM' && h === 12) h = 0;
+  return p2(m[3]) + '/' + p2(m[2]) + '/' + m[1] + ' ' + h + ':' + m[5];
+}
+
 const BIKE_COLS = ['EC No', 'Tehsil Name', 'Emergency Type', 'Emergency Subtype', 'Emergency Address', 'Emergency Place', 'Dispatched Vehicles Type',
   'Dispatched Vehicles', 'Total Mileage', 'Start Time', 'End Time', 'Response Time (HH:MM:SS)', 'Elapsed Time (HH:MM:SS)', 'Emergency Status', 'Fate Of Patient'];
-function secs(t) { const m = String(t || '').trim().match(/^(\d+):(\d{2}):(\d{2})$/); return m ? +m[1] * 3600 + +m[2] * 60 + +m[3] : -1; }
 function bikeLate(rows) {
-  const R = Object.assign({ title: 'Motor Bike Late Finish Report', filePrefix: 'Bike Late Finish', vehicleTypes: ['bike', 'buddy,bike'], fate: 'First Aid', minElapsed: '00:40:00' },
-    (window.REPORTS_CONFIG || {}).bikeLateFinish || {});
+  const R = Object.assign({ title: 'Motor Bike Late Finish Report', filePrefix: 'Bike Late Finish', vehicleTypes: ['bike', 'buddy,bike'], fate: 'First Aid', minElapsed: '00:40:00' }, RC('bikeLateFinish'));
   const head = rows[0].map(h => h.trim()), ix = n => head.indexOf(n), missing = BIKE_COLS.filter(c => ix(c) < 0);
   const flat = s => String(s).toLowerCase().replace(/\s+/g, ''), types = R.vehicleTypes.map(flat), min = secs(R.minElapsed), seen = new Set(), recs = [];
   for (const r of rows.slice(1)) {
@@ -152,9 +165,84 @@ function bikeLate(rows) {
     const ec = g('EC No'); if (seen.has(ec)) continue; seen.add(ec);
     recs.push(BIKE_COLS.map(g));
   }
-  const m = recs.length && String(recs[0][9]).match(/(\d{4})[\/-](\d{1,2})[\/-](\d{1,2})/), p2 = v => String(v).padStart(2, '0'), d = new Date();
-  const date = m ? p2(m[3]) + '-' + p2(m[2]) + '-' + m[1] : p2(d.getDate()) + '-' + p2(d.getMonth() + 1) + '-' + d.getFullYear();
-  return { R, recs, date, missing };
+  const date = dateFrom(recs.length ? recs[0][9] : ''), n = BIKE_COLS.length;
+  return {
+    name: R.filePrefix + ' ' + date, count: recs.length, cards: [['Late finish trips', recs.length], ...countBy(recs, r => r[1])],
+    rule: 'Vehicle type: ' + R.vehicleTypes.join(' / ') + '  |  Fate: ' + R.fate + '  |  Elapsed >= ' + R.minElapsed,
+    warn: missing.length ? 'These columns were not found in the CSV: ' + missing.join(', ') : '',
+    widths: [7.4, 12.25, 18.1, 19.1, 36.1, 10.6, 11.1, 14, 8, 19, 19, 13, 15, 12, 12].map(w => Math.round(w * 7)),
+    rows: [[cl(R.title + ' Date: ' + date, 'font-size:22pt;font-weight:bold;height:36px;', { cs: n })],
+      BIKE_COLS.map(c => cl(c, 'background:#008000;color:#ffffff;font-weight:bold;height:50px;')),
+      ...(recs.length ? recs.map(r => r.map((v, i) => cl(v, i === 7 || i === 12 ? 'background:#ffff00;' : ''))) : [[cl('No matching records found.', '', { cs: n })]])],
+    csv: [BIKE_COLS, ...recs]
+  };
+}
+
+function deliveryCase(rows) {
+  const R = Object.assign({ title: 'Delivery Case Emergencies of District Rahim Yar Khan', subtype: 'Delivery Case', gender: 'Female' }, RC('deliveryCase'));
+  const head = rows[0].map(h => h.trim()), ix = n => head.indexOf(n), seen = new Set(), recs = [];
+  const missing = ['EC No', 'Emergency Subtype', 'Start Time', 'Age', 'Fate Of Patient', 'Emergency Address'].filter(c => ix(c) < 0);
+  for (const r of rows.slice(1)) {
+    const g = n => ix(n) < 0 ? '' : String(r[ix(n)] || '').trim();
+    const ec = g('EC No'); if (!ec || ec.toUpperCase() === 'NOT ASSIGNED') continue;
+    if (g('Emergency Subtype').toLowerCase() !== R.subtype.toLowerCase()) continue;
+    const t = g('Emergency Type').toLowerCase(), ct = g('Call Type').toLowerCase(), cat = g('Emergency Category').toLowerCase();
+    if (t.includes('patient transfer') || ct.includes('patient transfer') || cat.includes('pts') || t.includes('pts')) continue;
+    if (seen.has(ec)) continue; seen.add(ec);
+    let fate = g('Fate Of Patient'); const f = fate.toLowerCase();
+    fate = f.includes('shifted') ? 'Shifted' : (f.includes('dead') || f.includes('expired')) ? 'Dead' : fate === '' ? 'N/A' : fate;
+    recs.push([callTime(g('Start Time') || g('Call Received at')), g('Age'), fate, g('Emergency Address')]);
+  }
+  const n = recs.length, date = dmy(new Date()), L = 'text-align:left;height:18px;', H = ['Emergency', 'Total Emg.', 'Call Time', 'Total Patients', 'Age', 'Gender', 'F/A Shifted/Dead', 'Location'];
+  const data = recs.map((r, i) => i === 0
+    ? [cl(R.subtype, 'font-weight:bold;mso-rotate:90;', { rs: n, rot: true }), cl(n, '', { rs: n }), cl(r[0], L), cl(n, '', { rs: n }), cl(r[1], L), cl(R.gender, '', { rs: n }), cl(r[2], L), cl(r[3], L)]
+    : [cl(r[0], L), cl(r[1], L), cl(r[2], L), cl(r[3], L)]);
+  return {
+    name: 'Delivery Case ' + date, count: n, cards: [['Delivery cases', n], ...countBy(recs, r => r[2])],
+    rule: 'Subtype: ' + R.subtype + '  |  PTS trips excluded  |  Sheet date is today',
+    warn: missing.length ? 'These columns were not found in the CSV: ' + missing.join(', ') : '',
+    widths: [12, 10, 18, 12, 8, 10, 14, 55].map(w => w * 7),
+    rows: [[cl(R.title, 'border:none;font-weight:bold;font-size:16pt;', { cs: 8 })], [cl('Date: ' + date, 'border:none;font-weight:bold;', { cs: 8 })], [cl('', 'border:none;', { cs: 8 })],
+      H.map(c => cl(c, 'background:#c8c8c8;font-weight:bold;')), ...(n ? data : [[cl('No matching records found.', '', { cs: 8 })]])],
+    csv: [H, ...recs.map(r => [R.subtype, n, r[0], n, r[1], R.gender, r[2], r[3]])]
+  };
+}
+
+function longDuration(rows) {
+  const R = Object.assign({ minHours: 2, title1: 'Punjab Emergency Service Rescue 1122, Bahawalpur Division', title2: 'Long Duration Emergencies (More than 2 hours)' }, RC('longDuration'));
+  const H = rows[0].map(h => h.toLowerCase().trim()), last = f => { let r = -1; H.forEach((h, i) => { if (f(h)) r = i; }); return r; };
+  const c = {
+    ec: last(h => h.includes('ec no')), dist: last(h => h.includes('district name')), teh: last(h => h.includes('tehsil name')),
+    type: last(h => h.includes('emergency type') && !h.includes('subtype')), sub: last(h => h.includes('emergency subtype')), addr: last(h => h.includes('emergency address')),
+    veh: last(h => h.includes('vehicle reg no') && !h.includes('response') && !h.includes('acknowledge')), mile: last(h => h.includes('total mileage')),
+    call: last(h => h.includes('call received')), start: last(h => h.includes('start time')), end: last(h => h.includes('end time')),
+    resp: last(h => h.includes('response time') && h.includes('hh:mm')), elap: last(h => h.includes('elapsed time') && h.includes('hh:mm')),
+    fate: last(h => h.includes('fate of patient')), long: last(h => h.includes('long distance'))
+  };
+  const HD = ['EC No', 'District Name', 'Tehsil Name', 'Emergency Type', 'Emergency Subtype', 'Emergency Address', 'Remarks By Staff', 'Vehicle No', 'Total Mileage', 'Call Received', 'Start Time', 'End Time', 'Response Time', 'Elapsed Time', 'Fate Of Patient', 'Remarks'];
+  const base = { name: 'Long Duration Emergencies', count: 0, cards: [], rule: 'Elapsed Time more than ' + R.minHours + ' hours  |  PTS trips excluded', widths: [], csv: [] };
+  if (c.ec < 0 || c.elap < 0) return { ...base, warn: 'EC No or Elapsed Time column was not found in the CSV.', rows: [[cl('No data', '')]] };
+  const recs = []; let date = '';
+  for (const r of rows.slice(1)) {
+    const g = k => c[k] < 0 ? '' : String(r[c[k]] || '').trim();
+    if (g('type').toLowerCase().includes('patient transfer')) continue;
+    const el = g('elap'); if (!el || el.toUpperCase() === 'N/A') continue;
+    const s = secs(el); if (s < 0 || s / 3600 <= R.minHours) continue;
+    const dm = g('call').match(/\d{4}[\/-]\d{1,2}[\/-]\d{1,2}/); if (!date && dm) date = dateFrom(dm[0]);
+    let addr = g('addr'); if (addr.length > 60) addr = addr.slice(0, 57) + '...';
+    const rem = g('long').toLowerCase() === 'yes' ? 'Long Distance' : g('type').toLowerCase().includes('rescue operations') ? 'Mass Event / Other' : 'Long Duration';
+    recs.push([g('ec'), g('dist'), g('teh'), g('type'), g('sub'), addr, rem, g('veh').split(',')[0].trim(), g('mile').split(',')[0].trim(), g('call'), g('start'), g('end'), g('resp'), el, g('fate'), '']);
+  }
+  date = date || dmy(new Date());
+  const n = HD.length, T = 'color:#ffffff;font-weight:bold;';
+  return {
+    ...base, name: 'Long Duration Emergencies ' + date, count: recs.length, cards: [['Long duration trips', recs.length], ...countBy(recs, r => r[6])], warn: '',
+    widths: [10, 14, 14, 18, 18, 40, 14, 12, 12, 16, 16, 16, 12, 12, 16, 12].map(w => w * 7),
+    rows: [[cl(R.title1, T + 'background:#006400;font-size:16pt;height:28px;', { cs: n })], [cl(R.title2 + ' (' + date + ')', T + 'background:#228b22;font-size:12pt;height:22px;', { cs: n })],
+      HD.map(h => cl(h, h === 'Remarks By Staff' ? 'background:#ffff00;color:#000000;font-weight:bold;font-size:10pt;height:30px;' : T + 'background:#4472c4;font-size:10pt;height:30px;')),
+      ...(recs.length ? recs.map(r => r.map((v, i) => cl(v, 'font-size:9pt;height:35px;' + (i === 5 ? 'text-align:left;' : '') + (i === 6 ? 'background:#fff2cc;' : '')))) : [[cl('No matching records found.', '', { cs: n })]])],
+    csv: [HD, ...recs]
+  };
 }
 
 const VOUT = () => Object.assign({ status: 'Vehicle Check', correct: 'Correct Tehsil (Vehicle)' }, (window.VEHICLE_CONFIG || {}).outputColumns || {});
@@ -199,7 +287,7 @@ function analyse(rows) {
     out.push({ r, sub, cat, status, correct, id: get(r, C.id), type: get(r, C.type), agent: get(r, C.agent),
       agentId: get(r, C.agentId), tehsil, recv: get(r, C.received), ...VCk.check(get(r, VCol), tehsil) });
   }
-  return { head, out, O, VO: VOUT(), vTotal: VCk.total, bike: bikeLate(rows) };
+  return { head, out, O, VO: VOUT(), vTotal: VCk.total, reports: { bike: bikeLate(rows), delivery: deliveryCase(rows), long: longDuration(rows) } };
 }
 // CORE END
 
@@ -267,29 +355,24 @@ function render() {
     (list.length ? '' : '<tr><td colspan="12" class="mu">No matching records.</td></tr>') + '</tbody>';
 }
 
-function renderBike() {
-  const b = D.bike, n = BIKE_COLS.length;
-  $('bikeSum').innerHTML = `<div class="card s2" style="--c:var(--bad)"><b>${b.recs.length}</b><span>Late finish trips</span></div>` +
-    tally(b.recs, r => r[1]).map(([t, v]) => `<div class="card s2" style="--c:var(--ac)"><b>${v}</b><span>${esc(t)}</span></div>`).join('');
-  $('bikeWarn').innerHTML = b.missing.length ? `<div class="note">These columns were not found in the CSV: ${esc(b.missing.join(', '))}</div>` : '';
-  $('bikeRule').textContent = 'Vehicle type: ' + b.R.vehicleTypes.join(' / ') + '  |  Fate: ' + b.R.fate + '  |  Elapsed >= ' + b.R.minElapsed;
-  $('bikeSheet').innerHTML = `<table class="xl"><thead><tr><th class="ttl" colspan="${n}">${esc(b.R.title)} Date: ${b.date}</th></tr><tr>${BIKE_COLS.map(c => `<th>${c}</th>`).join('')}</tr></thead><tbody>` +
-    (b.recs.length ? b.recs.map(r => '<tr>' + r.map((v, i) => `<td class="${i === 7 || i === 12 ? 'y' : ''}">${esc(v)}</td>`).join('') + '</tr>').join('') : `<tr><td colspan="${n}">No matching records found.</td></tr>`) + '</tbody></table>';
+const REPS = [['bike', 'Bike Late Finish'], ['delivery', 'Delivery Case'], ['long', 'Long Duration']];
+let curRep = 'bike';
+const BD = 'border:1px solid #000;text-align:center;vertical-align:middle;font-family:Calibri,Arial;';
+const cellHTML = c => `<td${c.cs ? ` colspan="${c.cs}"` : ''}${c.rs ? ` rowspan="${c.rs}"` : ''} style="${BD}${c.s}">${c.rot ? `<span class="rot">${esc(c.v)}</span>` : esc(c.v)}</td>`;
+const sheetHTML = sp => `<table class="xl" style="border-collapse:collapse"><colgroup>${sp.widths.map(w => `<col style="width:${w}px">`).join('')}</colgroup>${sp.rows.map(r => '<tr>' + r.map(cellHTML).join('') + '</tr>').join('')}</table>`;
+function renderReport(k) {
+  curRep = k; const sp = D.reports[k];
+  $('bikeSum').innerHTML = sp.cards.map(([l, v], i) => `<div class="card s2" style="--c:${i ? 'var(--ac)' : 'var(--bad)'}"><b>${v}</b><span>${esc(l)}</span></div>`).join('');
+  $('bikeWarn').innerHTML = sp.warn ? `<div class="note">${esc(sp.warn)}</div>` : '';
+  $('bikeRule').textContent = sp.rule;
+  $('bikeSheet').innerHTML = sheetHTML(sp);
 }
-function bikeXLS() {
-  const b = D.bike, n = BIKE_COLS.length, bd = 'border:1px solid #000;text-align:center;vertical-align:middle;font-family:Calibri,Arial;';
-  const rows = b.recs.map(r => '<tr>' + r.map((v, i) => `<td style="${bd}${i === 7 || i === 12 ? 'background:#ffff00;' : ''}">${esc(v)}</td>`).join('') + '</tr>').join('');
-  return `<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="utf-8"></head><body><table style="border-collapse:collapse"><tr><td colspan="${n}" style="${bd}font-size:22pt;font-weight:bold;height:36px">${esc(b.R.title)} Date: ${b.date}</td></tr>` +
-    `<tr>${BIKE_COLS.map(c => `<td style="${bd}background:#008000;color:#ffffff;font-weight:bold;height:50px">${c}</td>`).join('')}</tr>${rows || `<tr><td colspan="${n}" style="${bd}">No matching records found.</td></tr>`}</table></body></html>`;
-}
-function bikeCSV() {
-  const q = v => '"' + String(v).replace(/"/g, '""') + '"';
-  return '\ufeff' + [BIKE_COLS, ...D.bike.recs].map(r => r.map(q).join(',')).join('\r\n');
-}
+const bikeXLS = sp => '<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="utf-8"></head><body>' + sheetHTML(sp) + '</body></html>';
+function repCSV(sp) { const q = v => '"' + String(v).replace(/"/g, '""') + '"'; return '\ufeff' + sp.csv.map(r => r.map(q).join(',')).join('\r\n'); }
 function showTab(t) {
-  $('tabCheck').hidden = t !== 'check'; $('tabBike').hidden = t !== 'bike';
+  $('tabCheck').hidden = t === 'bike' || t === 'delivery' || t === 'long'; $('tabBike').hidden = $('tabCheck').hidden === false;
   document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
-  if (t === 'bike') renderBike();
+  if (D.reports[t]) renderReport(t);
 }
 
 function load(file) {
@@ -301,7 +384,7 @@ function load(file) {
       const t = [...new Set(D.out.map(x => x.tehsil).filter(Boolean))].sort();
       $('teh').innerHTML = '<option value="">All tehsils</option>' + t.map(v => `<option>${esc(v)}</option>`).join('');
       $('fname').innerHTML = 'Loaded: <b>' + esc(file.name) + '</b> - drop another file to replace it.';
-      $('result').hidden = false; render(); showTab('check'); $('tabBikeBtn').textContent = 'Bike Late Finish (' + D.bike.recs.length + ')';
+      $('result').hidden = false; render(); showTab('check'); REPS.forEach(([k, l]) => $('tab_' + k).textContent = l + ' (' + D.reports[k].count + ')');
     } catch (e) { $('msg').textContent = e.message; }
   };
   rd.readAsText(file, 'utf-8');
@@ -324,8 +407,8 @@ $('result').addEventListener('click', e => {
   else if (st) { if (st.dataset.f !== undefined) filter = st.dataset.f; else vf = st.dataset.v; render(); }
   else if (th) { const k = th.dataset.k; sortDir = sortK === k ? -sortDir : 1; sortK = k; render(); }
 });
-$('bikeXls').onclick = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([bikeXLS()], { type: 'application/vnd.ms-excel' })); a.download = D.bike.R.filePrefix + ' ' + D.bike.date + '.xls'; a.click(); };
-$('bikeCsv').onclick = () => download(D.bike.R.filePrefix + ' ' + D.bike.date + '.csv', bikeCSV());
+$('bikeXls').onclick = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([bikeXLS(D.reports[curRep])], { type: 'application/vnd.ms-excel' })); a.download = D.reports[curRep].name + '.xls'; a.click(); };
+$('bikeCsv').onclick = () => download(D.reports[curRep].name + '.csv', repCSV(D.reports[curRep]));
 $('bikePrint').onclick = () => window.print();
 $('q').oninput = render; $('teh').onchange = render;
 $('dlAll').onclick = () => download('emergency_trips_checked.csv', toCSV(D.out));
