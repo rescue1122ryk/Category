@@ -57,7 +57,6 @@ window.CATEGORY_CONFIG = {
       "Allergy",
       "Anxiety",
       "Chemical/Drug Poisoning",
-      "Domestic Injury",
       "Earache/Toothache",
       "Epistaxis/Nosebleed",
       "Eye Pain",
