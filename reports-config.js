@@ -144,15 +144,27 @@ window.REPORTS_CONFIG = {
     ]
   },
 
-  /* ---- JCO Emg Count (Emergencies_Count macro) ----------------------
-     Type the name in the tab. Counted per day (Call Received at):
-     agent name contains the typed text, Call Type is one of callTypes,
-     not PTS, EC No assigned (each EC No counted once).
-     categories: the Emergency Type columns shown; others go in "Other".
+  /* ---- JCO Emg Count (monthly report, data kept on GitHub) ----------
+     Counted per call agent ("Agent Name"): EC No assigned, each EC No once,
+     and the trip types in excludeTypes are left out.
+     callTypes: [] = every call type. To copy the old macro use
+                ["App Call", "EMDS Call"].
   ------------------------------------------------------------------ */
   jcoCount: {
-    title:      "JCO Emergency Count",
-    callTypes:  ["App Call", "EMDS Call"],
-    categories: ["Medical Emergency", "RTA", "Crime", "Miscellaneous", "Fire", "Drowning", "Fall", "Building Collapse"]
+    excludeTypes: ["Patient Transfer Service"],
+    callTypes:    []
+  },
+
+  /* ---- GitHub (where the monthly JCO data is saved / read) ---------
+     owner / repo : your GitHub user and repository name
+     folder       : folder inside the repo (created automatically)
+     Do NOT write the token here. The "GitHub settings" button in the
+     JCO tab asks for it and keeps it only in your own browser.
+  ------------------------------------------------------------------ */
+  github: {
+    owner:  "",
+    repo:   "",
+    branch: "main",
+    folder: "jco-data"
   }
 };
