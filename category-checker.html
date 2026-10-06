@@ -56,6 +56,12 @@ tr.WRONG td{background:var(--badb)}
 .rot{display:inline-block;writing-mode:vertical-rl;transform:rotate(180deg)}
 @media print{body *{visibility:hidden}#bikeSheet,#bikeSheet *{visibility:visible}#bikeSheet{position:absolute;left:0;top:0;width:100%;max-height:none;overflow:visible}}
 .tabs{flex-wrap:wrap}.tabs button:disabled{opacity:.45;cursor:not-allowed}
+
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}.cal .wd{text-align:center;font-weight:700;color:var(--mu);font-size:12px}
+.cd{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;min-height:56px;border-radius:10px;border:1px solid var(--bd);background:rgba(31,94,255,calc(var(--i,0)*.35));color:var(--tx)}
+.cd b{font-size:12px;color:var(--mu)}.cd span{font-size:16px;font-weight:700}.cd.z span{color:var(--mu);font-weight:400}.cd.on{outline:2px solid var(--ac)}.cd.e{visibility:hidden;border:none}
+.dl{width:100%;border-collapse:collapse}.dl th,.dl td{padding:6px 10px;border-bottom:1px solid var(--bd);text-align:left;white-space:nowrap}.dl th{position:sticky;top:0;background:var(--card)}
+.chip{padding:2px 10px;border-radius:12px;font-size:12px;font-weight:700;background:var(--skb);color:var(--sk)}.chip.m{background:var(--okb);color:var(--ok)}.chip.r{background:var(--badb);color:var(--bad)}
 </style>
 </head>
 <body>
@@ -75,6 +81,7 @@ tr.WRONG td{background:var(--badb)}
     <p><b>Drop all your CSV files here</b> or <button class="p" id="pick">Choose files</button></p>
     <p class="mu">Select several files at once. Each file is recognised by its columns.</p>
     <p class="mu">Emergency trips CSV: download it from the <a href="https://punjab.rescue1122.org/dashboard/report/detailed_emergency_statistics_v2" target="_blank" rel="noopener" id="lnk">All-In-One Emergency Detailed Report</a></p>
+    <p><button id="openJco">Open JCO monthly report (saved months on GitHub)</button></p>
     <input type="file" id="file" accept=".csv,text/csv" multiple hidden>
     <div id="files" class="act" style="justify-content:center"></div>
   </div>
@@ -102,10 +109,20 @@ tr.WRONG td{background:var(--badb)}
     <div class="act" id="act"></div>
     <div class="wrap"><table id="tbl"></table></div>
     </div>
+    <div id="tabJco" hidden>
+      <div class="bar">
+        <select id="jMonth" title="Month"></select><select id="jAgent" title="Call agent" style="min-width:240px"></select>
+        <span style="flex:1"></span>
+        <button class="p" id="jUp">Upload this month to GitHub</button><button id="jSet">GitHub settings</button><button id="jCsv">Download CSV</button>
+      </div>
+      <div id="jMsg" class="mu"></div>
+      <div class="grid" id="jSum"></div>
+      <div class="two"><div class="card"><h3>Calendar (number = emergencies of that day)</h3><div id="jCal"></div></div>
+        <div class="card"><h3 id="jDayT">Click a date to see its emergencies</h3><div class="wrap" style="max-height:60vh" id="jDay"></div></div></div>
+    </div>
     <div id="tabBike" hidden>
       <div class="grid" id="bikeSum"></div>
       <div id="bikeWarn"></div>
-      <div class="bar" id="jcoBar" hidden><input type="search" id="jcoName" placeholder="Enter JCO / agent name (part of the name is fine)..."></div>
       <div class="bar"><span class="mu" id="bikeRule"></span><span style="flex:1"></span>
         <button class="p" id="bikeXls">Download Excel (.xls)</button><button id="bikeCsv">Download CSV</button><button id="bikePrint">Print</button></div>
       <div class="wrap" id="bikeSheet"></div>
@@ -444,35 +461,6 @@ function deadVictim(rows) {
     rule: 'Fate Of Patient: ' + R.fate + '  |  Discarded trips excluded  |  Sheet date is yesterday',
     keep: (g, r) => g(r, 'Fate Of Patient').toLowerCase().includes(R.fate.toLowerCase()) && g(r, 'Emergency Status').toLowerCase() !== 'discarded' });
 }
-function jcoCount(rows, name) {
-  const R = Object.assign({ title: 'JCO Emergency Count', callTypes: ['App Call', 'EMDS Call'],
-    categories: ['Medical Emergency', 'RTA', 'Crime', 'Miscellaneous', 'Fire', 'Drowning', 'Fall', 'Building Collapse'] }, RC('jcoCount'));
-  const { ix, get } = tripGetter(rows), C = CFG.columns, nm = String(name || '').trim().toLowerCase(), cats = R.categories.map(norm);
-  const H = ['Date', ...R.categories, 'Other', 'Total'], n = H.length, nmShow = String(name || '').trim();
-  const base = { name: 'JCO Emg Count' + (nmShow ? ' ' + nmShow : ''), count: 0, cards: [['Total emergencies', 0]], widths: H.map(() => 115), csv: [H],
-    rule: 'Agent name contains "' + nmShow + '"  |  Call type: ' + R.callTypes.join(' / ') + '  |  PTS excluded  |  each EC No counted once' };
-  const miss = [C.id, C.type, C.agent, C.received].filter(h => ix(h) < 0);
-  if (miss.length) return { ...base, warn: 'These columns were not found in the CSV: ' + miss.join(', '), rows: [[cl('No data', '')]] };
-  if (!nm) return { ...base, warn: '', rows: [[cl('Type the JCO / agent name above to see the day-wise count.', '', { cs: n })]] };
-  const callOk = ix('Call Type') < 0 ? () => true : r => R.callTypes.map(norm).includes(norm(get(r, 'Call Type')));
-  const skipT = (CFG.skipEmergencyTypes || []).map(norm), days = {}, seen = new Set();
-  for (const r of rows.slice(1)) {
-    const ec = get(r, C.id); if (!ec || norm(ec) === 'notassigned' || seen.has(ec)) continue;
-    const tn = norm(get(r, C.type)); if (skipT.includes(tn) || tn === 'pts' || tn.includes('patienttransfer')) continue;
-    if (!callOk(r) || !get(r, C.agent).toLowerCase().includes(nm)) continue;
-    seen.add(ec);
-    const m = fmtDT(get(r, C.received)).match(/^(\d{2})\/(\d{2})\/(\d{4})/), key = m ? m[3] + m[2] + m[1] : '0', d = days[key] = days[key] || { label: m ? m[1] + '-' + m[2] + '-' + m[3] : 'Unknown', c: R.categories.map(() => 0), other: 0 };
-    const k = cats.indexOf(tn); if (k >= 0) d.c[k]++; else d.other++;
-  }
-  const list = Object.keys(days).sort().map(k => days[k]), sum = R.categories.map((_, i) => list.reduce((a, d) => a + d.c[i], 0)), other = list.reduce((a, d) => a + d.other, 0), total = sum.reduce((a, b) => a + b, 0) + other;
-  const line = d => [d.label, ...d.c, d.other, d.c.reduce((a, b) => a + b, 0) + d.other], tot = ['Total', ...sum, other, total];
-  return {
-    ...base, count: total, warn: '', cards: [['Total emergencies', total], ...R.categories.map((c, i) => [c, sum[i]]).filter(x => x[1]), ...(other ? [['Other', other]] : [])],
-    rows: [[cl(R.title + ' \u2014 ' + nmShow, 'font-size:16pt;font-weight:bold;height:30px;', { cs: n })], H.map(h => cl(h, 'font-weight:bold;color:#ffffff;background:#4472c4;height:34px;')),
-      ...(list.length ? [...list.map(d => line(d).map(v => cl(v, 'height:22px;'))), tot.map(v => cl(v, 'font-weight:bold;background:#e2efda;height:24px;'))] : [[cl('No matching records found.', '', { cs: n })]])],
-    csv: [H, ...list.map(line), ...(list.length ? [tot] : [])]
-  };
-}
 
 const VOUT = () => Object.assign({ status: 'Vehicle Check', correct: 'Correct Tehsil (Vehicle)' }, (window.VEHICLE_CONFIG || {}).outputColumns || {});
 function buildVehicles() {
@@ -525,7 +513,7 @@ const VLABEL = { OK: 'Correct', WRONG: 'Wrong tehsil', NOTLIST: 'Not in list', S
 const COL = { OK: 'var(--ok)', WRONG: 'var(--bad)', NOTLIST: 'var(--warn)', SKIP: 'var(--mu)' };
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-let TRIPROWS = null, D = null, filter = 'ALL', vf = 'ALL', agentF = '', sortK = null, sortDir = 1;
+let D = null, filter = 'ALL', vf = 'ALL', agentF = '', sortK = null, sortDir = 1;
 const akey = x => x.agent + '|' + x.agentId;
 
 function toCSV(items) {
@@ -601,9 +589,152 @@ function renderReport(k) {
 const bikeXLS = sp => '<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="utf-8"></head><body>' + sheetHTML(sp) + '</body></html>';
 function repCSV(sp) { const q = v => '"' + String(v).replace(/"/g, '""') + '"'; return '\ufeff' + sp.csv.map(r => r.map(q).join(',')).join('\r\n'); }
 function showTab(t) {
-  $('tabCheck').hidden = t !== 'check'; $('tabBike').hidden = t === 'check'; $('jcoBar').hidden = t !== 'jco';
+  $('tabCheck').hidden = t !== 'check'; $('tabBike').hidden = t === 'check' || t === 'jco'; $('tabJco').hidden = t !== 'jco';
   document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
-  if (t !== 'check') renderReport(t);
+  if (t === 'jco') renderJco(); else if (t !== 'check') renderReport(t);
+}
+
+
+/* ======================= JCO monthly report (data stored on GitHub) ======================= */
+const JC = { idx: [], local: null, cache: {}, ym: '', agent: '', day: '', loaded: false, data: null, recs: [], tok: '' };
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const ymLabel = ym => { const [y, m] = ym.split('-'); return MONTHS[+m - 1] + ' ' + y; };
+const ymd = d => d.split('-').reverse().join('-');
+const isoDT = s => {
+  const m = String(s || '').match(/(\d{4})[\/-](\d{1,2})[\/-](\d{1,2})(?:[ T]+(\d{1,2}):(\d{2})(?::\d{2})?\s*([AP]M)?)?/i);
+  if (!m) return '';
+  let h = +(m[4] || 0); const ap = (m[6] || '').toUpperCase(); if (ap === 'PM' && h < 12) h += 12; if (ap === 'AM' && h === 12) h = 0;
+  return m[1] + '-' + p2(m[2]) + '-' + p2(m[3]) + ' ' + p2(h) + ':' + (m[5] || '00');
+};
+function jcoSlim(rows) {
+  const head = rows[0].map(h => String(h).trim()), C = CFG.columns, I = n => colIx(head, n);
+  const ix = [C.id, I(C.agent) >= 0 ? C.agent : 'Agent Name', C.agentId || 'Agent Id', C.type, C.subtype, 'Call Type', C.received, C.tehsil].map(I);
+  if ([0, 1, 3, 6].some(k => ix[k] < 0)) return null;
+  const all = rows.slice(1).map(r => ix.map((i, k) => k === 6 ? isoDT(r[i]) : i < 0 ? '' : String(r[i] == null ? '' : r[i]).trim())).filter(r => r[6]), cnt = {};
+  all.forEach(r => { const m = r[6].slice(0, 7); cnt[m] = (cnt[m] || 0) + 1; });
+  const month = Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a])[0]; if (!month) return null;
+  return { v: 1, month, saved: new Date().toISOString(), cols: ['ec', 'agent', 'agentId', 'type', 'subtype', 'call', 'recv', 'tehsil'], rows: all.filter(r => r[6].startsWith(month)) };
+}
+function jcoRecs(d) {
+  const R = Object.assign({ callTypes: [], excludeTypes: ['Patient Transfer Service'] }, RC('jcoCount'));
+  const ex = [...R.excludeTypes, ...(CFG.skipEmergencyTypes || [])].map(norm), ct = (R.callTypes || []).map(norm), seen = new Set(), out = [];
+  for (const [ec, agent, agentId, type, sub, call, recv, teh] of d.rows) {
+    const tn = norm(type);
+    if (!ec || norm(ec) === 'notassigned' || seen.has(ec)) continue;
+    if (ex.includes(tn) || tn === 'pts' || tn.includes('patienttransfer')) continue;
+    if (ct.length && !ct.includes(norm(call))) continue;
+    seen.add(ec); out.push({ ec, agent, type, sub, call, teh, date: recv.slice(0, 10), time: recv.slice(11) });
+  }
+  return out;
+}
+const isMed = t => norm(t) === 'medicalemergency', isRta = t => /roadcrash|rta|rtc/.test(norm(t));
+const chip = t => `<span class="chip ${isMed(t) ? 'm' : isRta(t) ? 'r' : ''}">${esc(t)}</span>`;
+
+/* ---- GitHub access ---- */
+function ghCfg() {
+  let s = {}; try { s = JSON.parse(localStorage.getItem('jco_gh') || '{}'); } catch (e) { }
+  const c = Object.assign({ owner: '', repo: '', branch: 'main', folder: 'jco-data', token: '' }, RC('github'), s);
+  c.token = c.token || JC.tok; return c;
+}
+function ghSetup() {
+  const c = ghCfg();
+  const rp = prompt('GitHub repository (username/repository):', c.owner && c.repo ? c.owner + '/' + c.repo : ''); if (rp === null) return false;
+  const m = rp.trim().match(/^([^\/\s]+)\/([^\/\s]+)$/); if (!m) { alert('Please write it like  username/repository'); return false; }
+  const br = prompt('Branch name:', c.branch || 'main'); if (br === null) return false;
+  const tk = prompt('GitHub token (fine-grained, "Contents: Read and write" for this repository only).\nLeave empty to keep the saved one:', ''); if (tk === null) return false;
+  JC.tok = tk.trim() || c.token; JC.loaded = false;
+  try { localStorage.setItem('jco_gh', JSON.stringify({ owner: m[1], repo: m[2], branch: br.trim() || 'main', token: JC.tok })); } catch (e) { }
+  return true;
+}
+async function ghGet(path) {
+  const c = ghCfg();
+  if (c.owner && c.repo) {
+    const h = { Accept: 'application/vnd.github.raw+json' }; if (c.token) h.Authorization = 'Bearer ' + c.token;
+    const r = await fetch(`https://api.github.com/repos/${c.owner}/${c.repo}/contents/${path}?ref=${encodeURIComponent(c.branch)}`, { headers: h, cache: 'no-store' });
+    if (r.status === 404) return null; if (!r.ok) throw new Error('GitHub says ' + r.status + (r.status === 401 || r.status === 403 ? ' (token / permission / rate limit)' : ''));
+    return r.text();
+  }
+  const r = await fetch(path + '?t=' + Date.now(), { cache: 'no-store' }); return r.ok ? r.text() : null;
+}
+const b64 = text => new Promise(res => { const f = new FileReader(); f.onload = () => res(f.result.split(',')[1]); f.readAsDataURL(new Blob([text])); });
+async function ghPut(path, text, message) {
+  const c = ghCfg(), url = `https://api.github.com/repos/${c.owner}/${c.repo}/contents/${path}`, h = { Authorization: 'Bearer ' + c.token, Accept: 'application/vnd.github+json' };
+  let sha; const g = await fetch(url + '?ref=' + encodeURIComponent(c.branch), { headers: h, cache: 'no-store' });
+  if (g.ok) sha = (await g.json()).sha; else if (g.status !== 404) throw new Error('GitHub says ' + g.status + ' (check repository name and token)');
+  const body = { message, content: await b64(text), branch: c.branch }; if (sha) body.sha = sha;
+  const r = await fetch(url, { method: 'PUT', headers: { ...h, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  if (!r.ok) throw new Error('GitHub says ' + r.status + ': ' + ((await r.json().catch(() => ({}))).message || ''));
+}
+async function jcoUpload() {
+  const d = JC.local, msg = t => $('jMsg').textContent = t; if (!d) return msg('Load the monthly trips CSV first.');
+  let c = ghCfg(); if (!c.owner || !c.repo || !c.token) { if (!ghSetup()) return; c = ghCfg(); }
+  if (!c.owner || !c.repo || !c.token) return msg('GitHub repository and token are required.');
+  $('jUp').disabled = true; msg('Uploading ' + ymLabel(d.month) + ' ...');
+  try {
+    await ghPut(c.folder + '/' + d.month + '.json', JSON.stringify(d), 'JCO data ' + d.month);
+    let idx = []; try { const t = await ghGet(c.folder + '/index.json'); if (t) idx = JSON.parse(t).months || []; } catch (e) { }
+    idx = idx.filter(m => m.month !== d.month).concat({ month: d.month, rows: d.rows.length, agents: new Set(d.rows.map(r => r[1])).size, uploaded: d.saved }).sort((a, b) => b.month.localeCompare(a.month));
+    await ghPut(c.folder + '/index.json', JSON.stringify({ months: idx }), 'JCO index ' + d.month);
+    JC.idx = idx; fillMonths(); msg('\u2713 Uploaded ' + ymLabel(d.month) + ' (' + d.rows.length + ' rows) to ' + c.owner + '/' + c.repo + '/' + c.folder);
+  } catch (e) { msg('Upload failed: ' + e.message); }
+  $('jUp').disabled = !JC.local;
+}
+
+/* ---- screen ---- */
+function fillMonths() {
+  const set = new Set(JC.idx.map(m => m.month)); if (JC.local) set.add(JC.local.month);
+  const list = [...set].sort().reverse(); if (!list.includes(JC.ym)) JC.ym = list[0] || '';
+  $('jMonth').innerHTML = list.length ? list.map(ym => `<option value="${ym}">${ymLabel(ym)}${JC.local && JC.local.month === ym ? (JC.idx.some(m => m.month === ym) ? ' (loaded file)' : ' (loaded file \u2013 not uploaded yet)') : ''}</option>`).join('') : '<option value="">No month yet</option>';
+  $('jMonth').value = JC.ym; $('jUp').disabled = !JC.local;
+}
+async function renderJco() {
+  const msg = t => $('jMsg').textContent = t;
+  if (!JC.loaded) {
+    JC.loaded = true; msg('Loading months from GitHub ...');
+    try { const t = await ghGet(ghCfg().folder + '/index.json'); JC.idx = t ? JSON.parse(t).months || [] : []; msg(JC.idx.length ? '' : (ghCfg().owner ? 'No month uploaded yet. Load a monthly CSV and press "Upload this month to GitHub".' : 'GitHub is not set up yet (press "GitHub settings"). You can still load a monthly CSV and view it here.')); }
+    catch (e) { JC.idx = []; msg('Could not read months from GitHub: ' + e.message); }
+  }
+  fillMonths(); await jcoPick();
+}
+async function jcoPick() {
+  const msg = t => $('jMsg').textContent = t, ym = JC.ym;
+  if (!ym) { JC.data = null; JC.recs = []; $('jAgent').innerHTML = ''; return jcoDraw(); }
+  let d = JC.local && JC.local.month === ym ? JC.local : JC.cache[ym];
+  if (!d) {
+    msg('Loading ' + ymLabel(ym) + ' ...');
+    try { const t = await ghGet(ghCfg().folder + '/' + ym + '.json'); if (!t) throw new Error('file ' + ym + '.json not found'); d = JC.cache[ym] = JSON.parse(t); msg(''); }
+    catch (e) { msg('Could not load ' + ymLabel(ym) + ': ' + e.message); return; }
+  }
+  if (ym !== JC.ym) return;
+  JC.data = d; JC.recs = jcoRecs(d);
+  const ag = countBy(JC.recs, r => r.agent || '(no name)').sort((a, b) => a[0].localeCompare(b[0]));
+  if (JC.agent && !ag.some(a => a[0] === JC.agent)) JC.agent = '';
+  $('jAgent').innerHTML = `<option value="">All call agents (${JC.recs.length})</option>` + ag.map(([a, n]) => `<option value="${esc(a)}">${esc(a)} (${n})</option>`).join('');
+  $('jAgent').value = JC.agent; jcoDraw();
+}
+function jcoRows() { return JC.agent ? JC.recs.filter(r => r.agent === JC.agent) : JC.recs; }
+function jcoDraw() {
+  const ym = JC.ym;
+  if (!JC.data || !ym) { $('jSum').innerHTML = ''; $('jCal').innerHTML = '<span class="mu">No data.</span>'; $('jDay').innerHTML = ''; $('jDayT').textContent = 'Emergencies of the day'; return; }
+  const rs = jcoRows(), byT = countBy(rs, r => r.type), days = Object.fromEntries(countBy(rs, r => r.date)), dayList = Object.entries(days).sort((a, b) => b[1] - a[1]);
+  const ord = [...byT.filter(([t]) => isMed(t)), ...byT.filter(([t]) => isRta(t)), ...byT.filter(([t]) => !isMed(t) && !isRta(t))];
+  const cardH = (v, l, c) => `<div class="card s2" style="--c:${c}"><b>${v}</b><span>${esc(l)}</span></div>`;
+  $('jSum').innerHTML = cardH(rs.length, (JC.agent || 'All call agents') + ' \u2013 total emergencies (' + ymLabel(ym) + ')', 'var(--ac)') +
+    ord.map(([t, n]) => cardH(n, isRta(t) ? t + ' (RTC)' : t, isMed(t) ? 'var(--ok)' : isRta(t) ? 'var(--bad)' : 'var(--warn)')).join('') +
+    cardH(dayList.length, 'Days with emergencies', 'var(--mu)') + cardH(dayList.length ? dayList[0][1] : 0, dayList.length ? 'Busiest day: ' + ymd(dayList[0][0]) : 'Busiest day', 'var(--mu)');
+  const [y, m] = ym.split('-').map(Number), first = (new Date(y, m - 1, 1).getDay() + 6) % 7, n = new Date(y, m, 0).getDate(), max = Math.max(1, ...Object.values(days));
+  if (!JC.day.startsWith(ym)) JC.day = '';
+  let cal = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(x => `<div class="wd">${x}</div>`).join('') + '<div class="cd e"></div>'.repeat(first);
+  for (let i = 1; i <= n; i++) {
+    const k = ym + '-' + p2(i), c = days[k] || 0;
+    cal += `<button class="cd ${c ? '' : 'z'} ${JC.day === k ? 'on' : ''}" data-d="${k}" style="--i:${(c / max).toFixed(2)}"><b>${i}</b><span>${c}</span></button>`;
+  }
+  $('jCal').innerHTML = `<div class="cal">${cal}</div>`;
+  if (!JC.day) { $('jDayT').textContent = 'Click a date to see its emergencies'; $('jDay').innerHTML = ''; return; }
+  const dl = rs.filter(r => r.date === JC.day).sort((a, b) => a.time.localeCompare(b.time)), all = !JC.agent;
+  $('jDayT').textContent = ymd(JC.day) + ' \u2013 ' + dl.length + ' emergenc' + (dl.length === 1 ? 'y' : 'ies');
+  $('jDay').innerHTML = dl.length ? `<table class="dl"><thead><tr><th>#</th><th>EC No</th><th>Type</th><th>Subtype</th><th>Time</th><th>Call type</th>${all ? '<th>Call agent</th>' : ''}</tr></thead><tbody>` +
+    dl.map((r, i) => `<tr><td class="mu">${i + 1}</td><td><b>${esc(r.ec)}</b></td><td>${chip(r.type)}</td><td>${esc(r.sub)}</td><td>${esc(r.time)}</td><td class="mu">${esc(r.call)}</td>${all ? `<td>${esc(r.agent)}</td>` : ''}</tr>`).join('') + '</tbody></table>' : '<p class="mu" style="padding:12px">No emergencies on this date.</p>';
 }
 
 const KINDS = { trips: 'Emergency trips', staff: 'Staff App', pin: 'Pin Emergencies', late: 'Late Accept' }, FILES = {}, ASKQ = [];
@@ -618,12 +749,12 @@ function renderAsk() {
 function afterLoad(t) {
   $('result').hidden = false; if (D) render();
   const R = ALLREP();
-  REPS.forEach(([k, l]) => { const b = $('tab_' + k); b.textContent = l + (R[k] ? ' (' + R[k].count + ')' : ''); b.disabled = !R[k]; b.title = R[k] ? '' : 'Upload the ' + (HINT[k] || 'Emergency trips') + ' CSV first'; });
+  REPS.forEach(([k, l]) => { const b = $('tab_' + k); if (k === 'jco') { b.disabled = false; return; } b.textContent = l + (R[k] ? ' (' + R[k].count + ')' : ''); b.disabled = !R[k]; b.title = R[k] ? '' : 'Upload the ' + (HINT[k] || 'Emergency trips') + ' CSV first'; });
   $('tab_check').disabled = !D; showTab(t);
 }
 function processFile(kind, rows, name) {
   if (kind === 'trips') {
-    D = analyse(rows); TRIPROWS = rows; X.jco = jcoCount(rows, $('jcoName').value); filter = 'ALL'; vf = 'ALL'; agentF = ''; sortK = null; $('q').value = '';
+    D = analyse(rows); JC.local = jcoSlim(rows); filter = 'ALL'; vf = 'ALL'; agentF = ''; sortK = null; $('q').value = '';
     const t = [...new Set(D.out.map(x => x.tehsil).filter(Boolean))].sort();
     $('teh').innerHTML = '<option value="">All tehsils</option>' + t.map(v => `<option>${esc(v)}</option>`).join('');
   } else X[kind] = { staff: staffApp, pin: pinEmergencies, late: lateAccept }[kind](rows);
@@ -668,8 +799,16 @@ $('result').addEventListener('click', e => {
 $('bikeXls').onclick = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([bikeXLS(ALLREP()[curRep])], { type: 'application/vnd.ms-excel' })); a.download = ALLREP()[curRep].name + '.xls'; a.click(); };
 $('bikeCsv').onclick = () => download(ALLREP()[curRep].name + '.csv', repCSV(ALLREP()[curRep]));
 $('bikePrint').onclick = () => window.print();
-$('jcoName').oninput = () => { if (!TRIPROWS) return; X.jco = jcoCount(TRIPROWS, $('jcoName').value); $('tab_jco').textContent = 'JCO Emg Count (' + X.jco.count + ')'; renderReport('jco'); };
-$('q').oninput = render; $('teh').onchange = render;
+$('jMonth').onchange = () => { JC.ym = $('jMonth').value; JC.day = ''; jcoPick(); };
+$('jAgent').onchange = () => { JC.agent = $('jAgent').value; jcoDraw(); };
+$('jUp').onclick = jcoUpload;
+$('jSet').onclick = () => { if (ghSetup()) renderJco(); };
+$('jCsv').onclick = () => {
+  const rs = jcoRows(), q = ['EC No', 'Date', 'Time', 'Emergency Type', 'Emergency Subtype', 'Call Type', 'Tehsil', 'Call Agent'];
+  download('JCO ' + (JC.agent || 'All agents') + ' ' + JC.ym + '.csv', repCSV({ csv: [q, ...rs.map(r => [r.ec, ymd(r.date), r.time, r.type, r.sub, r.call, r.teh, r.agent])] }));
+};
+$('tabJco').addEventListener('click', e => { const b = e.target.closest('.cd[data-d]'); if (b) { JC.day = b.dataset.d; jcoDraw(); } });
+$('openJco').onclick = e => { e.stopPropagation(); afterLoad('jco'); };$('q').oninput = render; $('teh').onchange = render;
 $('dlAll').onclick = () => download('emergency_trips_checked.csv', toCSV(D.out));
 $('dlBad').onclick = () => download('emergency_trips_WRONG_only.csv', toCSV(D.out.filter(x => x.status === 'WRONG' || x.vstatus === 'WRONG')));
 </script>
