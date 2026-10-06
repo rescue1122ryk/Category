@@ -81,7 +81,7 @@ tr.WRONG td{background:var(--badb)}
   <div id="ask"></div>
 
   <div id="result" hidden>
-    <div class="tabs"><button class="on" data-tab="check" id="tab_check">Category &amp; Vehicle Check</button><button data-tab="bike" id="tab_bike">Bike Late Finish</button><button data-tab="delivery" id="tab_delivery">Delivery Case</button><button data-tab="long" id="tab_long">Long Duration</button><button data-tab="staff" id="tab_staff">Staff App Not Sync</button><button data-tab="pin" id="tab_pin">Pin Emergencies</button><button data-tab="late" id="tab_late">Late Accept</button></div>
+    <div class="tabs"><button class="on" data-tab="check" id="tab_check">Category &amp; Vehicle Check</button><button data-tab="bike" id="tab_bike">Bike Late Finish</button><button data-tab="delivery" id="tab_delivery">Delivery Case</button><button data-tab="long" id="tab_long">Long Duration</button><button data-tab="staff" id="tab_staff">Staff App Not Sync</button><button data-tab="pin" id="tab_pin">Pin Emergencies</button><button data-tab="late" id="tab_late">Late Accept</button><button data-tab="crime" id="tab_crime">Crime Report</button><button data-tab="dead" id="tab_dead">Dead Report</button><button data-tab="jco" id="tab_jco">JCO Emg Count</button></div>
     <div id="tabCheck">
     <div class="sub">Category check</div><div class="grid" id="stats"></div>
     <div class="sub">Vehicle &amp; tehsil check</div><div class="grid" id="vstats"></div><div id="vnote"></div>
@@ -105,6 +105,7 @@ tr.WRONG td{background:var(--badb)}
     <div id="tabBike" hidden>
       <div class="grid" id="bikeSum"></div>
       <div id="bikeWarn"></div>
+      <div class="bar" id="jcoBar" hidden><input type="search" id="jcoName" placeholder="Enter JCO / agent name (part of the name is fine)..."></div>
       <div class="bar"><span class="mu" id="bikeRule"></span><span style="flex:1"></span>
         <button class="p" id="bikeXls">Download Excel (.xls)</button><button id="bikeCsv">Download CSV</button><button id="bikePrint">Print</button></div>
       <div class="wrap" id="bikeSheet"></div>
@@ -394,6 +395,85 @@ function lateAccept(rows) {
   };
 }
 
+/* ---- Crime / Dead / JCO reports (from the Crime_Emergency, Dead_Victim and Emergencies_Count macros) ---- */
+function colIx(head, name) { const n = String(name).trim().toLowerCase(); return head.map(x => String(x).trim().toLowerCase()).indexOf(n); }
+const yday = () => { const d = new Date(); d.setDate(d.getDate() - 1); return d; };
+const fate3 = f => { const l = String(f).toLowerCase(); return l.includes('shifted') ? 'Shifted' : (l.includes('dead') || l.includes('expired')) ? 'Dead' : f === '' ? 'N/A' : f; };
+function tripGetter(rows) {
+  const head = rows[0].map(h => String(h).trim()), alias = { '@agent': CFG.columns.agent, '@id': CFG.columns.id };
+  const ix = n => colIx(head, alias[n] || n);
+  const get = (r, n) => { const i = ix(n); return i < 0 ? '' : String(r[i] == null ? '' : r[i]).trim(); };
+  return { ix, get };
+}
+function tripList(rows, R, o) {
+  const { ix, get } = tripGetter(rows), C = CFG.columns, cols = R.columns, left = R.leftCols || [];
+  const missing = cols.map(c => c[1]).filter(h => h !== '@nature' && ix(h) < 0);
+  const val = (r, h) => h === '@nature' ? get(r, C.subtype) + (get(r, C.type) ? ' (' + get(r, C.type) + ')' : '') : h === 'Fate Of Patient' ? fate3(get(r, h)) : get(r, h);
+  const seen = new Set(), recs = [];
+  for (const r of rows.slice(1)) {
+    const ec = get(r, '@id'); if (!ec || ec.toUpperCase() === 'NOT ASSIGNED') continue;
+    if (!o.keep(get, r)) continue;
+    if (seen.has(ec)) continue; seen.add(ec);
+    recs.push(cols.map(c => val(r, c[1])));
+  }
+  const date = dmy(yday()), HD = (o.sr ? ['Sr. #'] : []).concat(cols.map(c => c[0])), n = HD.length, off = o.sr ? 1 : 0;
+  const body = recs.map((v, i) => (o.sr ? [i + 1, ...v] : v).map((x, j) => cl(x, 'height:' + (o.rowH || 22) + 'px;' + (left.includes(j - off) ? 'text-align:left;padding-left:12px;' : ''))));
+  return {
+    name: o.file + ' ' + date, count: recs.length, cards: [[o.card, recs.length], ...countBy(recs, r => r[0])], rule: o.rule,
+    warn: missing.length ? 'These columns were not found in the CSV: ' + missing.join(', ') : '',
+    widths: HD.map((h, j) => j === 0 && o.sr ? 50 : left.includes(j - off) ? 260 : 125),
+    rows: [[cl(R.title, o.titleStyle, { cs: n })], [cl('Date: ' + date, 'border:none;text-align:right;font-weight:bold;font-size:14pt;', { cs: n })],
+      HD.map(h => cl(h, 'font-weight:bold;background:#d0cece;height:38px;')), ...(recs.length ? body : [[cl('No matching records found.', '', { cs: n })]])],
+    csv: [HD, ...recs.map((v, i) => o.sr ? [i + 1, ...v] : v)]
+  };
+}
+function crimeReport(rows) {
+  const R = Object.assign({ title: 'Crime Emergencies Breakup of District Rahim Yar Khan', emergencyType: 'Crime', statuses: [], leftCols: [6, 7],
+    columns: [['Tehsil', 'Tehsil Name'], ['Nature of Emergency', 'Emergency Subtype'], ['R.Time', 'Response Time (HH:MM:SS)'], ['Time', 'Start Time'], ['Vehicle', 'Dispatched Vehicles'],
+      ['First Aid/ Shifted/ Dead', 'Fate Of Patient'], ['Emergency Address', 'Emergency Address'], ['Emergency Place', 'Emergency Place']] }, RC('crimeReport'));
+  const st = (R.statuses || []).map(norm);
+  return tripList(rows, R, { file: 'Crime Emergencies', card: 'Crime emergencies', sr: false, titleStyle: 'font-size:20pt;font-weight:bold;height:33px;',
+    rule: 'Emergency Type: ' + R.emergencyType + '  |  EC No assigned' + (st.length ? '  |  Status: ' + R.statuses.join(' / ') : '') + '  |  Sheet date is yesterday',
+    keep: (g, r) => norm(g(r, CFG.columns.type)) === norm(R.emergencyType) && (!st.length || st.includes(norm(g(r, 'Emergency Status')))) });
+}
+function deadVictim(rows) {
+  const R = Object.assign({ title: 'Rahim Yar Khan Report of All Dead Victim', fate: 'Dead', leftCols: [6], rowH: 36,
+    columns: [['Tehsil', 'Tehsil Name'], ['Nature of Emergency', '@nature'], ['Age', 'Age'], ['Time of Incident', 'Start Time'], ['Response Time (HH:MM:SS)', 'Response Time (HH:MM:SS)'],
+      ['Vehicle', 'Dispatched Vehicles'], ['Location', 'Emergency Address'], ['Staff Name', '@agent']] }, RC('deadVictim'));
+  return tripList(rows, R, { file: 'Dead Victim Report', card: 'Dead victims', sr: true, rowH: R.rowH, titleStyle: 'font-size:24pt;font-weight:bold;height:38px;background:#d0cece;',
+    rule: 'Fate Of Patient: ' + R.fate + '  |  Discarded trips excluded  |  Sheet date is yesterday',
+    keep: (g, r) => g(r, 'Fate Of Patient').toLowerCase().includes(R.fate.toLowerCase()) && g(r, 'Emergency Status').toLowerCase() !== 'discarded' });
+}
+function jcoCount(rows, name) {
+  const R = Object.assign({ title: 'JCO Emergency Count', callTypes: ['App Call', 'EMDS Call'],
+    categories: ['Medical Emergency', 'RTA', 'Crime', 'Miscellaneous', 'Fire', 'Drowning', 'Fall', 'Building Collapse'] }, RC('jcoCount'));
+  const { ix, get } = tripGetter(rows), C = CFG.columns, nm = String(name || '').trim().toLowerCase(), cats = R.categories.map(norm);
+  const H = ['Date', ...R.categories, 'Other', 'Total'], n = H.length, nmShow = String(name || '').trim();
+  const base = { name: 'JCO Emg Count' + (nmShow ? ' ' + nmShow : ''), count: 0, cards: [['Total emergencies', 0]], widths: H.map(() => 115), csv: [H],
+    rule: 'Agent name contains "' + nmShow + '"  |  Call type: ' + R.callTypes.join(' / ') + '  |  PTS excluded  |  each EC No counted once' };
+  const miss = [C.id, C.type, C.agent, C.received].filter(h => ix(h) < 0);
+  if (miss.length) return { ...base, warn: 'These columns were not found in the CSV: ' + miss.join(', '), rows: [[cl('No data', '')]] };
+  if (!nm) return { ...base, warn: '', rows: [[cl('Type the JCO / agent name above to see the day-wise count.', '', { cs: n })]] };
+  const callOk = ix('Call Type') < 0 ? () => true : r => R.callTypes.map(norm).includes(norm(get(r, 'Call Type')));
+  const skipT = (CFG.skipEmergencyTypes || []).map(norm), days = {}, seen = new Set();
+  for (const r of rows.slice(1)) {
+    const ec = get(r, C.id); if (!ec || norm(ec) === 'notassigned' || seen.has(ec)) continue;
+    const tn = norm(get(r, C.type)); if (skipT.includes(tn) || tn === 'pts' || tn.includes('patienttransfer')) continue;
+    if (!callOk(r) || !get(r, C.agent).toLowerCase().includes(nm)) continue;
+    seen.add(ec);
+    const m = fmtDT(get(r, C.received)).match(/^(\d{2})\/(\d{2})\/(\d{4})/), key = m ? m[3] + m[2] + m[1] : '0', d = days[key] = days[key] || { label: m ? m[1] + '-' + m[2] + '-' + m[3] : 'Unknown', c: R.categories.map(() => 0), other: 0 };
+    const k = cats.indexOf(tn); if (k >= 0) d.c[k]++; else d.other++;
+  }
+  const list = Object.keys(days).sort().map(k => days[k]), sum = R.categories.map((_, i) => list.reduce((a, d) => a + d.c[i], 0)), other = list.reduce((a, d) => a + d.other, 0), total = sum.reduce((a, b) => a + b, 0) + other;
+  const line = d => [d.label, ...d.c, d.other, d.c.reduce((a, b) => a + b, 0) + d.other], tot = ['Total', ...sum, other, total];
+  return {
+    ...base, count: total, warn: '', cards: [['Total emergencies', total], ...R.categories.map((c, i) => [c, sum[i]]).filter(x => x[1]), ...(other ? [['Other', other]] : [])],
+    rows: [[cl(R.title + ' \u2014 ' + nmShow, 'font-size:16pt;font-weight:bold;height:30px;', { cs: n })], H.map(h => cl(h, 'font-weight:bold;color:#ffffff;background:#4472c4;height:34px;')),
+      ...(list.length ? [...list.map(d => line(d).map(v => cl(v, 'height:22px;'))), tot.map(v => cl(v, 'font-weight:bold;background:#e2efda;height:24px;'))] : [[cl('No matching records found.', '', { cs: n })]])],
+    csv: [H, ...list.map(line), ...(list.length ? [tot] : [])]
+  };
+}
+
 const VOUT = () => Object.assign({ status: 'Vehicle Check', correct: 'Correct Tehsil (Vehicle)' }, (window.VEHICLE_CONFIG || {}).outputColumns || {});
 function buildVehicles() {
   const map = {}; let total = 0;
@@ -436,7 +516,7 @@ function analyse(rows) {
     out.push({ r, sub, cat, status, correct, id: get(r, C.id), type: get(r, C.type), agent: get(r, C.agent),
       agentId: get(r, C.agentId), tehsil, recv: get(r, C.received), ...VCk.check(get(r, VCol), tehsil) });
   }
-  return { head, out, O, VO: VOUT(), vTotal: VCk.total, reports: { bike: bikeLate(rows), delivery: deliveryCase(rows), long: longDuration(rows) } };
+  return { head, out, O, VO: VOUT(), vTotal: VCk.total, reports: { bike: bikeLate(rows), delivery: deliveryCase(rows), long: longDuration(rows), crime: crimeReport(rows), dead: deadVictim(rows) } };
 }
 // CORE END
 
@@ -445,7 +525,7 @@ const VLABEL = { OK: 'Correct', WRONG: 'Wrong tehsil', NOTLIST: 'Not in list', S
 const COL = { OK: 'var(--ok)', WRONG: 'var(--bad)', NOTLIST: 'var(--warn)', SKIP: 'var(--mu)' };
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-let D = null, filter = 'ALL', vf = 'ALL', agentF = '', sortK = null, sortDir = 1;
+let TRIPROWS = null, D = null, filter = 'ALL', vf = 'ALL', agentF = '', sortK = null, sortDir = 1;
 const akey = x => x.agent + '|' + x.agentId;
 
 function toCSV(items) {
@@ -504,7 +584,7 @@ function render() {
     (list.length ? '' : '<tr><td colspan="12" class="mu">No matching records.</td></tr>') + '</tbody>';
 }
 
-const REPS = [['bike', 'Bike Late Finish'], ['delivery', 'Delivery Case'], ['long', 'Long Duration'], ['staff', 'Staff App Not Sync'], ['pin', 'Pin Emergencies'], ['late', 'Late Accept']];
+const REPS = [['bike', 'Bike Late Finish'], ['delivery', 'Delivery Case'], ['long', 'Long Duration'], ['staff', 'Staff App Not Sync'], ['pin', 'Pin Emergencies'], ['late', 'Late Accept'], ['crime', 'Crime Report'], ['dead', 'Dead Report'], ['jco', 'JCO Emg Count']];
 const X = {};
 const ALLREP = () => Object.assign({}, D ? D.reports : {}, X);
 let curRep = 'bike';
@@ -521,7 +601,7 @@ function renderReport(k) {
 const bikeXLS = sp => '<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="utf-8"></head><body>' + sheetHTML(sp) + '</body></html>';
 function repCSV(sp) { const q = v => '"' + String(v).replace(/"/g, '""') + '"'; return '\ufeff' + sp.csv.map(r => r.map(q).join(',')).join('\r\n'); }
 function showTab(t) {
-  $('tabCheck').hidden = t !== 'check'; $('tabBike').hidden = t === 'check';
+  $('tabCheck').hidden = t !== 'check'; $('tabBike').hidden = t === 'check'; $('jcoBar').hidden = t !== 'jco';
   document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
   if (t !== 'check') renderReport(t);
 }
@@ -543,7 +623,7 @@ function afterLoad(t) {
 }
 function processFile(kind, rows, name) {
   if (kind === 'trips') {
-    D = analyse(rows); filter = 'ALL'; vf = 'ALL'; agentF = ''; sortK = null; $('q').value = '';
+    D = analyse(rows); TRIPROWS = rows; X.jco = jcoCount(rows, $('jcoName').value); filter = 'ALL'; vf = 'ALL'; agentF = ''; sortK = null; $('q').value = '';
     const t = [...new Set(D.out.map(x => x.tehsil).filter(Boolean))].sort();
     $('teh').innerHTML = '<option value="">All tehsils</option>' + t.map(v => `<option>${esc(v)}</option>`).join('');
   } else X[kind] = { staff: staffApp, pin: pinEmergencies, late: lateAccept }[kind](rows);
@@ -588,6 +668,7 @@ $('result').addEventListener('click', e => {
 $('bikeXls').onclick = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([bikeXLS(ALLREP()[curRep])], { type: 'application/vnd.ms-excel' })); a.download = ALLREP()[curRep].name + '.xls'; a.click(); };
 $('bikeCsv').onclick = () => download(ALLREP()[curRep].name + '.csv', repCSV(ALLREP()[curRep]));
 $('bikePrint').onclick = () => window.print();
+$('jcoName').oninput = () => { if (!TRIPROWS) return; X.jco = jcoCount(TRIPROWS, $('jcoName').value); $('tab_jco').textContent = 'JCO Emg Count (' + X.jco.count + ')'; renderReport('jco'); };
 $('q').oninput = render; $('teh').onchange = render;
 $('dlAll').onclick = () => download('emergency_trips_checked.csv', toCSV(D.out));
 $('dlBad').onclick = () => download('emergency_trips_WRONG_only.csv', toCSV(D.out.filter(x => x.status === 'WRONG' || x.vstatus === 'WRONG')));
