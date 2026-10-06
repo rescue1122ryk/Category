@@ -18,7 +18,6 @@ window.CATEGORY_CONFIG = {
       "Cardiac Arrest",
       "Unconscious",
       "Breathing Difficulty",
-      "Severe Trauma",
       "Severe Burn",
       "Drowning Case"
     ],
@@ -43,6 +42,7 @@ window.CATEGORY_CONFIG = {
       "Manhole",
       "SOB/Respiratory Distress",
       "Deep Well",
+       "Severe Trauma",
       "Lift/Room Extrication"
     ],
 
