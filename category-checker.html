@@ -21,9 +21,9 @@ main{max-width:1300px;margin:-18px auto 0;padding:0 20px 40px}
 .step{display:flex;gap:12px;align-items:flex-start}.step i{flex:none;width:28px;height:28px;border-radius:50%;background:var(--ac);color:#fff;display:grid;place-items:center;font-style:normal;font-weight:700}
 .step b{display:block}.step span{color:var(--mu);font-size:13px}
 a{color:var(--ac);font-weight:600}
-#drop{border:2px dashed var(--bd);text-align:center;padding:30px;cursor:pointer;transition:.15s}
-#drop:hover,#drop.over{border-color:var(--ac);background:var(--badb)}
-#drop.over{background:var(--card)}
+.drop{border:2px dashed var(--bd);text-align:center;padding:30px;cursor:pointer;transition:.15s}
+.drop:hover,.drop.over{border-color:var(--ac);background:var(--badb)}
+.drop.over{background:var(--card)}
 button,select{font:inherit;cursor:pointer;border:1px solid var(--bd);background:var(--card);color:var(--tx);padding:7px 12px;border-radius:9px}
 button.p{background:var(--ac);border-color:var(--ac);color:#fff}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:14px 0}
@@ -55,6 +55,7 @@ tr.WRONG td{background:var(--badb)}
 .xl{border-collapse:collapse;white-space:nowrap;table-layout:fixed}.xl td{padding:5px 8px;background:#fff;color:#000;white-space:normal;word-break:break-word}
 .rot{display:inline-block;writing-mode:vertical-rl;transform:rotate(180deg)}
 @media print{body *{visibility:hidden}#bikeSheet,#bikeSheet *{visibility:visible}#bikeSheet{position:absolute;left:0;top:0;width:100%;max-height:none;overflow:visible}}
+.tabs{flex-wrap:wrap}.tabs button:disabled{opacity:.45;cursor:not-allowed}
 </style>
 </head>
 <body>
@@ -66,18 +67,28 @@ tr.WRONG td{background:var(--badb)}
   <div id="msg"></div>
   <div class="steps">
     <div class="card step"><i>1</i><div><b>Get the report</b><span>Open the <a href="https://punjab.rescue1122.org/dashboard/report/detailed_emergency_statistics_v2" target="_blank" rel="noopener">All-In-One Emergency Detailed Report</a> and download the CSV.</span></div></div>
-    <div class="card step"><i>2</i><div><b>Upload the CSV</b><span>Drop the file below. Nothing leaves your computer.</span></div></div>
+    <div class="card step"><i>2</i><div><b>Upload the CSV files</b><span>Emergency trips CSV for most reports, Staff App CSV for the Staff App report. Nothing leaves your computer.</span></div></div>
     <div class="card step"><i>3</i><div><b>Review &amp; export</b><span>Wrong categories are highlighted with the correct one. Download the fixed CSV.</span></div></div>
   </div>
 
-  <div id="drop" class="card">
-    <p><b>Drop the CSV file here</b> or <button class="p" id="pick">Choose file</button></p>
-    <p class="mu" id="fname">Upload the CSV file from the <a href="https://punjab.rescue1122.org/dashboard/report/detailed_emergency_statistics_v2" target="_blank" rel="noopener" id="lnk">All-In-One Emergency Detailed Report</a></p>
-    <input type="file" id="file" accept=".csv,text/csv" hidden>
+  <div class="two">
+    <div id="drop" class="card drop">
+      <p><b>1. Emergency trips CSV</b></p>
+      <p>Drop the file here or <button class="p" id="pick">Choose file</button></p>
+      <p class="mu" id="fname">Upload the CSV file from the <a href="https://punjab.rescue1122.org/dashboard/report/detailed_emergency_statistics_v2" target="_blank" rel="noopener" id="lnk">All-In-One Emergency Detailed Report</a></p>
+      <input type="file" id="file" accept=".csv,text/csv" multiple hidden>
+    </div>
+    <div id="drop2" class="card drop">
+      <p><b>2. Staff App CSV</b> <span class="mu">(optional)</span></p>
+      <p>Drop the file here or <button class="p" id="pick2">Choose file</button></p>
+      <p class="mu" id="fname2">Upload the vehicle availability CSV used for the Staff App Not Sync report.</p>
+      <input type="file" id="file2" accept=".csv,text/csv" multiple hidden>
+    </div>
   </div>
+  <p class="mu">You can drop both files together. The page recognises each file by its columns, so the box you use does not matter.</p>
 
   <div id="result" hidden>
-    <div class="tabs"><button class="on" data-tab="check">Category &amp; Vehicle Check</button><button data-tab="bike" id="tab_bike">Bike Late Finish</button><button data-tab="delivery" id="tab_delivery">Delivery Case</button><button data-tab="long" id="tab_long">Long Duration</button></div>
+    <div class="tabs"><button class="on" data-tab="check" id="tab_check">Category &amp; Vehicle Check</button><button data-tab="bike" id="tab_bike">Bike Late Finish</button><button data-tab="delivery" id="tab_delivery">Delivery Case</button><button data-tab="long" id="tab_long">Long Duration</button><button data-tab="staff" id="tab_staff">Staff App Not Sync</button></div>
     <div id="tabCheck">
     <div class="sub">Category check</div><div class="grid" id="stats"></div>
     <div class="sub">Vehicle &amp; tehsil check</div><div class="grid" id="vstats"></div><div id="vnote"></div>
@@ -245,6 +256,67 @@ function longDuration(rows) {
   };
 }
 
+function durSecs(d) {
+  let t = String(d || '').toLowerCase().trim(), h = 0, m = 0, s = 0, p;
+  if ((p = t.indexOf('h')) >= 0) { h = parseFloat(t.slice(0, p)) || 0; t = t.slice(p + 1); }
+  if ((p = t.indexOf('m')) >= 0) { m = parseFloat(t.slice(0, p)) || 0; t = t.slice(p + 1); }
+  if ((p = t.indexOf('s')) >= 0) s = parseFloat(t.slice(0, p)) || 0;
+  const tot = h * 3600 + m * 60 + s;
+  return tot > 0 ? tot : Math.max(0, secs(d));
+}
+function fmtDT(v) {
+  const s = String(v == null ? '' : v).trim();
+  const m = s.match(/^(?:(\d{4})[\/-](\d{1,2})[\/-](\d{1,2})|(\d{1,2})[\/-](\d{1,2})[\/-](\d{4}))(?:[ T]+(\d{1,2}):(\d{2})(?::\d{2})?\s*([AP]M)?)?/i);
+  if (!m) return s;
+  const y = m[1] || m[6], mo = m[1] ? m[2] : m[5], d = m[1] ? m[3] : m[4];
+  let out = p2(d) + '/' + p2(mo) + '/' + y;
+  if (m[7]) { let h = +m[7]; const ap = (m[9] || '').toUpperCase(); if (ap === 'PM' && h < 12) h += 12; if (ap === 'AM' && h === 12) h = 0; out += ' ' + p2(h) + ':' + m[8]; }
+  return out;
+}
+function staffApp(rows) {
+  const R = Object.assign({ minHours: 1, title: 'Staff App is out of Sync', subtitle: 'Staff App is out of sync (1 hrs) \u2014 Rahim Yar Khan', reason: 'Staff App is out of sync',
+    vehicleType: 'Ambulance', status: 'Not Available', district: 'Rahim Yar Khan', stations: { 'RS-01': '', 'RS-02': '', 'RS-03': '', 'RS-04': '' } }, RC('staffApp'));
+  const H = rows[0].map(h => String(h).toLowerCase()), find = n => H.findIndex(h => h.includes(n.toLowerCase()));
+  const N = { station: 'Station Call Sign', veh: 'Registration Number', type: 'Vehicle Type', from: 'From Date', to: 'To Date', dur: 'Duration', reason: 'Reasons', status: 'Emergency Status', gps: 'Location Data', addr: 'Station Address', dist: 'District Info' };
+  const c = {}; for (const k in N) c[k] = find(N[k]);
+  const miss = ['station', 'type', 'dur', 'reason', 'status'].filter(k => c[k] < 0);
+  if (miss.length) throw new Error('Staff App CSV: required columns not found: ' + miss.map(k => N[k]).join(', '));
+  const g = (r, k) => c[k] < 0 ? '' : String(r[c[k]] == null ? '' : r[c[k]]);
+  const up = s => String(s).trim().toUpperCase();
+  const qual = r => up(g(r, 'type')) === up(R.vehicleType) && up(g(r, 'status')) === up(R.status) &&
+    g(r, 'reason').toLowerCase().includes(R.reason.toLowerCase()) && durSecs(g(r, 'dur')) >= R.minHours * 3600;
+  const data = rows.slice(1);
+  let date = '';
+  for (const r of data) if (qual(r)) { const m = fmtDT(g(r, 'from')).match(/^(\d{2})\/(\d{2})\/(\d{4})/); if (m) { date = m[1] + '-' + m[2] + '-' + m[3]; break; } }
+  date = date || dmy(new Date());
+  const sheet = [], csv = [], per = [];
+  let rr = 4, total = 0;
+  const A = { 0: 1, 1: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 10: 1 };
+  const mk = (vals, nill) => vals.map((v, i) => cl(v, 'font-size:8pt;height:28px;' + ((A[i] || nill) ? '' : 'text-align:left;') + (rr % 2 === 0 ? 'background:#e8f5e9;' : '')));
+  for (const [st, a0] of Object.entries(R.stations)) {
+    let first = true, n = 0;
+    for (const r of data) {
+      if (up(g(r, 'station')) !== up(st) || !qual(r)) continue;
+      const dist = c.dist >= 0 ? g(r, 'dist') : R.district, addr = c.addr >= 0 ? g(r, 'addr') : a0;
+      const vals = [first ? dist : '', first ? st : '', first ? addr : '', g(r, 'veh'), 'Ambulance', g(r, 'gps'), fmtDT(g(r, 'from')), fmtDT(g(r, 'to')), g(r, 'dur'),
+        g(r, 'reason').replace(/\r?\n/g, ' | '), 'Not Available', ''];
+      sheet.push(mk(vals)); csv.push([dist, st, addr, ...vals.slice(3)]); first = false; n++; total++; rr++;
+    }
+    if (!n) { sheet.push(mk([R.district, st, a0, '', '', 'NILL', '', '', '', '', '', ''], true)); csv.push([R.district, st, a0, '', '', 'NILL', '', '', '', '', '', '']); rr++; }
+    per.push([st, n]);
+  }
+  const HD = ['District Info', 'Station Call', 'Location Data (Station)', 'Vehicle', 'Vehicle Type', 'Location Data (GPS)', 'From Date', 'To Date', 'Duration', 'Reasons', 'Emergency Status', 'Remarks'];
+  return {
+    name: 'Staff App Out of Sync ' + date, count: total, cards: [['Out-of-sync records', total], ...per], warn: '',
+    rule: R.vehicleType + '  |  ' + R.status + '  |  Reason contains "' + R.reason + '"  |  Duration >= ' + R.minHours + ' hr',
+    widths: [14, 11, 38, 10, 11, 12, 14, 14, 11, 38, 13, 10].map(w => w * 7),
+    rows: [[cl(R.title + ', Dated ' + date, 'color:#ffffff;font-weight:bold;font-size:14pt;background:#2e7d32;height:28px;', { cs: 12 })],
+      [cl(R.subtitle, 'font-weight:bold;font-size:11pt;background:#c8e6c9;height:22px;', { cs: 12 })],
+      HD.map(x => cl(x, 'color:#ffffff;font-weight:bold;font-size:9pt;background:#43a047;height:30px;')), ...sheet],
+    csv: [HD, ...csv]
+  };
+}
+
 const VOUT = () => Object.assign({ status: 'Vehicle Check', correct: 'Correct Tehsil (Vehicle)' }, (window.VEHICLE_CONFIG || {}).outputColumns || {});
 function buildVehicles() {
   const map = {}; let total = 0;
@@ -355,13 +427,15 @@ function render() {
     (list.length ? '' : '<tr><td colspan="12" class="mu">No matching records.</td></tr>') + '</tbody>';
 }
 
-const REPS = [['bike', 'Bike Late Finish'], ['delivery', 'Delivery Case'], ['long', 'Long Duration']];
+const REPS = [['bike', 'Bike Late Finish'], ['delivery', 'Delivery Case'], ['long', 'Long Duration'], ['staff', 'Staff App Not Sync']];
+let S = null;
+const ALLREP = () => Object.assign({}, D ? D.reports : {}, S ? { staff: S } : {});
 let curRep = 'bike';
 const BD = 'border:1px solid #000;text-align:center;vertical-align:middle;font-family:Calibri,Arial;';
 const cellHTML = c => `<td${c.cs ? ` colspan="${c.cs}"` : ''}${c.rs ? ` rowspan="${c.rs}"` : ''} style="${BD}${c.s}">${c.rot ? `<span class="rot">${esc(c.v)}</span>` : esc(c.v)}</td>`;
 const sheetHTML = sp => `<table class="xl" style="border-collapse:collapse"><colgroup>${sp.widths.map(w => `<col style="width:${w}px">`).join('')}</colgroup>${sp.rows.map(r => '<tr>' + r.map(cellHTML).join('') + '</tr>').join('')}</table>`;
 function renderReport(k) {
-  curRep = k; const sp = D.reports[k];
+  curRep = k; const sp = ALLREP()[k];
   $('bikeSum').innerHTML = sp.cards.map(([l, v], i) => `<div class="card s2" style="--c:${i ? 'var(--ac)' : 'var(--bad)'}"><b>${v}</b><span>${esc(l)}</span></div>`).join('');
   $('bikeWarn').innerHTML = sp.warn ? `<div class="note">${esc(sp.warn)}</div>` : '';
   $('bikeRule').textContent = sp.rule;
@@ -370,21 +444,28 @@ function renderReport(k) {
 const bikeXLS = sp => '<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="utf-8"></head><body>' + sheetHTML(sp) + '</body></html>';
 function repCSV(sp) { const q = v => '"' + String(v).replace(/"/g, '""') + '"'; return '\ufeff' + sp.csv.map(r => r.map(q).join(',')).join('\r\n'); }
 function showTab(t) {
-  $('tabCheck').hidden = t === 'bike' || t === 'delivery' || t === 'long'; $('tabBike').hidden = $('tabCheck').hidden === false;
+  $('tabCheck').hidden = t !== 'check'; $('tabBike').hidden = t === 'check';
   document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
-  if (D.reports[t]) renderReport(t);
+  if (t !== 'check') renderReport(t);
 }
 
+function afterLoad(t) {
+  $('result').hidden = false; if (D) render();
+  const R = ALLREP();
+  REPS.forEach(([k, l]) => { const b = $('tab_' + k); b.textContent = l + (R[k] ? ' (' + R[k].count + ')' : ''); b.disabled = !R[k]; b.title = R[k] ? '' : 'Upload the ' + (k === 'staff' ? 'Staff App' : 'Emergency trips') + ' CSV first'; });
+  $('tab_check').disabled = !D; showTab(t);
+}
 function load(file) {
   $('msg').textContent = '';
   const rd = new FileReader();
   rd.onload = () => {
     try {
-      D = analyse(parseCSV(rd.result)); filter = 'ALL'; vf = 'ALL'; agentF = ''; sortK = null; $('q').value = '';
+      const rows = parseCSV(rd.result), loaded = 'Loaded: <b>' + esc(file.name) + '</b> - drop another file to replace it.';
+      if (rows[0] && rows[0].some(x => /station call sign/i.test(x))) { S = staffApp(rows); $('fname2').innerHTML = loaded; afterLoad('staff'); return; }
+      D = analyse(rows); filter = 'ALL'; vf = 'ALL'; agentF = ''; sortK = null; $('q').value = '';
       const t = [...new Set(D.out.map(x => x.tehsil).filter(Boolean))].sort();
       $('teh').innerHTML = '<option value="">All tehsils</option>' + t.map(v => `<option>${esc(v)}</option>`).join('');
-      $('fname').innerHTML = 'Loaded: <b>' + esc(file.name) + '</b> - drop another file to replace it.';
-      $('result').hidden = false; render(); showTab('check'); REPS.forEach(([k, l]) => $('tab_' + k).textContent = l + ' (' + D.reports[k].count + ')');
+      $('fname').innerHTML = loaded; afterLoad('check');
     } catch (e) { $('msg').textContent = e.message; }
   };
   rd.readAsText(file, 'utf-8');
@@ -394,10 +475,16 @@ if (!CFG) $('msg').textContent = 'categories-config.js could not be loaded. Keep
 $('pick').onclick = e => { e.stopPropagation(); $('file').click(); };
 $('lnk').onclick = e => e.stopPropagation();
 $('drop').onclick = () => $('file').click();
-$('file').onchange = e => e.target.files[0] && load(e.target.files[0]);
+$('file').onchange = e => [...e.target.files].forEach(load);
 ['dragover', 'dragenter'].forEach(ev => $('drop').addEventListener(ev, e => { e.preventDefault(); $('drop').classList.add('over'); }));
 ['dragleave', 'drop'].forEach(ev => $('drop').addEventListener(ev, e => { e.preventDefault(); $('drop').classList.remove('over'); }));
-$('drop').addEventListener('drop', e => e.dataTransfer.files[0] && load(e.dataTransfer.files[0]));
+$('drop').addEventListener('drop', e => [...e.dataTransfer.files].forEach(load));
+$('pick2').onclick = e => { e.stopPropagation(); $('file2').click(); };
+$('drop2').onclick = () => $('file2').click();
+$('file2').onchange = e => [...e.target.files].forEach(load);
+['dragover', 'dragenter'].forEach(ev => $('drop2').addEventListener(ev, e => { e.preventDefault(); $('drop2').classList.add('over'); }));
+['dragleave', 'drop'].forEach(ev => $('drop2').addEventListener(ev, e => { e.preventDefault(); $('drop2').classList.remove('over'); }));
+$('drop2').addEventListener('drop', e => [...e.dataTransfer.files].forEach(load));
 $('result').addEventListener('click', e => {
   const t = e.target, tb = t.closest('[data-tab]');
   if (tb) return showTab(tb.dataset.tab);
@@ -407,8 +494,8 @@ $('result').addEventListener('click', e => {
   else if (st) { if (st.dataset.f !== undefined) filter = st.dataset.f; else vf = st.dataset.v; render(); }
   else if (th) { const k = th.dataset.k; sortDir = sortK === k ? -sortDir : 1; sortK = k; render(); }
 });
-$('bikeXls').onclick = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([bikeXLS(D.reports[curRep])], { type: 'application/vnd.ms-excel' })); a.download = D.reports[curRep].name + '.xls'; a.click(); };
-$('bikeCsv').onclick = () => download(D.reports[curRep].name + '.csv', repCSV(D.reports[curRep]));
+$('bikeXls').onclick = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([bikeXLS(ALLREP()[curRep])], { type: 'application/vnd.ms-excel' })); a.download = ALLREP()[curRep].name + '.xls'; a.click(); };
+$('bikeCsv').onclick = () => download(ALLREP()[curRep].name + '.csv', repCSV(ALLREP()[curRep]));
 $('bikePrint').onclick = () => window.print();
 $('q').oninput = render; $('teh').onchange = render;
 $('dlAll').onclick = () => download('emergency_trips_checked.csv', toCSV(D.out));
