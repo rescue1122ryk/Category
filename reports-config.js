@@ -144,7 +144,7 @@ window.REPORTS_CONFIG = {
     ]
   },
 
-  /* ---- JCO Emg Count (monthly report, data kept on GitHub) ----------
+  /* ---- JCO Emg Count (monthly report, month files read from GitHub) --
      Counted per call agent ("Agent Name"): EC No assigned, each EC No once,
      and the trip types in excludeTypes are left out.
      callTypes: [] = every call type. To copy the old macro use
@@ -155,11 +155,11 @@ window.REPORTS_CONFIG = {
     callTypes:    []
   },
 
-  /* ---- GitHub (where the monthly JCO data is saved / read) ---------
-     owner / repo : your GitHub user and repository name
-     folder       : folder inside the repo (created automatically)
-     Do NOT write the token here. The "GitHub settings" button in the
-     JCO tab asks for it and keeps it only in your own browser.
+  /* ---- GitHub (where the monthly CSV files are kept) ---------------
+     Put one trips CSV per month inside the folder below, in the repo
+     (any file name is fine, e.g. "January 2026.csv"). The JCO tab lists
+     them and reads them directly. The month is taken from the dates
+     inside the file. No token is needed (the repo must be public).
   ------------------------------------------------------------------ */
   github: {
     owner:  "rescue1122ryk",
