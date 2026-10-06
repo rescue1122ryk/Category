@@ -19,5 +19,26 @@ window.REPORTS_CONFIG = {
     vehicleTypes: ["bike", "buddy,bike"],
     fate:         "First Aid",
     minElapsed:   "00:40:00"                         // HH:MM:SS
+  },
+
+  /* ---- Delivery Case report ----------------------------------------
+     Included: Emergency Subtype equals subtype, EC No present, and not a
+     Patient Transfer / PTS trip. Duplicate EC No rows are skipped.
+     The sheet date is today's date (same as the original macro).
+  ------------------------------------------------------------------ */
+  deliveryCase: {
+    title:   "Delivery Case Emergencies of District Rahim Yar Khan",
+    subtype: "Delivery Case",
+    gender:  "Female"
+  },
+
+  /* ---- Long Duration report ----------------------------------------
+     Included: Elapsed Time is MORE than minHours and the trip is not a
+     Patient Transfer. If you change minHours, change title2 to match.
+  ------------------------------------------------------------------ */
+  longDuration: {
+    minHours: 2,
+    title1:   "Punjab Emergency Service Rescue 1122, Bahawalpur Division",
+    title2:   "Long Duration Emergencies (More than 2 hours)"
   }
 };
