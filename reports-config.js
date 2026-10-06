@@ -162,8 +162,8 @@ window.REPORTS_CONFIG = {
      JCO tab asks for it and keeps it only in your own browser.
   ------------------------------------------------------------------ */
   github: {
-    owner:  "",
-    repo:   "",
+    owner:  "rescue1122ryk",
+    repo:   "Category",
     branch: "main",
     folder: "jco-data"
   }
