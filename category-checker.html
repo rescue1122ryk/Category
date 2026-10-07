@@ -317,7 +317,7 @@ function render() {
 
   const wr = out.filter(x => x.status === 'WRONG');
   $('agents').innerHTML = (t => t.length ? t.map(([k, v]) => `<tr><td><a class="lnk" data-agent="${esc(k)}">${esc(k.replace(/\|$/, '').replace('|', ' ('))}${k.endsWith('|') ? '' : ')'}</a></td><td>${v}</td></tr>`).join('') : '<tr><td class="mu">None</td></tr>')
-    (tally(out.filter(x => x.status === 'WRONG' || x.vstatus === 'WRONG'), akey).slice(0, 10));
+    (tally(out.filter(x => curTab === 'vehicle' ? x.vstatus === 'WRONG' : x.status === 'WRONG'), akey).slice(0, 10));   // Wrong Category tab counts category mistakes only, Vehicle Check tab counts vehicle mistakes only
   $('pairs').innerHTML = rowsHTML(tally(wr, x => x.sub + ': ' + x.cat + ' \u2192 ' + x.correct).slice(0, 10));
   $('unmapped').innerHTML = rowsHTML(tally(out.filter(x => x.status === 'NOTLIST'), x => x.sub || '(empty)'));
   $('vwrong').innerHTML = rowsHTML(tally(out.flatMap(x => x.vbad), x => x).slice(0, 15));
