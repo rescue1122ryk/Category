@@ -105,6 +105,8 @@ button.p{background:linear-gradient(120deg,#0b7a43,#19a354);border:0;box-shadow:
 .tabs [data-tab=check]{border-top-color:#c2281c}.tabs [data-tab=vehicle]{border-top-color:#1f5eff}
 .stat,.s2{border-radius:16px}
 footer{text-align:center;color:var(--mu);padding:18px;font-size:13px}
+.ec{white-space:nowrap}.cp{opacity:0;cursor:pointer;margin-left:6px;font-size:12px;font-style:normal;user-select:none;transition:.15s}
+.ec:hover .cp,.cp.done{opacity:1}.cp:hover{transform:scale(1.25)}@media print{.cp{display:none}}
 </style>
 </head>
 <body>
@@ -333,7 +335,7 @@ function render() {
   const H = [['id', 'EC No'], ['tehsil', 'Tehsil'], ['sub', 'Subtype'], ['cat', 'Selected category'], ['correct', 'Correct category'], ['status', 'Category result'],
     ['vehicles', 'Vehicle'], ['vstatus', 'Vehicle result'], ['vfix', 'Correct tehsil (vehicle)'], ['agent', 'Agent'], ['recv', 'Call received']];
   $('tbl').innerHTML = '<thead><tr><th>#</th>' + H.map(([k, l]) => `<th data-k="${k}">${l}${sortK === k ? (sortDir > 0 ? ' \u25B2' : ' \u25BC') : ''}</th>`).join('') + '</tr></thead><tbody>' +
-    list.map((x, i) => `<tr class="${x.status === 'WRONG' || x.vstatus === 'WRONG' ? 'WRONG' : ''}"><td class="mu">${i + 1}</td><td>${esc(x.id)}</td><td>${esc(x.tehsil)}</td><td>${esc(x.sub)}</td><td>${esc(x.cat)}</td>
+    list.map((x, i) => `<tr class="${x.status === 'WRONG' || x.vstatus === 'WRONG' ? 'WRONG' : ''}"><td class="mu">${i + 1}</td><td>${ecHTML(x.id)}</td><td>${esc(x.tehsil)}</td><td>${esc(x.sub)}</td><td>${esc(x.cat)}</td>
     <td class="fix">${esc(x.correct)}</td><td><span class="tag ${x.status}">${LABEL[x.status]}</span></td>
     <td>${esc(x.vehicles)}</td><td><span class="tag ${x.vstatus}">${VLABEL[x.vstatus]}</span></td><td class="fix">${esc(x.vfix)}</td>
     <td><a class="lnk" data-agent="${esc(akey(x))}">${esc(x.agent)}</a> <span class="mu">${esc(x.agentId)}</span></td><td class="mu">${esc(x.recv)}</td></tr>`).join('') +
@@ -345,14 +347,16 @@ const X = {};
 const ALLREP = () => Object.assign({}, D ? D.reports : {}, X);
 let curRep = REPS.length ? REPS[0][0] : '';
 const BD = 'border:1px solid #000;text-align:center;vertical-align:middle;font-family:Calibri,Arial;';
-const cellHTML = c => `<td${c.cs ? ` colspan="${c.cs}"` : ''}${c.rs ? ` rowspan="${c.rs}"` : ''} style="${BD}${c.s}">${c.rot ? `<span class="rot">${esc(c.v)}</span>` : esc(c.v)}</td>`;
-const sheetHTML = sp => `<table class="xl" style="border-collapse:collapse"><colgroup>${sp.widths.map(w => `<col style="width:${w}px">`).join('')}</colgroup>${sp.rows.map(r => '<tr>' + r.map(cellHTML).join('') + '</tr>').join('')}</table>`;
+const EC_RE = /^(ec|emergency)\s*(no|number)\.?$/i;
+const ecHTML = v => String(v || '').trim() ? `<span class="ec">${esc(v)}<span class="cp" data-copy="${esc(v)}" title="Copy EC No">\u{1F4CB}</span></span>` : '';
+const cellHTML = (c, ec) => `<td${c.cs ? ` colspan="${c.cs}"` : ''}${c.rs ? ` rowspan="${c.rs}"` : ''} style="${BD}${c.s}">${c.rot ? `<span class="rot">${esc(c.v)}</span>` : ec ? ecHTML(c.v) : esc(c.v)}</td>`;
+const sheetHTML = (sp, ui) => { let ei = -1; return `<table class="xl" style="border-collapse:collapse"><colgroup>${sp.widths.map(w => `<col style="width:${w}px">`).join('')}</colgroup>${sp.rows.map(r => { const hi = r.findIndex(c => EC_RE.test(String(c.v).trim())); const isH = ui && ei < 0 && hi >= 0; if (isH) ei = hi; return '<tr>' + r.map((c, i) => cellHTML(c, ui && ei >= 0 && !isH && i === ei && !c.cs)).join('') + '</tr>'; }).join('')}</table>`; };
 function renderReport(k) {
   curRep = k; const sp = ALLREP()[k];
   $('bikeSum').innerHTML = sp.cards.map(([l, v], i) => `<div class="card s2" style="--c:${i ? 'var(--ac)' : 'var(--bad)'}"><b>${v}</b><span>${esc(l)}</span></div>`).join('');
   $('bikeWarn').innerHTML = sp.warn ? `<div class="note">${esc(sp.warn)}</div>` : '';
   $('bikeRule').textContent = sp.rule;
-  $('bikeSheet').innerHTML = sheetHTML(sp);
+  $('bikeSheet').innerHTML = sheetHTML(sp, true);
 }
 const bikeXLS = sp => '<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="utf-8"></head><body>' + sheetHTML(sp) + '</body></html>';
 function repCSV(sp) { const q = v => '"' + String(v).replace(/"/g, '""') + '"'; return '\ufeff' + sp.csv.map(r => r.map(q).join(',')).join('\r\n'); }
@@ -414,6 +418,12 @@ $('ask').onclick = e => {
   renderAsk();
 };
 renderFiles();
+document.addEventListener('click', e => {
+  const b = e.target.closest('.cp'); if (!b) return; e.stopPropagation();
+  const v = b.dataset.copy, ok = () => { b.textContent = '\u2714'; b.classList.add('done'); setTimeout(() => { b.textContent = '\u{1F4CB}'; b.classList.remove('done'); }, 1200); };
+  const fb = () => { const t = document.createElement('textarea'); t.value = v; document.body.appendChild(t); t.select(); try { document.execCommand('copy'); ok(); } catch (x) { } t.remove(); };
+  if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(v).then(ok, fb); else fb();
+}, true);
 
 if (!CFG) $('msg').textContent = 'categories-config.js could not be loaded. Keep all files in the same folder.';
 $('pick').onclick = e => { e.stopPropagation(); $('file').click(); };

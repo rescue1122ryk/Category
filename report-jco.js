@@ -142,7 +142,7 @@
     const dl = rs.filter(r => r.date === JC.day).sort((a, b) => a.time.localeCompare(b.time)), all = !JC.agent;
     $('jDayT').textContent = ymd(JC.day) + ' \u2013 ' + dl.length + ' emergenc' + (dl.length === 1 ? 'y' : 'ies');
     $('jDay').innerHTML = dl.length ? `<table class="dl"><thead><tr><th>#</th><th>EC No</th><th>Type</th><th>Subtype</th><th>Time</th><th>Call type</th>${all ? '<th>Call agent</th>' : ''}</tr></thead><tbody>` +
-      dl.map((r, i) => `<tr><td class="mu">${i + 1}</td><td><b>${esc(r.ec)}</b></td><td>${chip(r.type)}</td><td>${esc(r.sub)}</td><td>${esc(r.time)}</td><td class="mu">${esc(r.call)}</td>${all ? `<td>${esc(r.agent)}</td>` : ''}</tr>`).join('') + '</tbody></table>' : '<p class="mu" style="padding:12px">No emergencies on this date.</p>';
+      dl.map((r, i) => `<tr><td class="mu">${i + 1}</td><td><b>${ecHTML(r.ec)}</b></td><td>${chip(r.type)}</td><td>${esc(r.sub)}</td><td>${esc(r.time)}</td><td class="mu">${esc(r.call)}</td>${all ? `<td>${esc(r.agent)}</td>` : ''}</tr>`).join('') + '</tbody></table>' : '<p class="mu" style="padding:12px">No emergencies on this date.</p>';
   }
 
   /* ---- slim CSV: keeps only the columns the JCO report needs (no victim / caller details) ---- */
