@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Emergency Category Checker</title>
+<title>RESCUE 1122 RAHIM YAR KHAN REPORTS DASHBOARD</title>
 <script src="categories-config.js"></script>
 <script src="vehicles-config.js"></script>
 <script src="report-helpers.js"></script>
@@ -71,12 +71,24 @@ tr.WRONG td{background:var(--badb)}
 .cd b{font-size:12px;color:var(--mu)}.cd span{font-size:16px;font-weight:700}.cd.z span{color:var(--mu);font-weight:400}.cd.on{outline:2px solid var(--ac)}.cd.e{visibility:hidden;border:none}
 .dl{width:100%;border-collapse:collapse}.dl th,.dl td{padding:6px 10px;border-bottom:1px solid var(--bd);text-align:left;white-space:nowrap}.dl th{position:sticky;top:0;background:var(--card)}
 .chip{padding:2px 10px;border-radius:12px;font-size:12px;font-weight:700;background:var(--skb);color:var(--sk)}.chip.m{background:var(--okb);color:var(--ok)}.chip.r{background:var(--badb);color:var(--bad)}
+[hidden]{display:none!important}
+header{padding:22px 20px 40px;border-bottom:4px solid #19a354}
+.hd{display:flex;align-items:center;justify-content:space-between;gap:18px}.ttl{text-align:center;flex:1}
+.ttl h1{font-size:30px;letter-spacing:.3px;text-shadow:0 2px 6px rgba(0,0,0,.25)}.ttl p{font-size:15px}
+.logo{height:92px;width:auto;background:#fff;border-radius:18px;padding:6px;box-shadow:0 4px 14px rgba(0,0,0,.3)}
+@media(max-width:700px){.hd{flex-wrap:wrap;justify-content:center}.ttl{order:3;flex-basis:100%}.logo{height:62px}.ttl h1{font-size:22px}}
+.drop{background:linear-gradient(180deg,var(--card),var(--bg));border-color:var(--ac);padding:26px}
+.tabs{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;margin:16px 0}
+.tabs button{border-radius:14px!important;padding:16px 12px;text-align:left;font-size:15px;border:1px solid var(--bd);border-left:5px solid #19a354;background:var(--card);box-shadow:0 1px 4px rgba(0,0,0,.08);transition:.15s}
+.tabs button:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.15)}
+.tabs button.on{background:linear-gradient(120deg,var(--hd1),var(--hd2));color:#fff;border-color:var(--hd2)}
 </style>
 </head>
 <body>
-<header><div class="in">
-  <h1>Emergency Category Checker</h1>
-  <p>Verify that every trip's emergency category matches the standard category list.</p>
+<header><div class="in hd">
+  <img class="logo" src="logo-punjab.jpg" alt="Government of Punjab" onerror="this.style.visibility='hidden'">
+  <div class="ttl"><h1>Rescue 1122 R.Y. Khan Reports Dashboard</h1><p>Upload your CSV files once, then click a report to open it.</p></div>
+  <img class="logo" src="logo-rescue.jpg" alt="Rescue 1122" onerror="this.style.visibility='hidden'">
 </div></header>
 <main>
   <div id="msg"></div>
@@ -98,18 +110,18 @@ tr.WRONG td{background:var(--badb)}
   <div id="ask"></div>
   <input type="file" id="slimFile" accept=".csv,text/csv" multiple hidden>
 
-  <div id="result" hidden>
-    <div class="tabs" id="tabsBar"><button class="on" data-tab="check" id="tab_check">Category &amp; Vehicle Check</button></div>
+  <div id="result">
+    <div class="tabs" id="tabsBar"><button data-tab="check" id="tab_check">Wrong Category</button><button data-tab="vehicle" id="tab_vehicle">Vehicle Check</button></div>
     <div id="tabCheck">
-    <div class="sub">Category check</div><div class="grid" id="stats"></div>
-    <div class="sub">Vehicle &amp; tehsil check</div><div class="grid" id="vstats"></div><div id="vnote"></div>
-    <div class="card acc"><div class="t"><b>Category accuracy</b><span id="accTxt"></span></div><div class="meter" id="meter"></div></div>
+    <div class="sub cat-only">Category check</div><div class="grid cat-only" id="stats"></div>
+    <div class="sub veh-only">Vehicle &amp; tehsil check</div><div class="grid veh-only" id="vstats"></div><div id="vnote" class="veh-only"></div>
+    <div class="card acc cat-only"><div class="t"><b>Category accuracy</b><span id="accTxt"></span></div><div class="meter" id="meter"></div></div>
     <div class="two">
       <div class="card"><h3>Mistakes by agent (click a name to filter)</h3><table id="agents"></table></div>
-      <div class="card"><h3>Most common mistakes (selected &rarr; correct)</h3><table id="pairs"></table></div>
-      <div class="card"><h3>Subtypes not found in the standard list</h3><table id="unmapped"></table></div>
-      <div class="card"><h3>Vehicles in the wrong tehsil (vehicle &rarr; correct tehsil)</h3><table id="vwrong"></table></div>
-      <div class="card"><h3>Vehicles not found in vehicles-config.js</h3><table id="vunk"></table></div>
+      <div class="card cat-only"><h3>Most common mistakes (selected &rarr; correct)</h3><table id="pairs"></table></div>
+      <div class="card cat-only"><h3>Subtypes not found in the standard list</h3><table id="unmapped"></table></div>
+      <div class="card veh-only"><h3>Vehicles in the wrong tehsil (vehicle &rarr; correct tehsil)</h3><table id="vwrong"></table></div>
+      <div class="card veh-only"><h3>Vehicles not found in vehicles-config.js</h3><table id="vunk"></table></div>
     </div>
     <div class="bar">
       <select id="teh"></select>
@@ -321,9 +333,11 @@ function renderReport(k) {
 const bikeXLS = sp => '<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="utf-8"></head><body>' + sheetHTML(sp) + '</body></html>';
 function repCSV(sp) { const q = v => '"' + String(v).replace(/"/g, '""') + '"'; return '\ufeff' + sp.csv.map(r => r.map(q).join(',')).join('\r\n'); }
 function showTab(t) {
-  $('tabCheck').hidden = t !== 'check'; $('tabBike').hidden = t === 'check' || (REPORTS[t] || {}).own; $('tabJco').hidden = t !== 'jco';
+  const ck = t === 'check' || t === 'vehicle';
+  $('tabCheck').hidden = !ck; $('tabBike').hidden = !t || ck || (REPORTS[t] || {}).own; $('tabJco').hidden = t !== 'jco';
+  document.querySelectorAll('.cat-only').forEach(e => e.hidden = t === 'vehicle'); document.querySelectorAll('.veh-only').forEach(e => e.hidden = t === 'check');
   document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
-  if (t !== 'check' && REPORTS[t] && REPORTS[t].own) REPORTS[t].render(); else if (t !== 'check') renderReport(t);
+  if (t !== 'check' && REPORTS[t] && REPORTS[t].own) REPORTS[t].render(); else if (t && !ck) renderReport(t);
 }
 
 
@@ -341,7 +355,7 @@ function afterLoad(t) {
   $('result').hidden = false; if (D) render();
   const R = ALLREP();
   REPS.forEach(([k, l]) => { const b = $('tab_' + k); if (REPORTS[k].alwaysOn) { b.disabled = false; return; } b.textContent = l + (R[k] ? ' (' + R[k].count + ')' : ''); b.disabled = !R[k]; b.title = R[k] ? '' : 'Upload the ' + (HINT[k] || 'Emergency trips') + ' CSV first'; });
-  $('tab_check').disabled = !D; showTab(t);
+  $('tab_check').disabled = !D; $('tab_vehicle').disabled = !D; showTab(t);
 }
 function processFile(kind, rows, name) {
   if (kind === 'trips') {
@@ -349,7 +363,7 @@ function processFile(kind, rows, name) {
     const t = [...new Set(D.out.map(x => x.tehsil).filter(Boolean))].sort();
     $('teh').innerHTML = '<option value="">All tehsils</option>' + t.map(v => `<option>${esc(v)}</option>`).join('');
   } else X[kind] = REPORTS[kind].run(rows);
-  FILES[kind] = name; renderFiles(); afterLoad(kind === 'trips' ? 'check' : kind);
+  FILES[kind] = name; renderFiles(); afterLoad(document.querySelector('.tabs button.on') ? document.querySelector('.tabs button.on').dataset.tab : '');
 }
 function load(file) {
   $('msg').textContent = '';
@@ -398,6 +412,7 @@ $('dlBad').onclick = () => download('emergency_trips_WRONG_only.csv', toCSV(D.ou
 $('tabsBar').insertAdjacentHTML('beforeend', REPS.map(([k, l]) => `<button data-tab="${k}" id="tab_${k}">${esc(l)}</button>`).join(''));
 if (!REPORTS.jco) ['jcoBtns', 'slimMsg'].forEach(i => $(i).hidden = true);
 Object.values(REPORTS).forEach(r => { if (r.init) r.init(); });
+['check', 'vehicle', ...REPS.filter(([k]) => !REPORTS[k].alwaysOn).map(([k]) => k)].forEach(k => $('tab_' + k).disabled = true);
 </script>
 </body>
 </html>
