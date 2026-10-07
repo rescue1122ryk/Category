@@ -52,7 +52,7 @@ window.CATEGORY_CONFIG = {
       "Diabetic",
       "Vomiting",
       "Renal Disorder",
-       "Domestic Injury",
+      "Domestic Injury",
       "Diarrhea",
       "Allergy",
       "Anxiety",
