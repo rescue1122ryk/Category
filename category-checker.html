@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>RESCUE 1122 RAHIM YAR KHAN REPORTS DASHBOARD</title>
+<link rel="icon" type="image/jpeg" href="logo-rescue.jpg">
 <script src="categories-config.js"></script>
 <script src="vehicles-config.js"></script>
 <script src="report-helpers.js"></script>
@@ -82,12 +83,34 @@ header{padding:22px 20px 40px;border-bottom:4px solid #19a354}
 .tabs button{border-radius:14px!important;padding:16px 12px;text-align:left;font-size:15px;border:1px solid var(--bd);border-left:5px solid #19a354;background:var(--card);box-shadow:0 1px 4px rgba(0,0,0,.08);transition:.15s}
 .tabs button:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.15)}
 .tabs button.on{background:linear-gradient(120deg,var(--hd1),var(--hd2));color:#fff;border-color:var(--hd2)}
+body{background:linear-gradient(180deg,#e6f2ec 0,var(--bg) 340px) fixed}
+@media(prefers-color-scheme:dark){body{background:var(--bg)}}
+header{background:radial-gradient(circle at 12% 20%,rgba(255,255,255,.14) 0,transparent 38%),radial-gradient(circle at 88% 80%,rgba(255,255,255,.12) 0,transparent 36%),linear-gradient(115deg,#064e2b,#0b7a43 50%,#b3122b);border-bottom:5px solid #e8b923}
+.ttl h1{font-size:32px;font-weight:800;letter-spacing:1.5px;line-height:1.25}
+.chipd{display:inline-block;margin-top:10px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);padding:3px 14px;border-radius:20px;font-size:13px}
+.logo{border:3px solid #e8b923;animation:fl 4s ease-in-out infinite}@keyframes fl{50%{transform:translateY(-4px)}}
+.card{border-radius:18px;box-shadow:0 4px 16px rgba(10,60,40,.08)}
+.step i{background:linear-gradient(135deg,#0b7a43,#19a354);box-shadow:0 2px 6px rgba(0,0,0,.25)}
+.drop{border:2px dashed #19a354;background:linear-gradient(135deg,rgba(25,163,84,.08),rgba(179,18,43,.05))}
+.drop:hover{background:rgba(25,163,84,.14)}.drop::before{content:"\1F4C2";display:block;font-size:40px}
+button.p{background:linear-gradient(120deg,#0b7a43,#19a354);border:0;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+.tabs button{display:flex;flex-direction:column;gap:6px;font-weight:700;min-height:92px;border-left:0!important;border-top:5px solid #19a354;border-radius:16px!important}
+.tabs button::before{font-size:28px;line-height:1}
+.tabs button.on{background:linear-gradient(135deg,#064e2b,#0b7a43);border-top-color:#e8b923}
+.tabs button:disabled{filter:grayscale(1)}
+.tabs [data-tab=check]::before{content:"\2705"}.tabs [data-tab=vehicle]::before{content:"\1F691"}.tabs [data-tab=bike]::before{content:"\1F3CD\FE0F"}
+.tabs [data-tab=delivery]::before{content:"\1F930"}.tabs [data-tab=long]::before{content:"\23F1\FE0F"}.tabs [data-tab=staff]::before{content:"\1F4F1"}
+.tabs [data-tab=pin]::before{content:"\1F4CD"}.tabs [data-tab=late]::before{content:"\23F0"}.tabs [data-tab=crime]::before{content:"\1F6A8"}
+.tabs [data-tab=dead]::before{content:"\1F54A\FE0F"}.tabs [data-tab=jco]::before{content:"\1F4CA"}
+.tabs [data-tab=check]{border-top-color:#c2281c}.tabs [data-tab=vehicle]{border-top-color:#1f5eff}
+.stat,.s2{border-radius:16px}
+footer{text-align:center;color:var(--mu);padding:18px;font-size:13px}
 </style>
 </head>
 <body>
 <header><div class="in hd">
   <img class="logo" src="logo-punjab.jpg" alt="Government of Punjab" onerror="this.style.visibility='hidden'">
-  <div class="ttl"><h1>Rescue 1122 R.Y. Khan Reports Dashboard</h1><p>Upload your CSV files once, then click a report to open it.</p></div>
+  <div class="ttl"><h1>RESCUE 1122 RAHIM YAR KHAN<br>REPORTS DASHBOARD</h1><p>Upload your CSV files once, then click a report to open it.</p><span class="chipd" id="today"></span></div>
   <img class="logo" src="logo-rescue.jpg" alt="Rescue 1122" onerror="this.style.visibility='hidden'">
 </div></header>
 <main>
@@ -152,6 +175,7 @@ header{padding:22px 20px 40px;border-bottom:4px solid #19a354}
     </div>
   </div>
 </main>
+<footer>RESCUE 1122 RAHIM YAR KHAN &mdash; Reports Dashboard &bull; Data stays on your computer</footer>
 
 <script>
 // CORE START
@@ -332,12 +356,19 @@ function renderReport(k) {
 }
 const bikeXLS = sp => '<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="utf-8"></head><body>' + sheetHTML(sp) + '</body></html>';
 function repCSV(sp) { const q = v => '"' + String(v).replace(/"/g, '""') + '"'; return '\ufeff' + sp.csv.map(r => r.map(q).join(',')).join('\r\n'); }
+let curTab = '';
+function resetFilters() {
+  filter = 'ALL'; vf = 'ALL'; agentF = ''; sortK = null; sortDir = 1; $('q').value = ''; $('teh').value = '';
+  Object.values(REPORTS).forEach(r => { if (r.reset) r.reset(); });
+}
 function showTab(t) {
+  if (t !== curTab) { curTab = t; resetFilters(); }   // filters only stay while you remain in the same report
   const ck = t === 'check' || t === 'vehicle';
   $('tabCheck').hidden = !ck; $('tabBike').hidden = !t || ck || (REPORTS[t] || {}).own; $('tabJco').hidden = t !== 'jco';
   document.querySelectorAll('.cat-only').forEach(e => e.hidden = t === 'vehicle'); document.querySelectorAll('.veh-only').forEach(e => e.hidden = t === 'check');
   document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
   if (t !== 'check' && REPORTS[t] && REPORTS[t].own) REPORTS[t].render(); else if (t && !ck) renderReport(t);
+  if (ck && D) render();
 }
 
 
@@ -411,6 +442,7 @@ $('dlBad').onclick = () => download('emergency_trips_WRONG_only.csv', toCSV(D.ou
 /* ---- build the report tabs from the loaded report files ---- */
 $('tabsBar').insertAdjacentHTML('beforeend', REPS.map(([k, l]) => `<button data-tab="${k}" id="tab_${k}">${esc(l)}</button>`).join(''));
 if (!REPORTS.jco) ['jcoBtns', 'slimMsg'].forEach(i => $(i).hidden = true);
+$('today').textContent = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
 Object.values(REPORTS).forEach(r => { if (r.init) r.init(); });
 ['check', 'vehicle', ...REPS.filter(([k]) => !REPORTS[k].alwaysOn).map(([k]) => k)].forEach(k => $('tab_' + k).disabled = true);
 </script>

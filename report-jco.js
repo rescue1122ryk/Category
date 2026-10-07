@@ -183,6 +183,7 @@
   }
 
   window.REPORTS.jco = { label: 'JCO Emg Count', own: true, alwaysOn: true, render: renderJco, init: jcoInit,
-    onTrips: (rows, name) => { JC.local = jcoSlim(rows); if (JC.local) JC.local.file = name; }   // called when a trips CSV is loaded
+    reset: () => { JC.agent = ''; JC.day = ''; },   // filters are cleared when you move to another report
+  onTrips: (rows, name) => { JC.local = jcoSlim(rows); if (JC.local) JC.local.file = name; }   // called when a trips CSV is loaded
   };
 })();
