@@ -5,18 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>RESCUE 1122 RAHIM YAR KHAN REPORTS DASHBOARD</title>
 <link rel="icon" type="image/jpeg" href="logo-rescue.jpg">
-<script src="categories-config.js"></script>
-<script src="vehicles-config.js"></script>
-<script src="report-helpers.js"></script>
-<script src="report-bike.js"></script>
-<script src="report-delivery.js"></script>
-<script src="report-long.js"></script>
-<script src="report-staff.js"></script>
-<script src="report-pin.js"></script>
-<script src="report-late.js"></script>
-<script src="report-crime.js"></script>
-<script src="report-dead.js"></script>
-<script src="report-jco.js"></script>
+<script>document.write('<script src="categories-config.js?v=' + Date.now() + '"><\/script>');</script>
+<script>document.write('<script src="vehicles-config.js?v=' + Date.now() + '"><\/script>');</script>
+<script>document.write('<script src="report-helpers.js?v=' + Date.now() + '"><\/script>');</script>
+<script>document.write('<script src="report-bike.js?v=' + Date.now() + '"><\/script>');</script>
+<script>document.write('<script src="report-delivery.js?v=' + Date.now() + '"><\/script>');</script>
+<script>document.write('<script src="report-long.js?v=' + Date.now() + '"><\/script>');</script>
+<script>document.write('<script src="report-staff.js?v=' + Date.now() + '"><\/script>');</script>
+<script>document.write('<script src="report-pin.js?v=' + Date.now() + '"><\/script>');</script>
+<script>document.write('<script src="report-late.js?v=' + Date.now() + '"><\/script>');</script>
+<script>document.write('<script src="report-crime.js?v=' + Date.now() + '"><\/script>');</script>
+<script>document.write('<script src="report-dead.js?v=' + Date.now() + '"><\/script>');</script>
+<script>document.write('<script src="report-jco.js?v=' + Date.now() + '"><\/script>');</script>
 <style>
 :root{--bg:#f3f5f9;--card:#fff;--tx:#18202e;--mu:#6b7686;--bd:#e1e6ee;--ac:#1f5eff;--hd1:#0f2a5c;--hd2:#1f5eff;
 --ok:#12803f;--okb:#e0f4e8;--bad:#c2281c;--badb:#fdecea;--warn:#8a5a00;--warnb:#fff1cf;--sk:#566;--skb:#eceff3}
@@ -177,7 +177,7 @@ footer{text-align:center;color:var(--mu);padding:18px;font-size:13px}
     </div>
   </div>
 </main>
-<footer>RESCUE 1122 RAHIM YAR KHAN &mdash; Reports Dashboard &bull; Data stays on your computer</footer>
+<footer>RESCUE 1122 RAHIM YAR KHAN &mdash; Reports Dashboard &bull; Data stays on your computer<br><small id="cfgStamp"></small></footer>
 
 <script>
 // CORE START
@@ -425,6 +425,7 @@ document.addEventListener('click', e => {
   if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(v).then(ok, fb); else fb();
 }, true);
 
+if (CFG) $('cfgStamp').textContent = 'Category list loaded \u2192 ' + Object.entries(CFG.categories).map(([k, v]) => k + ': ' + v.length).join('  |  ');
 if (!CFG) $('msg').textContent = 'categories-config.js could not be loaded. Keep all files in the same folder.';
 $('pick').onclick = e => { e.stopPropagation(); $('file').click(); };
 $('lnk').onclick = e => e.stopPropagation();
