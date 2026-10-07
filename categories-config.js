@@ -39,14 +39,14 @@ window.CATEGORY_CONFIG = {
       "Crime Case",
       "Fire Case",
       "Fall",
-      "Blood in Stool",
-      "Blood in Vomit",
       "Snake/Dog Bite",
       "Work/Occupational Injury",
       "Manhole",
       "SOB/Respiratory Distress",
       "Deep Well",
-      "Lift/Room Extrication"
+      "Lift/Room Extrication",
+      "Blood in Stool",
+      "Blood in Vomit"
     ],
 
     "Less Urgent": [               // CATEGORY-III
