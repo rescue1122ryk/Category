@@ -9,7 +9,7 @@
        Included: Fate Of Patient is Dead and the trip is not Discarded.
        "@nature" = Subtype (Emergency Type);  "@agent" = agent column from
        categories-config.js.  A Sr. # column is added automatically.
-       The sheet date is yesterday (same as the macro =TODAY()-1).
+       The sheet date is the date of the trips in the CSV.
     ------------------------------------------------------------------ */
   const CONFIG = {
     title:   "Rahim Yar Khan Report of All Dead Victim",
@@ -31,7 +31,7 @@
   function deadVictim(rows) {
     const R = CONFIG;
     return tripList(rows, R, { file: 'Dead Victim Report', card: 'Dead victims', sr: true, rowH: R.rowH, titleStyle: 'font-size:24pt;font-weight:bold;height:38px;background:#d0cece;',
-      rule: 'Fate Of Patient: ' + R.fate + '  |  Discarded trips excluded  |  Sheet date is yesterday',
+      rule: 'Fate Of Patient: ' + R.fate + '  |  Discarded trips excluded  |  Sheet date = date of the trips in the CSV',
       keep: (g, r) => g(r, 'Fate Of Patient').toLowerCase().includes(R.fate.toLowerCase()) && g(r, 'Emergency Status').toLowerCase() !== 'discarded' });
   }
 

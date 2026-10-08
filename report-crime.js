@@ -19,7 +19,7 @@
                        Cause Of Emergency (e.g. "Violence Case بقول ..."), as in the hand-made sheet
        headers       : the 9 column titles shown on the sheet
        fields        : the CSV column used for each value
-       The sheet date is yesterday.
+       The sheet date is the date of the trips in the CSV.
     ------------------------------------------------------------------ */
   const CONFIG = {
     title:         "Crime Emergencies Breakup of District Rahim Yar Khan",
@@ -67,7 +67,7 @@
     }
 
     // 3) build the sheet
-    const date = dmy(yday()), n = 9, H = R.headers, body = [], csv = [H];
+    const date = csvDate(rows, ['Start Time', 'Call Received at']), n = 9, H = R.headers, body = [], csv = [H];
     const BX = 'height:46px;', B = 'font-weight:bold;';
     let totEc = 0, totPat = 0;
     for (const [nat, list] of groups) {
@@ -95,7 +95,7 @@
     return {
       name: 'Crime Emergencies ' + date, count: totEc,
       cards: [['Crime emergencies', totEc], ['Patients', totPat], ...[...groups].map(([k, v]) => [k, v.length]).sort((a, b) => b[1] - a[1])],
-      rule: 'Emergency Type: ' + R.emergencyType + '  |  EC No assigned' + (st.length ? '  |  Status: ' + R.statuses.join(' / ') : '') + '  |  Sheet date is yesterday',
+      rule: 'Emergency Type: ' + R.emergencyType + '  |  EC No assigned' + (st.length ? '  |  Status: ' + R.statuses.join(' / ') : '') + '  |  Sheet date = date of the trips in the CSV',
       warn: missing.length ? 'These columns were not found in the CSV: ' + missing.join(', ') : '',
       widths: [150, 75, 80, 85, 70, 85, 110, 230, 380],
       rows: [

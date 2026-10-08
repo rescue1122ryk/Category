@@ -44,7 +44,7 @@
     const lines = ordered.map(x => { const kept = [...x.kept]; if (K >= 5) kept[4] = fmtTime12(kept[4]); return { x, cells: [...kept, isNaN(x.lat) ? (x.raw[0] || '') : x.lat.toFixed(5), isNaN(x.lng) ? (x.raw[1] || '').trim() : x.lng.toFixed(5)] }; });
     const hits = ordered.filter(x => x.hit).length, B = 'font-weight:bold;font-size:14pt;';
     return {
-      name: 'Pin Emergencies ' + dmy(new Date()), count: ordered.length, cards: [['Pin emergencies', ordered.length], ['Hotspot matches', hits]], warn: '',
+      name: 'Pin Emergencies ' + csvDate(rows), count: ordered.length, cards: [['Pin emergencies', ordered.length], ['Hotspot matches', hits]], warn: '',
       rule: 'Duplicates removed by "' + HD[0] + '"  |  sorted by "' + HD[sk] + '" (descending)  |  gold rows = default pin locations, moved to the top',
       widths: [22.86, 19, 22.86, 20.14, 13.86, 16, 8.43].map(w => Math.round(w * 7)),
       rows: [HD.map(x => cl(x, 'font-weight:bold;background:#f2f2f2;')),

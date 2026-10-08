@@ -67,6 +67,21 @@ function fmtTime12(s) {
 
 function colIx(head, name) { const n = String(name).trim().toLowerCase(); return head.map(x => String(x).trim().toLowerCase()).indexOf(n); }
 
+/* Date shown on a sheet = the date of the trips inside the CSV (the most common date in the given
+   columns, or in any cell when no columns are given). Falls back to yesterday when none is found. */
+function csvDate(rows, names) {
+  const head = rows[0] || [], cols = (names || []).map(n => colIx(head, n)).filter(i => i >= 0), cnt = {};
+  for (const r of rows.slice(1, 400)) {
+    for (const i of (cols.length ? cols : r.map((_, k) => k))) {
+      const s = String(r[i] == null ? '' : r[i]);
+      let m = s.match(/(\d{4})[\/-](\d{1,2})[\/-](\d{1,2})/), d = m && p2(m[3]) + '-' + p2(m[2]) + '-' + m[1];
+      if (!m && (m = s.match(/(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})/))) d = p2(m[1]) + '-' + p2(m[2]) + '-' + m[3];
+      if (m) { cnt[d] = (cnt[d] || 0) + 1; if (cols.length) break; }
+    }
+  }
+  const best = Object.entries(cnt).sort((a, b) => b[1] - a[1])[0];
+  return best ? best[0] : dmy(yday());
+}
 const yday = () => { const d = new Date(); d.setDate(d.getDate() - 1); return d; };
 
 const fate3 = f => { const l = String(f).toLowerCase(); return l.includes('shifted') ? 'Shifted' : (l.includes('dead') || l.includes('expired')) ? 'Dead' : f === '' ? 'N/A' : f; };
@@ -89,7 +104,7 @@ function tripList(rows, R, o) {
     if (seen.has(ec)) continue; seen.add(ec);
     recs.push(cols.map(c => val(r, c[1])));
   }
-  const date = dmy(yday()), HD = (o.sr ? ['Sr. #'] : []).concat(cols.map(c => c[0])), n = HD.length, off = o.sr ? 1 : 0;
+  const date = csvDate(rows, ['Start Time', 'Call Received at']), HD = (o.sr ? ['Sr. #'] : []).concat(cols.map(c => c[0])), n = HD.length, off = o.sr ? 1 : 0;
   const body = recs.map((v, i) => (o.sr ? [i + 1, ...v] : v).map((x, j) => cl(x, 'height:' + (o.rowH || 22) + 'px;' + (left.includes(j - off) ? 'text-align:left;padding-left:12px;' : ''))));
   return {
     name: o.file + ' ' + date, count: recs.length, cards: [[o.card, recs.length], ...countBy(recs, r => r[0])], rule: o.rule,

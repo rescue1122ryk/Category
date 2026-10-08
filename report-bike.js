@@ -35,7 +35,7 @@
       const ec = g('EC No'); if (seen.has(ec)) continue; seen.add(ec);
       recs.push(BIKE_COLS.map(g));
     }
-    const date = dateFrom(recs.length ? recs[0][9] : ''), n = BIKE_COLS.length;
+    const date = recs.length ? dateFrom(recs[0][9]) : csvDate(rows, ['Start Time', 'Call Received at']), n = BIKE_COLS.length;
     return {
       name: R.filePrefix + ' ' + date, count: recs.length, cards: [['Late finish trips', recs.length], ...countBy(recs, r => r[1])],
       rule: 'Vehicle type: ' + R.vehicleTypes.join(' / ') + '  |  Fate: ' + R.fate + '  |  Elapsed >= ' + R.minElapsed,

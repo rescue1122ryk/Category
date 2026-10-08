@@ -8,7 +8,7 @@
   /* ---- Delivery Case report ----------------------------------------
        Included: Emergency Subtype equals subtype, EC No present, and not a
        Patient Transfer / PTS trip. Duplicate EC No rows are skipped.
-       The sheet date is today's date (same as the original macro).
+       The sheet date is the date of the trips in the CSV.
     ------------------------------------------------------------------ */
   const CONFIG = {
     title:   "Delivery Case Emergencies of District Rahim Yar Khan",
@@ -31,13 +31,13 @@
       fate = f.includes('shifted') ? 'Shifted' : (f.includes('dead') || f.includes('expired')) ? 'Dead' : fate === '' ? 'N/A' : fate;
       recs.push([callTime(g('Start Time') || g('Call Received at')), g('Age'), fate, g('Emergency Address')]);
     }
-    const n = recs.length, date = dmy(new Date()), L = 'text-align:left;height:18px;', H = ['Emergency', 'Total Emg.', 'Call Time', 'Total Patients', 'Age', 'Gender', 'F/A Shifted/Dead', 'Location'];
+    const n = recs.length, date = csvDate(rows, ['Start Time', 'Call Received at']), L = 'text-align:left;height:18px;', H = ['Emergency', 'Total Emg.', 'Call Time', 'Total Patients', 'Age', 'Gender', 'F/A Shifted/Dead', 'Location'];
     const data = recs.map((r, i) => i === 0
       ? [cl(R.subtype, 'font-weight:bold;mso-rotate:90;', { rs: n, rot: true }), cl(n, '', { rs: n }), cl(r[0], L), cl(n, '', { rs: n }), cl(r[1], L), cl(R.gender, '', { rs: n }), cl(r[2], L), cl(r[3], L)]
       : [cl(r[0], L), cl(r[1], L), cl(r[2], L), cl(r[3], L)]);
     return {
       name: 'Delivery Case ' + date, count: n, cards: [['Delivery cases', n], ...countBy(recs, r => r[2])],
-      rule: 'Subtype: ' + R.subtype + '  |  PTS trips excluded  |  Sheet date is today',
+      rule: 'Subtype: ' + R.subtype + '  |  PTS trips excluded  |  Sheet date = date of the trips in the CSV',
       warn: missing.length ? 'These columns were not found in the CSV: ' + missing.join(', ') : '',
       widths: [12, 10, 18, 12, 8, 10, 14, 55].map(w => w * 7),
       rows: [[cl(R.title, 'border:none;font-weight:bold;font-size:16pt;', { cs: 8 })], [cl('Date: ' + date, 'border:none;font-weight:bold;', { cs: 8 })], [cl('', 'border:none;', { cs: 8 })],

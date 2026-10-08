@@ -40,7 +40,7 @@
       const rem = g('long').toLowerCase() === 'yes' ? 'Long Distance' : g('type').toLowerCase().includes('rescue operations') ? 'Mass Event / Other' : 'Long Duration';
       recs.push([g('ec'), g('dist'), g('teh'), g('type'), g('sub'), addr, rem, g('veh').split(',')[0].trim(), g('mile').split(',')[0].trim(), g('call'), g('start'), g('end'), g('resp'), el, g('fate'), '']);
     }
-    date = date || dmy(new Date());
+    date = date || csvDate(rows, ['Start Time', 'Call Received at']);
     const n = HD.length, T = 'color:#ffffff;font-weight:bold;';
     return {
       ...base, name: 'Long Duration Emergencies ' + date, count: recs.length, cards: [['Long duration trips', recs.length], ...countBy(recs, r => r[6])], warn: '',
