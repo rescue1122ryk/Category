@@ -46,7 +46,8 @@ window.CATEGORY_CONFIG = {
       "Deep Well",
       "Lift/Room Extrication",
       "Blood in Stool",
-      "Blood in Vomit"
+      "Blood in Vomit",
+      "FBAO"
     ],
 
     "Less Urgent": [               // CATEGORY-III
@@ -64,7 +65,6 @@ window.CATEGORY_CONFIG = {
       "Earache/Toothache",
       "Epistaxis/Nosebleed",
       "Eye Pain",
-      "FBAO",
       "Food Poisoning",
       "Headache",
       "High Fever",
