@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RESCUE 1122 RAHIM YAR KHAN REPORTS DASHBOARD</title>
+<link rel="icon" type="image/jpeg" href="logo-rescue.jpg">
+<script>document.write('<script src="categories-config.js?v=' + Date.now() + '"><\/script>');</script>
+<script>document.write('<script src="vehicles-config.js?v=' + Date.now() + '"><\/script>');</script>
+<script>document.write('<script src="report-helpers.js?v=' + Date.now() + '"><\/script>');</script>
+<script>document.write('<script src="report-bike.js?v=' + Date.now() + '"><\/script>');</script>
+<script>document.write('<script src="report-delivery.js?v=' + Date.now() + '"><\/script>');</script>
+<script>document.write('<script src="report-long.js?v=' + Date.now() + '"><\/script>');</script>
+<script>document.write('<script src="report-staff.js?v=' + Date.now() + '"><\/script>');</script>
+<script>document.write('<script src="report-pin.js?v=' + Date.now() + '"><\/script>');</script>
+<script>document.write('<script src="report-late.js?v=' + Date.now() + '"><\/script>');</script>
+<script>document.write('<script src="report-crime.js?v=' + Date.now() + '"><\/script>');</script>
+<script>document.write('<script src="report-dead.js?v=' + Date.now() + '"><\/script>');</script>
+<script>document.write('<script src="report-jco.js?v=' + Date.now() + '"><\/script>');</script>
+<style>
+:root{--bg:#f3f5f9;--card:#fff;--tx:#18202e;--mu:#6b7686;--bd:#e1e6ee;--ac:#1f5eff;--hd1:#0f2a5c;--hd2:#1f5eff;
+--ok:#12803f;--okb:#e0f4e8;--bad:#c2281c;--badb:#fdecea;--warn:#8a5a00;--warnb:#fff1cf;--sk:#566;--skb:#eceff3}
+@media(prefers-color-scheme:dark){:root{--bg:#0f131a;--card:#181e28;--tx:#e8ecf2;--mu:#97a2b3;--bd:#2a3240;--ac:#6d96ff;--hd1:#0b1b3d;--hd2:#1d3f9e;
+--ok:#5fdb8c;--okb:#15382a;--bad:#ff8f84;--badb:#3f1b18;--warn:#ffcf70;--warnb:#44350f;--sk:#bbb;--skb:#2a2f38}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.5 system-ui,Segoe UI,Roboto,sans-serif}
+header{background:linear-gradient(120deg,var(--hd1),var(--hd2));color:#fff;padding:26px 20px 30px}
+.in{max-width:1300px;margin:auto}h1{margin:0;font-size:24px}header p{margin:6px 0 0;opacity:.85}
+main{max-width:1300px;margin:-18px auto 0;padding:0 20px 40px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-bottom:14px}
+.step{display:flex;gap:12px;align-items:flex-start}.step i{flex:none;width:28px;height:28px;border-radius:50%;background:var(--ac);color:#fff;display:grid;place-items:center;font-style:normal;font-weight:700}
+.step b{display:block}.step span{color:var(--mu);font-size:13px}
+a{color:var(--ac);font-weight:600}
+.drop{border:2px dashed var(--bd);text-align:center;padding:30px;cursor:pointer;transition:.15s}
+.drop:hover,.drop.over{border-color:var(--ac);background:var(--badb)}
+.drop.over{background:var(--card)}
+button,select{font:inherit;cursor:pointer;border:1px solid var(--bd);background:var(--card);color:var(--tx);padding:7px 12px;border-radius:9px}
+button.p{background:var(--ac);border-color:var(--ac);color:#fff}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:14px 0}
+.stat{cursor:pointer;border-left:4px solid var(--c,var(--bd))}.stat:hover{transform:translateY(-1px)}.stat.on{outline:2px solid var(--ac)}
+.stat b{display:block;font-size:26px;color:var(--c)}.stat span{color:var(--mu)}
+.acc{margin:0 0 14px}.acc .t{display:flex;justify-content:space-between;margin-bottom:6px}
+.meter{height:12px;border-radius:8px;background:var(--badb);overflow:hidden;display:flex}
+.meter div{height:100%}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px;margin-bottom:14px}
+.two h3{margin:0 0 8px;font-size:14px}.two table{width:100%;border-collapse:collapse}.two td{padding:4px 0;border-bottom:1px solid var(--bd)}.two td:last-child{text-align:right;font-weight:700}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0}
+input[type=search]{flex:1;min-width:200px;padding:8px 12px;border:1px solid var(--bd);border-radius:9px;background:var(--card);color:var(--tx);font:inherit}
+.wrap{overflow:auto;max-height:70vh;border:1px solid var(--bd);border-radius:14px;background:var(--card)}
+#tbl{border-collapse:collapse;width:100%;white-space:nowrap}
+#tbl th{position:sticky;top:0;background:var(--card);text-align:left;padding:10px;border-bottom:2px solid var(--bd);z-index:1;cursor:pointer;user-select:none}
+#tbl td{padding:8px 10px;border-bottom:1px solid var(--bd)}#tbl tbody tr:hover td{filter:brightness(.97)}
+tr.WRONG td{background:var(--badb)}
+.tag{padding:2px 10px;border-radius:12px;font-weight:700;font-size:12px}
+.tag.OK{background:var(--okb);color:var(--ok)}.tag.WRONG{background:var(--bad);color:#fff}
+.tag.NOTLIST{background:var(--warnb);color:var(--warn)}.tag.SKIP{background:var(--skb);color:var(--sk)}
+.fix{font-weight:700;color:var(--ok)}.mu{color:var(--mu)}
+#msg{margin:10px 0;color:var(--bad);font-weight:600}
+.lnk{color:var(--ac);cursor:pointer;font-weight:600;text-decoration:underline dotted}
+.act{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0;align-items:center}.pill{background:var(--ac);color:#fff;border-radius:16px;padding:3px 12px;cursor:pointer}
+.sub{margin:16px 0 0;font-weight:700;color:var(--mu);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+.note{background:var(--warnb);color:var(--warn);border-radius:10px;padding:8px 12px;margin-top:8px}
+.tabs{display:flex;gap:8px;margin:0 0 6px}.tabs button{border-radius:20px;font-weight:600}.tabs button.on{background:var(--ac);border-color:var(--ac);color:#fff}
+.s2{border-left:4px solid var(--c)}.s2 b{display:block;font-size:26px;color:var(--c)}.s2 span{color:var(--mu)}
+.xl{border-collapse:collapse;white-space:nowrap;table-layout:fixed}.xl td{padding:5px 8px;background:#fff;color:#000;white-space:normal;word-break:break-word}
+.rot{display:inline-block;writing-mode:vertical-rl;transform:rotate(180deg)}
+@media print{body *{visibility:hidden}#bikeSheet,#bikeSheet *{visibility:visible}#bikeSheet{position:absolute;left:0;top:0;width:100%;max-height:none;overflow:visible}}
+.tabs{flex-wrap:wrap}.tabs button:disabled{opacity:.45;cursor:not-allowed}
+
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}.cal .wd{text-align:center;font-weight:700;color:var(--mu);font-size:12px}
+.cd{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;min-height:56px;border-radius:10px;border:1px solid var(--bd);background:rgba(31,94,255,calc(var(--i,0)*.35));color:var(--tx)}
+.cd b{font-size:12px;color:var(--mu)}.cd span{font-size:16px;font-weight:700}.cd.z span{color:var(--mu);font-weight:400}.cd.on{outline:2px solid var(--ac)}.cd.e{visibility:hidden;border:none}
+.dl{width:100%;border-collapse:collapse}.dl th,.dl td{padding:6px 10px;border-bottom:1px solid var(--bd);text-align:left;white-space:nowrap}.dl th{position:sticky;top:0;background:var(--card)}
+.chip{padding:2px 10px;border-radius:12px;font-size:12px;font-weight:700;background:var(--skb);color:var(--sk)}.chip.m{background:var(--okb);color:var(--ok)}.chip.r{background:var(--badb);color:var(--bad)}
+[hidden]{display:none!important}
+header{padding:22px 20px 40px;border-bottom:4px solid #19a354}
+.hd{display:flex;align-items:center;justify-content:space-between;gap:18px}.ttl{text-align:center;flex:1}
+.ttl h1{font-size:30px;letter-spacing:.3px;text-shadow:0 2px 6px rgba(0,0,0,.25)}.ttl p{font-size:15px}
+.logo{height:92px;width:auto;background:#fff;border-radius:18px;padding:6px;box-shadow:0 4px 14px rgba(0,0,0,.3)}
+@media(max-width:700px){.hd{flex-wrap:wrap;justify-content:center}.ttl{order:3;flex-basis:100%}.logo{height:62px}.ttl h1{font-size:22px}}
+.drop{background:linear-gradient(180deg,var(--card),var(--bg));border-color:var(--ac);padding:26px}
+.tabs{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;margin:16px 0}
+.tabs button{border-radius:14px!important;padding:16px 12px;text-align:left;font-size:15px;border:1px solid var(--bd);border-left:5px solid #19a354;background:var(--card);box-shadow:0 1px 4px rgba(0,0,0,.08);transition:.15s}
+.tabs button:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.15)}
+.tabs button.on{background:linear-gradient(120deg,var(--hd1),var(--hd2));color:#fff;border-color:var(--hd2)}
+body{background:linear-gradient(180deg,#e6f2ec 0,var(--bg) 340px) fixed}
+@media(prefers-color-scheme:dark){body{background:var(--bg)}}
+header{background:radial-gradient(circle at 12% 20%,rgba(255,255,255,.14) 0,transparent 38%),radial-gradient(circle at 88% 80%,rgba(255,255,255,.12) 0,transparent 36%),linear-gradient(115deg,#064e2b,#0b7a43 50%,#b3122b);border-bottom:5px solid #e8b923}
+.ttl h1{font-size:32px;font-weight:800;letter-spacing:1.5px;line-height:1.25}
+.chipd{display:inline-block;margin-top:10px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);padding:3px 14px;border-radius:20px;font-size:13px}
+.logo{border:3px solid #e8b923;animation:fl 4s ease-in-out infinite}@keyframes fl{50%{transform:translateY(-4px)}}
+.card{border-radius:18px;box-shadow:0 4px 16px rgba(10,60,40,.08)}
+.step i{background:linear-gradient(135deg,#0b7a43,#19a354);box-shadow:0 2px 6px rgba(0,0,0,.25)}
+.drop{border:2px dashed #19a354;background:linear-gradient(135deg,rgba(25,163,84,.08),rgba(179,18,43,.05))}
+.drop:hover{background:rgba(25,163,84,.14)}.drop::before{content:"\1F4C2";display:block;font-size:40px}
+button.p{background:linear-gradient(120deg,#0b7a43,#19a354);border:0;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+.tabs button{display:flex;flex-direction:column;gap:6px;font-weight:700;min-height:92px;border-left:0!important;border-top:5px solid #19a354;border-radius:16px!important}
+.tabs button::before{font-size:28px;line-height:1}
+.tabs button.on{background:linear-gradient(135deg,#064e2b,#0b7a43);border-top-color:#e8b923}
+.tabs button:disabled{filter:grayscale(1)}
+.tabs [data-tab=check]::before{content:"\2705"}.tabs [data-tab=vehicle]::before{content:"\1F691"}.tabs [data-tab=bike]::before{content:"\1F3CD\FE0F"}
+.tabs [data-tab=delivery]::before{content:"\1F930"}.tabs [data-tab=long]::before{content:"\23F1\FE0F"}.tabs [data-tab=staff]::before{content:"\1F4F1"}
+.tabs [data-tab=pin]::before{content:"\1F4CD"}.tabs [data-tab=late]::before{content:"\23F0"}.tabs [data-tab=crime]::before{content:"\1F6A8"}
+.tabs [data-tab=dead]::before{content:"\1F54A\FE0F"}.tabs [data-tab=jco]::before{content:"\1F4CA"}
+.tabs [data-tab=check]{border-top-color:#c2281c}.tabs [data-tab=vehicle]{border-top-color:#1f5eff}
+.stat,.s2{border-radius:16px}
+footer{text-align:center;color:var(--mu);padding:18px;font-size:13px}
+.ec{white-space:nowrap}.cp{opacity:0;cursor:pointer;margin-left:6px;font-size:12px;font-style:normal;user-select:none;transition:.15s}
+.ec:hover .cp,.cp.done{opacity:1}.cp:hover{transform:scale(1.25)}@media print{.cp{display:none}}
+</style>
+</head>
+<body>
+<header><div class="in hd">
+  <img class="logo" src="logo-punjab.jpg" alt="Government of Punjab" onerror="this.style.visibility='hidden'">
+  <div class="ttl"><h1>RESCUE 1122 RAHIM YAR KHAN<br>REPORTS DASHBOARD</h1><p>Upload your CSV files once, then click a report to open it.</p><span class="chipd" id="today"></span></div>
+  <img class="logo" src="logo-rescue.jpg" alt="Rescue 1122" onerror="this.style.visibility='hidden'">
+</div></header>
+<main>
+  <div id="msg"></div>
+  <div class="steps">
+    <div class="card step"><i>1</i><div><b>Get the report</b><span>Open the <a href="https://punjab.rescue1122.org/dashboard/report/detailed_emergency_statistics" target="_blank" rel="noopener">All-In-One Emergency Detailed Report</a> and download the CSV.</span></div></div>
+    <div class="card step"><i>2</i><div><b>Upload your CSV files</b><span>Select all files in one go: trips, Staff App, Pin Emergencies, Late Accept. Nothing leaves your computer.</span></div></div>
+    <div class="card step"><i>3</i><div><b>Review &amp; export</b><span>Wrong categories are highlighted with the correct one. Download the fixed CSV.</span></div></div>
+  </div>
+
+  <div id="drop" class="card drop">
+    <p><b>Drop all your CSV files here</b> or <button class="p" id="pick">Choose files</button></p>
+    <p class="mu">Select several files at once. Each file is recognised by its columns.</p>
+    <p class="mu">Emergency trips CSV: download it from the <a href="https://punjab.rescue1122.org/dashboard/report/detailed_emergency_statistics" target="_blank" rel="noopener" id="lnk">All-In-One Emergency Detailed Report</a></p>
+    <p id="jcoBtns"><button id="openJco">Open JCO monthly report</button> <button id="slimBtn" title="Choose the full monthly CSV files. For each one a small CSV with only the JCO columns is downloaded.">Slim files for JCO</button></p>
+    <p class="mu" id="slimMsg"></p>
+    <input type="file" id="file" accept=".csv,text/csv" multiple hidden>
+    <div id="files" class="act" style="justify-content:center"></div>
+  </div>
+  <div id="ask"></div>
+  <input type="file" id="slimFile" accept=".csv,text/csv" multiple hidden>
+
+  <div id="result">
+    <div class="tabs" id="tabsBar"><button data-tab="check" id="tab_check">Wrong Category</button><button data-tab="vehicle" id="tab_vehicle">Vehicle Check</button></div>
+    <div id="tabCheck">
+    <div class="sub cat-only">Category check</div><div class="grid cat-only" id="stats"></div>
+    <div class="sub veh-only">Vehicle &amp; tehsil check</div><div class="grid veh-only" id="vstats"></div><div id="vnote" class="veh-only"></div>
+    <div class="card acc cat-only"><div class="t"><b>Category accuracy</b><span id="accTxt"></span></div><div class="meter" id="meter"></div></div>
+    <div class="two">
+      <div class="card"><h3>Mistakes by agent (click a name to filter)</h3><table id="agents"></table></div>
+      <div class="card cat-only"><h3>Most common mistakes (selected &rarr; correct)</h3><table id="pairs"></table></div>
+      <div class="card cat-only"><h3>Subtypes not found in the standard list</h3><table id="unmapped"></table></div>
+      <div class="card veh-only"><h3>Vehicles in the wrong tehsil (vehicle &rarr; correct tehsil)</h3><table id="vwrong"></table></div>
+      <div class="card veh-only"><h3>Vehicles not found in vehicles-config.js</h3><table id="vunk"></table></div>
+    </div>
+    <div class="bar">
+      <select id="teh"></select>
+      <input type="search" id="q" placeholder="Search EC No, subtype, agent...">
+      <button class="p" id="dlAll">Download full CSV</button>
+      <button id="dlBad">Download wrong only</button>
+    </div>
+    <div class="act" id="act"></div>
+    <div class="wrap"><table id="tbl"></table></div>
+    </div>
+    <div id="tabJco" hidden>
+      <div class="bar">
+        <select id="jMonth" title="Month"></select><select id="jAgent" title="Call agent" style="min-width:240px"></select>
+        <span style="flex:1"></span>
+        <button id="jRef">Refresh list</button><button id="jCsv">Download CSV</button>
+      </div>
+      <div id="jMsg" class="mu"></div>
+      <div class="grid" id="jSum"></div>
+      <div class="two"><div class="card"><h3>Calendar (number = emergencies of that day)</h3><div id="jCal"></div></div>
+        <div class="card"><h3 id="jDayT">Click a date to see its emergencies</h3><div class="wrap" style="max-height:60vh" id="jDay"></div></div></div>
+    </div>
+    <div id="tabBike" hidden>
+      <div class="grid" id="bikeSum"></div>
+      <div id="bikeWarn"></div>
+      <div class="bar"><span class="mu" id="bikeRule"></span><span style="flex:1"></span>
+        <button class="p" id="bikeXls">Download Excel (.xls)</button><button id="bikeCsv">Download CSV</button><button id="bikePrint">Print</button></div>
+      <div class="wrap" id="bikeSheet"></div>
+    </div>
+  </div>
+</main>
+<footer>RESCUE 1122 RAHIM YAR KHAN &mdash; Reports Dashboard &bull; Data stays on your computer<br><small id="cfgStamp"></small><br><small>Page version: 08-10-2026 (report link without _v2)</small></footer>
+
+<script>
+// CORE START
+const REPORTS = window.REPORTS;
+
+function parseCSV(t) {
+  if (t.charCodeAt(0) === 0xFEFF) t = t.slice(1);
+  const rows = []; let r = [], f = '', q = false;
+  for (let i = 0; i < t.length; i++) {
+    const c = t[i];
+    if (q) { if (c === '"') { if (t[i + 1] === '"') { f += '"'; i++; } else q = false; } else f += c; }
+    else if (c === '"') q = true;
+    else if (c === ',') { r.push(f); f = ''; }
+    else if (c === '\n' || c === '\r') { if (c === '\r' && t[i + 1] === '\n') i++; r.push(f); f = ''; rows.push(r); r = []; }
+    else f += c;
+  }
+  if (f !== '' || r.length) { r.push(f); rows.push(r); }
+  return rows.filter(x => x.length > 1 || (x[0] || '').trim() !== '');
+}
+
+function buildLookup() {
+  const std = {}, ali = {};
+  for (const [cat, items] of Object.entries(CFG.categories))
+    for (const it of items) { const k = norm(it); (std[k] = std[k] || { name: it, cats: [] }).cats.push(cat); }
+  for (const [k, v] of Object.entries(CFG.aliases || {})) ali[norm(k)] = norm(v);
+  return k => std[k] || std[ali[k]];
+}
+
+/* Runs every report that reads the trips CSV. A mistake inside one report file only breaks that report's tab. */
+function runTripReports(rows) {
+  const out = {};
+  for (const [k, r] of Object.entries(window.REPORTS)) {
+    if (r.input !== 'trips') continue;
+    try { out[k] = r.run(rows); }
+    catch (e) { out[k] = { name: r.label, count: 0, cards: [['Error in this report', 0]], warn: 'This report could not be built: ' + e.message + '  (check report-' + k + '.js)', rule: '', widths: [400], rows: [[cl('Error: ' + e.message, '')]], csv: [['Error'], [e.message]] }; }
+  }
+  return out;
+}
+function detectKind(rows) {
+  const H = (rows[0] || []).map(h => String(h).trim().toLowerCase());
+  for (const [k, r] of Object.entries(window.REPORTS)) if (r.detect && r.detect(rows, H)) return k;
+  if (H.includes('emergency category') && H.includes('emergency subtype')) return 'trips';
+  return '';
+}
+
+
+const VOUT = () => Object.assign({ status: 'Vehicle Check', correct: 'Correct Tehsil (Vehicle)' }, (window.VEHICLE_CONFIG || {}).outputColumns || {});
+
+function buildVehicles() {
+  const map = {}; let total = 0;
+  for (const [t, list] of Object.entries((window.VEHICLE_CONFIG || {}).tehsils || {}))
+    for (const v of list) { const k = norm(v); map[k] = map[k] || []; if (!map[k].includes(t)) map[k].push(t); total++; }
+  const check = (txt, tehsil) => {
+    const vs = String(txt || '').split(/[,;|]+/).map(s => s.trim()).filter(s => s && norm(s) !== 'na');
+    const res = { vstatus: 'SKIP', vfix: '', vehicles: vs.join(', '), vbad: [], vunk: [] };
+    if (!total || !vs.length) return res;
+    for (const v of vs) {
+      const ts = map[norm(v)];
+      if (!ts) res.vunk.push(v); else if (!ts.some(t => norm(t) === norm(tehsil))) res.vbad.push(v + ' \u2192 ' + ts.join(' / '));
+    }
+    res.vstatus = res.vbad.length ? 'WRONG' : res.vunk.length ? 'NOTLIST' : 'OK';
+    res.vfix = res.vbad.join('; ');
+    return res;
+  };
+  return { check, total };
+}
+
+function analyse(rows) {
+  const C = CFG.columns, O = CFG.outputColumns, head = rows[0].map(h => h.trim());
+  const ix = n => head.indexOf(n);
+  const iSub = ix(C.subtype), iCat = ix(C.category);
+  if (iSub < 0 || iCat < 0) throw new Error('Columns "' + C.subtype + '" and/or "' + C.category + '" were not found in this CSV.');
+  const find = buildLookup(), skipT = CFG.skipEmergencyTypes.map(norm), skipC = CFG.skipCategories.map(norm);
+  const get = (r, n) => { const i = ix(n); return i < 0 ? '' : (r[i] || '').trim(); };
+  const DR = Object.assign({ enabled: false, fateColumn: 'Fate Of Patient', fateWords: ['dead', 'expired'], category: 'Life Threatening', statusColumn: 'Emergency Status', ignoreStatus: ['discarded'] }, CFG.deadRule || {});
+  const isDead = r => DR.enabled && (f => DR.fateWords.some(w => f.includes(String(w).toLowerCase())))(get(r, DR.fateColumn).toLowerCase()) &&
+    !DR.ignoreStatus.map(s => String(s).toLowerCase()).includes(get(r, DR.statusColumn).toLowerCase());
+  const out = [], VCk = buildVehicles(), VCol = ((window.VEHICLE_CONFIG || {}).columns || {}).vehicle || 'Vehicle Reg No';
+  for (const r of rows.slice(1)) {
+    const sub = (r[iSub] || '').trim(), cat = (r[iCat] || '').trim();
+    let status, correct = '';
+    if (skipT.includes(norm(get(r, C.type))) || skipC.includes(norm(cat))) status = 'SKIP';
+    else if (isDead(r)) {
+      if (norm(cat) === norm(DR.category)) status = 'OK'; else { status = 'WRONG'; correct = DR.category; }
+    }
+    else {
+      const hit = find(norm(sub));
+      if (!hit) status = 'NOTLIST';
+      else if (hit.cats.map(norm).includes(norm(cat))) status = 'OK';
+      else { status = 'WRONG'; correct = hit.cats.join(' / '); }
+    }
+    const tehsil = get(r, C.tehsil);
+    out.push({ r, sub, cat, status, correct, id: get(r, C.id), type: get(r, C.type), agent: get(r, C.agent),
+      agentId: get(r, C.agentId), tehsil, recv: get(r, C.received), ...VCk.check(get(r, VCol), tehsil) });
+  }
+  return { head, out, O, VO: VOUT(), vTotal: VCk.total, reports: runTripReports(rows) };
+}
+
+// CORE END
+
+const LABEL = { OK: 'Correct', WRONG: 'Wrong', NOTLIST: 'Not in list', SKIP: 'Skipped (PTS)' };
+const VLABEL = { OK: 'Correct', WRONG: 'Wrong tehsil', NOTLIST: 'Not in list', SKIP: 'Not checked' };
+const COL = { OK: 'var(--ok)', WRONG: 'var(--bad)', NOTLIST: 'var(--warn)', SKIP: 'var(--mu)' };
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+let D = null, filter = 'ALL', vf = 'ALL', agentF = '', sortK = null, sortDir = 1;
+const akey = x => x.agent + '|' + x.agentId;
+
+function toCSV(items) {
+  const { head, O, VO } = D, q = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+  const lines = [[...head, O.status, O.correct, VO.status, VO.correct].map(q).join(',')];
+  for (const x of items) lines.push([...head.map((_, i) => x.r[i] || ''), LABEL[x.status], x.correct, VLABEL[x.vstatus], x.vfix].map(q).join(','));
+  return '\ufeff' + lines.join('\r\n');
+}
+function download(name, text) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text], { type: 'text/csv;charset=utf-8' }));
+  a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+function tally(items, key) {
+  const m = {}; items.forEach(x => { const k = key(x); m[k] = (m[k] || 0) + 1; });
+  return Object.entries(m).sort((a, b) => b[1] - a[1]);
+}
+const rowsHTML = l => l.length ? l.map(([k, v]) => `<tr><td>${esc(k)}</td><td>${v}</td></tr>`).join('') : '<tr><td class="mu">None</td></tr>';
+const statCard = (attr, key, label, v, on, c) => `<div class="card stat ${on ? 'on' : ''}" data-${attr}="${key}" style="--c:${c}"><b>${v}</b><span>${label}</span></div>`;
+
+function render() {
+  const { out } = D, cn = s => out.filter(x => x.status === s).length, vn = s => out.filter(x => x.vstatus === s).length;
+  const checked = out.length - cn('SKIP'), pct = checked ? Math.round(cn('OK') / checked * 1000) / 10 : 0;
+  $('stats').innerHTML = statCard('f', 'ALL', 'Total trips', out.length, filter === 'ALL', 'var(--ac)') +
+    ['OK', 'WRONG', 'NOTLIST', 'SKIP'].map(s => statCard('f', s, LABEL[s], cn(s), filter === s, COL[s])).join('');
+  $('vstats').innerHTML = statCard('v', 'ALL', 'Total trips', out.length, vf === 'ALL', 'var(--ac)') +
+    ['OK', 'WRONG', 'NOTLIST', 'SKIP'].map(s => statCard('v', s, VLABEL[s], vn(s), vf === s, COL[s])).join('');
+  $('vnote').innerHTML = D.vTotal ? '' : '<div class="note">No vehicles added yet. Add them to <b>vehicles-config.js</b> to enable the vehicle and tehsil check.</div>';
+  $('accTxt').textContent = pct + '% correct (' + cn('OK') + ' of ' + checked + ' checked)';
+  $('meter').innerHTML = ['OK', 'NOTLIST', 'WRONG'].map(s => `<div style="width:${checked ? cn(s) / checked * 100 : 0}%;background:${COL[s]}"></div>`).join('');
+
+  const wr = out.filter(x => x.status === 'WRONG');
+  $('agents').innerHTML = (t => t.length ? t.map(([k, v]) => `<tr><td><a class="lnk" data-agent="${esc(k)}">${esc(k.replace(/\|$/, '').replace('|', ' ('))}${k.endsWith('|') ? '' : ')'}</a></td><td>${v}</td></tr>`).join('') : '<tr><td class="mu">None</td></tr>')
+    (tally(out.filter(x => curTab === 'vehicle' ? x.vstatus === 'WRONG' : x.status === 'WRONG'), akey).slice(0, 10));   // Wrong Category tab counts category mistakes only, Vehicle Check tab counts vehicle mistakes only
+  $('pairs').innerHTML = rowsHTML(tally(wr, x => x.sub + ': ' + x.cat + ' \u2192 ' + x.correct).slice(0, 10));
+  $('unmapped').innerHTML = rowsHTML(tally(out.filter(x => x.status === 'NOTLIST'), x => x.sub || '(empty)'));
+  $('vwrong').innerHTML = rowsHTML(tally(out.flatMap(x => x.vbad), x => x).slice(0, 15));
+  $('vunk').innerHTML = rowsHTML(tally(out.flatMap(x => x.vunk), x => x).slice(0, 15));
+
+  const term = $('q').value.trim().toLowerCase(), teh = $('teh').value;
+  const act = [];
+  if (agentF) act.push(['agent', 'Agent: ' + agentF.replace('|', ' ')]);
+  if (filter !== 'ALL') act.push(['f', 'Category: ' + LABEL[filter]]);
+  if (vf !== 'ALL') act.push(['v', 'Vehicle: ' + VLABEL[vf]]);
+  $('act').innerHTML = act.map(([k, l]) => `<span class="pill" data-clear="${k}">${esc(l)} \u2715</span>`).join('') + (act.length ? '<span class="mu">Click a tag to remove the filter</span>' : '');
+  let list = out.filter(x => (filter === 'ALL' || x.status === filter) && (vf === 'ALL' || x.vstatus === vf) && (!agentF || akey(x) === agentF) && (!teh || x.tehsil === teh) &&
+    (!term || [x.id, x.sub, x.cat, x.agent, x.agentId, x.tehsil, x.correct, x.vehicles, x.vfix].join(' ').toLowerCase().includes(term)));
+  if (sortK) list = [...list].sort((a, b) => String(a[sortK]).localeCompare(String(b[sortK]), undefined, { numeric: true }) * sortDir);
+  const H = [['id', 'EC No'], ['tehsil', 'Tehsil'], ['sub', 'Subtype'], ['cat', 'Selected category'], ['correct', 'Correct category'], ['status', 'Category result'],
+    ['vehicles', 'Vehicle'], ['vstatus', 'Vehicle result'], ['vfix', 'Correct tehsil (vehicle)'], ['agent', 'Agent'], ['recv', 'Call received']];
+  $('tbl').innerHTML = '<thead><tr><th>#</th>' + H.map(([k, l]) => `<th data-k="${k}">${l}${sortK === k ? (sortDir > 0 ? ' \u25B2' : ' \u25BC') : ''}</th>`).join('') + '</tr></thead><tbody>' +
+    list.map((x, i) => `<tr class="${x.status === 'WRONG' || x.vstatus === 'WRONG' ? 'WRONG' : ''}"><td class="mu">${i + 1}</td><td>${ecHTML(x.id)}</td><td>${esc(x.tehsil)}</td><td>${esc(x.sub)}</td><td>${esc(x.cat)}</td>
+    <td class="fix">${esc(x.correct)}</td><td><span class="tag ${x.status}">${LABEL[x.status]}</span></td>
+    <td>${esc(x.vehicles)}</td><td><span class="tag ${x.vstatus}">${VLABEL[x.vstatus]}</span></td><td class="fix">${esc(x.vfix)}</td>
+    <td><a class="lnk" data-agent="${esc(akey(x))}">${esc(x.agent)}</a> <span class="mu">${esc(x.agentId)}</span></td><td class="mu">${esc(x.recv)}</td></tr>`).join('') +
+    (list.length ? '' : '<tr><td colspan="12" class="mu">No matching records.</td></tr>') + '</tbody>';
+}
+
+const REPS = Object.entries(REPORTS).map(([k, r]) => [k, r.label]);   // tabs come from the report files that are loaded
+const X = {};
+const ALLREP = () => Object.assign({}, D ? D.reports : {}, X);
+let curRep = REPS.length ? REPS[0][0] : '';
+const BD = 'border:1px solid #000;text-align:center;vertical-align:middle;font-family:Calibri,Arial;';
+const EC_RE = /^(ec|emergency)\s*(no|number)\.?$/i;
+const ecHTML = v => String(v || '').trim() ? `<span class="ec">${esc(v)}<span class="cp" data-copy="${esc(v)}" title="Copy EC No">\u{1F4CB}</span></span>` : '';
+const cellHTML = (c, ec) => `<td${c.cs ? ` colspan="${c.cs}"` : ''}${c.rs ? ` rowspan="${c.rs}"` : ''} style="${BD}${c.s}">${c.rot ? `<span class="rot">${esc(c.v)}</span>` : ec ? ecHTML(c.v) : esc(c.v)}</td>`;
+const sheetHTML = (sp, ui) => { let ei = -1; return `<table class="xl" style="border-collapse:collapse"><colgroup>${sp.widths.map(w => `<col style="width:${w}px">`).join('')}</colgroup>${sp.rows.map(r => { const hi = r.findIndex(c => EC_RE.test(String(c.v).trim())); const isH = ui && ei < 0 && hi >= 0; if (isH) ei = hi; return '<tr>' + r.map((c, i) => cellHTML(c, ui && ei >= 0 && !isH && i === ei && !c.cs)).join('') + '</tr>'; }).join('')}</table>`; };
+function renderReport(k) {
+  curRep = k; const sp = ALLREP()[k];
+  $('bikeSum').innerHTML = sp.cards.map(([l, v], i) => `<div class="card s2" style="--c:${i ? 'var(--ac)' : 'var(--bad)'}"><b>${v}</b><span>${esc(l)}</span></div>`).join('');
+  $('bikeWarn').innerHTML = sp.warn ? `<div class="note">${esc(sp.warn)}</div>` : '';
+  $('bikeRule').textContent = sp.rule;
+  $('bikeSheet').innerHTML = sheetHTML(sp, true);
+}
+const bikeXLS = sp => '<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="utf-8"></head><body>' + sheetHTML(sp) + '</body></html>';
+function repCSV(sp) { const q = v => '"' + String(v).replace(/"/g, '""') + '"'; return '\ufeff' + sp.csv.map(r => r.map(q).join(',')).join('\r\n'); }
+let curTab = '';
+function resetFilters() {
+  filter = 'ALL'; vf = 'ALL'; agentF = ''; sortK = null; sortDir = 1; $('q').value = ''; $('teh').value = '';
+  Object.values(REPORTS).forEach(r => { if (r.reset) r.reset(); });
+}
+function showTab(t) {
+  if (t !== curTab) { curTab = t; resetFilters(); }   // filters only stay while you remain in the same report
+  const ck = t === 'check' || t === 'vehicle';
+  $('tabCheck').hidden = !ck; $('tabBike').hidden = !t || ck || (REPORTS[t] || {}).own; $('tabJco').hidden = t !== 'jco';
+  document.querySelectorAll('.cat-only').forEach(e => e.hidden = t === 'vehicle'); document.querySelectorAll('.veh-only').forEach(e => e.hidden = t === 'check');
+  document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
+  if (t !== 'check' && REPORTS[t] && REPORTS[t].own) REPORTS[t].render(); else if (t && !ck) renderReport(t);
+  if (ck && D) render();
+}
+
+
+const FILEREP = Object.entries(REPORTS).filter(([, r]) => r.detect);   // reports that read their own CSV file
+const KINDS = Object.assign({ trips: 'Emergency trips' }, Object.fromEntries(FILEREP.map(([k, r]) => [k, r.fileLabel || r.label]))), FILES = {}, ASKQ = [];
+const HINT = Object.fromEntries(FILEREP.map(([k, r]) => [k, r.hint || r.label]));
+function renderFiles() {
+  $('files').innerHTML = Object.entries(KINDS).map(([k, l]) => FILES[k] ? `<span class="pill" style="background:var(--ok);color:#fff;cursor:default">\u2713 ${l}: ${esc(FILES[k])}</span>` : `<span class="mu">${l}: not uploaded</span>`).join(' ');
+}
+function renderAsk() {
+  const a = ASKQ[0];
+  $('ask').innerHTML = a ? `<div class="note">"${esc(a.name)}" was not recognised. What kind of file is it? ${Object.entries(KINDS).map(([k, l]) => `<button data-kind="${k}">${l}</button>`).join(' ')} <button data-kind="skip">Ignore</button></div>` : '';
+}
+function afterLoad(t) {
+  $('result').hidden = false; if (D) render();
+  const R = ALLREP();
+  REPS.forEach(([k, l]) => { const b = $('tab_' + k); if (REPORTS[k].alwaysOn) { b.disabled = false; return; } b.textContent = l + (R[k] ? ' (' + R[k].count + ')' : ''); b.disabled = !R[k]; b.title = R[k] ? '' : 'Upload the ' + (HINT[k] || 'Emergency trips') + ' CSV first'; });
+  $('tab_check').disabled = !D; $('tab_vehicle').disabled = !D; showTab(t);
+}
+function processFile(kind, rows, name) {
+  if (kind === 'trips') {
+    D = analyse(rows); Object.values(REPORTS).forEach(r => { if (r.onTrips) r.onTrips(rows, name); }); filter = 'ALL'; vf = 'ALL'; agentF = ''; sortK = null; $('q').value = '';
+    const t = [...new Set(D.out.map(x => x.tehsil).filter(Boolean))].sort();
+    $('teh').innerHTML = '<option value="">All tehsils</option>' + t.map(v => `<option>${esc(v)}</option>`).join('');
+  } else X[kind] = REPORTS[kind].run(rows);
+  FILES[kind] = name; renderFiles(); afterLoad(document.querySelector('.tabs button.on') ? document.querySelector('.tabs button.on').dataset.tab : '');
+}
+function load(file) {
+  $('msg').textContent = '';
+  const rd = new FileReader();
+  rd.onload = () => {
+    try {
+      const rows = parseCSV(rd.result); if (!rows.length) throw new Error(file.name + ' is empty.');
+      const kind = detectKind(rows);
+      if (kind) processFile(kind, rows, file.name); else { ASKQ.push({ name: file.name, rows }); renderAsk(); }
+    } catch (e) { $('msg').textContent = e.message; }
+  };
+  rd.readAsText(file, 'utf-8');
+}
+$('ask').onclick = e => {
+  const b = e.target.closest('[data-kind]'); if (!b) return; const a = ASKQ.shift();
+  try { if (b.dataset.kind !== 'skip') processFile(b.dataset.kind, a.rows, a.name); } catch (err) { $('msg').textContent = err.message; }
+  renderAsk();
+};
+renderFiles();
+document.addEventListener('click', e => {
+  const b = e.target.closest('.cp'); if (!b) return; e.stopPropagation();
+  const v = b.dataset.copy, ok = () => { b.textContent = '\u2714'; b.classList.add('done'); setTimeout(() => { b.textContent = '\u{1F4CB}'; b.classList.remove('done'); }, 1200); };
+  const fb = () => { const t = document.createElement('textarea'); t.value = v; document.body.appendChild(t); t.select(); try { document.execCommand('copy'); ok(); } catch (x) { } t.remove(); };
+  if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(v).then(ok, fb); else fb();
+}, true);
+
+if (CFG) $('cfgStamp').textContent = 'Category list loaded \u2192 ' + Object.entries(CFG.categories).map(([k, v]) => k + ': ' + v.length).join('  |  ');
+if (!CFG) $('msg').textContent = 'categories-config.js could not be loaded. Keep all files in the same folder.';
+$('pick').onclick = e => { e.stopPropagation(); $('file').click(); };
+$('lnk').onclick = e => e.stopPropagation();
+$('drop').onclick = () => $('file').click();
+$('file').onchange = e => [...e.target.files].forEach(load);
+['dragover', 'dragenter'].forEach(ev => $('drop').addEventListener(ev, e => { e.preventDefault(); $('drop').classList.add('over'); }));
+['dragleave', 'drop'].forEach(ev => $('drop').addEventListener(ev, e => { e.preventDefault(); $('drop').classList.remove('over'); }));
+$('drop').addEventListener('drop', e => [...e.dataTransfer.files].forEach(load));
+$('result').addEventListener('click', e => {
+  const t = e.target, tb = t.closest('[data-tab]');
+  if (tb) return showTab(tb.dataset.tab);
+  const ag = t.closest('[data-agent]'), st = t.closest('.stat'), cl = t.closest('[data-clear]'), th = t.closest('th[data-k]');
+  if (ag) { agentF = ag.dataset.agent; render(); $('act').scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+  else if (cl) { const k = cl.dataset.clear; if (k === 'agent') agentF = ''; else if (k === 'f') filter = 'ALL'; else vf = 'ALL'; render(); }
+  else if (st) { if (st.dataset.f !== undefined) filter = st.dataset.f; else vf = st.dataset.v; render(); }
+  else if (th) { const k = th.dataset.k; sortDir = sortK === k ? -sortDir : 1; sortK = k; render(); }
+});
+$('bikeXls').onclick = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([bikeXLS(ALLREP()[curRep])], { type: 'application/vnd.ms-excel' })); a.download = ALLREP()[curRep].name + '.xls'; a.click(); };
+$('bikeCsv').onclick = () => download(ALLREP()[curRep].name + '.csv', repCSV(ALLREP()[curRep]));
+$('bikePrint').onclick = () => window.print();
+$('q').oninput = render; $('teh').onchange = render;
+$('dlAll').onclick = () => download('emergency_trips_checked.csv', toCSV(D.out));
+$('dlBad').onclick = () => download('emergency_trips_WRONG_only.csv', toCSV(D.out.filter(x => x.status === 'WRONG' || x.vstatus === 'WRONG')));
+
+/* ---- build the report tabs from the loaded report files ---- */
+$('tabsBar').insertAdjacentHTML('beforeend', REPS.map(([k, l]) => `<button data-tab="${k}" id="tab_${k}">${esc(l)}</button>`).join(''));
+if (!REPORTS.jco) ['jcoBtns', 'slimMsg'].forEach(i => $(i).hidden = true);
+$('today').textContent = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
+Object.values(REPORTS).forEach(r => { if (r.init) r.init(); });
+['check', 'vehicle', ...REPS.filter(([k]) => !REPORTS[k].alwaysOn).map(([k]) => k)].forEach(k => $('tab_' + k).disabled = true);
+</script>
+</body>
+</html>
