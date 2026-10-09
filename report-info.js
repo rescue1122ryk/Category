@@ -52,6 +52,11 @@
     const H = ['Sr. No', 'Agent ID', 'Agent Name', 'Caller Name', 'Caller Number', 'Call Received at', 'Call Duration', 'Remarks'];
     const body = list.map((x, i) => [cl(i + 1, B), cl(x.id, B), cl(x.agent, B), cl(x.caller, B), cl(x.num, B), cl(x.when, B), cl(x.dur, B), cl(x.rem, B)]);
     const total = list.reduce((a, x) => a + secs(x.dur), 0);
+    /* hands the call remarks (by Emergency No) to the Tele CPR report, which reads them from window.CALL_REMARKS */
+    const store = {};
+    for (const r of rows.slice(1)) { const ec = get(r, 'Emergency No'), rem = get(r, 'Remarks'); if (ec && rem) (store[ec] = store[ec] || []).push(rem); }
+    window.CALL_REMARKS = store;
+    if (window.REPORTS.telecpr && window.REPORTS.telecpr.refresh) window.REPORTS.telecpr.refresh();
     return {
       name: 'Info Call Report ' + date, count: list.length,
       cards: [['Info calls', list.length], ['Agents', new Set(list.map(x => x.id || x.agent)).size], ['Total call time', nice(total)]],

@@ -20,6 +20,7 @@
 <script>document.write('<script src="report-fire.js?v=' + Date.now() + '"><\/script>');</script>
 <script>document.write('<script src="report-misc.js?v=' + Date.now() + '"><\/script>');</script>
 <script>document.write('<script src="report-info.js?v=' + Date.now() + '"><\/script>');</script>
+<script>document.write('<script src="report-telecpr.js?v=' + Date.now() + '"><\/script>');</script>
 <script>document.write('<script src="report-dead.js?v=' + Date.now() + '"><\/script>');</script>
 <script>document.write('<script src="report-jco.js?v=' + Date.now() + '"><\/script>');</script>
 <style>
@@ -112,6 +113,7 @@ button.p{background:linear-gradient(120deg,#0b7a43,#19a354);border:0;box-shadow:
 .tabs [data-tab=fire]::before{content:"\1F525"}
 .tabs [data-tab=misc]::before{content:"\1F9F0"}
 .tabs [data-tab=info]::before{content:"\1F4DE"}
+.tabs [data-tab=telecpr]::before{content:"\2764\FE0F"}
 .tabs [data-tab=longdist]::before{content:"\1F6E3\FE0F"}
 .tabs [data-tab=check]{border-top-color:#c2281c}.tabs [data-tab=vehicle]{border-top-color:#1f5eff}
 .stat,.s2{border-radius:16px}
@@ -194,7 +196,7 @@ footer{text-align:center;color:var(--mu);padding:18px;font-size:13px}
     </div>
   </div>
 </main>
-<footer>RESCUE 1122 RAHIM YAR KHAN &mdash; Reports Dashboard &bull; Data stays on your computer<br><small id="cfgStamp"></small><br><small>Page version: 09-10-2026 (Info Call report)</small></footer>
+<footer>RESCUE 1122 RAHIM YAR KHAN &mdash; Reports Dashboard &bull; Data stays on your computer<br><small id="cfgStamp"></small><br><small>Page version: 09-10-2026 (Tele CPR report)</small></footer>
 
 <script>
 // CORE START
@@ -368,7 +370,7 @@ const BD = 'border:1px solid #000;text-align:center;vertical-align:middle;font-f
 const EC_RE = /^(ec|emergency)\s*(no|number)\.?$/i;
 const ecHTML = v => String(v || '').trim() ? `<span class="ec">${esc(v)}<span class="cp" data-copy="${esc(v)}" title="Copy EC No">\u{1F4CB}</span></span>` : '';
 const cellHTML = (c, ec) => `<td${c.cs ? ` colspan="${c.cs}"` : ''}${c.rs ? ` rowspan="${c.rs}"` : ''} style="${BD}${c.s}">${c.h ? c.h : c.rot ? `<span class="rot">${esc(c.v)}</span>` : ec ? ecHTML(c.v) : esc(c.v)}</td>`;
-const sheetHTML = (sp, ui) => { let ei = -1; return `<table class="xl" style="border-collapse:collapse"><colgroup>${sp.widths.map(w => `<col style="width:${w}px">`).join('')}</colgroup>${sp.rows.map(r => { const hi = r.findIndex(c => EC_RE.test(String(c.v).trim())); const isH = ui && ei < 0 && hi >= 0; if (isH) ei = hi; return '<tr>' + r.map((c, i) => cellHTML(c, ui && ei >= 0 && !isH && i === ei && !c.cs)).join('') + '</tr>'; }).join('')}</table>`; };
+const sheetHTML = (sp, ui) => { let ei = -1; const busy = []; return   /* busy = columns still covered by a merged (rowspan) cell from a row above, so the EC No column is found correctly */ `<table class="xl" style="border-collapse:collapse"><colgroup>${sp.widths.map(w => `<col style="width:${w}px">`).join('')}</colgroup>${sp.rows.map(r => { let col = 0; const pos = r.map(c => { while (busy[col] > 0) col++; const p = col; col += c.cs || 1; return p; }); busy.forEach((b, k) => { if (b > 0) busy[k] = b - 1; }); r.forEach((c, i) => { if (c.rs > 1) for (let k = 0; k < (c.cs || 1); k++) busy[pos[i] + k] = c.rs - 1; }); const hi = r.findIndex(c => EC_RE.test(String(c.v).trim())); const isH = ui && ei < 0 && hi >= 0; if (isH) ei = pos[hi]; return '<tr>' + r.map((c, i) => cellHTML(c, ui && ei >= 0 && !isH && pos[i] === ei && !c.cs)).join('') + '</tr>'; }).join('')}</table>`; };
 function renderReport(k) {
   curRep = k; const sp = ALLREP()[k];
   $('bikeSum').innerHTML = sp.cards.map(([l, v], i) => `<div class="card s2" style="--c:${i ? 'var(--ac)' : 'var(--bad)'}"><b>${v}</b><span>${esc(l)}</span></div>`).join('');
