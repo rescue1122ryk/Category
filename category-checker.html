@@ -188,7 +188,7 @@ footer{text-align:center;color:var(--mu);padding:18px;font-size:13px}
     </div>
   </div>
 </main>
-<footer>RESCUE 1122 RAHIM YAR KHAN &mdash; Reports Dashboard &bull; Data stays on your computer<br><small id="cfgStamp"></small><br><small>Page version: 09-10-2026 (Long Distance report)</small></footer>
+<footer>RESCUE 1122 RAHIM YAR KHAN &mdash; Reports Dashboard &bull; Data stays on your computer<br><small id="cfgStamp"></small><br><small>Page version: 09-10-2026 (Dead report layout)</small></footer>
 
 <script>
 // CORE START
@@ -361,7 +361,7 @@ let curRep = REPS.length ? REPS[0][0] : '';
 const BD = 'border:1px solid #000;text-align:center;vertical-align:middle;font-family:Calibri,Arial;';
 const EC_RE = /^(ec|emergency)\s*(no|number)\.?$/i;
 const ecHTML = v => String(v || '').trim() ? `<span class="ec">${esc(v)}<span class="cp" data-copy="${esc(v)}" title="Copy EC No">\u{1F4CB}</span></span>` : '';
-const cellHTML = (c, ec) => `<td${c.cs ? ` colspan="${c.cs}"` : ''}${c.rs ? ` rowspan="${c.rs}"` : ''} style="${BD}${c.s}">${c.rot ? `<span class="rot">${esc(c.v)}</span>` : ec ? ecHTML(c.v) : esc(c.v)}</td>`;
+const cellHTML = (c, ec) => `<td${c.cs ? ` colspan="${c.cs}"` : ''}${c.rs ? ` rowspan="${c.rs}"` : ''} style="${BD}${c.s}">${c.h ? c.h : c.rot ? `<span class="rot">${esc(c.v)}</span>` : ec ? ecHTML(c.v) : esc(c.v)}</td>`;
 const sheetHTML = (sp, ui) => { let ei = -1; return `<table class="xl" style="border-collapse:collapse"><colgroup>${sp.widths.map(w => `<col style="width:${w}px">`).join('')}</colgroup>${sp.rows.map(r => { const hi = r.findIndex(c => EC_RE.test(String(c.v).trim())); const isH = ui && ei < 0 && hi >= 0; if (isH) ei = hi; return '<tr>' + r.map((c, i) => cellHTML(c, ui && ei >= 0 && !isH && i === ei && !c.cs)).join('') + '</tr>'; }).join('')}</table>`; };
 function renderReport(k) {
   curRep = k; const sp = ALLREP()[k];
