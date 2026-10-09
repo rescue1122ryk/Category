@@ -75,13 +75,13 @@ window.CATEGORY_CONFIG = {
       "Animal Hit",
       "Scorpion Bite / Other Animal / Insect Bite",
       "Sports Injury",
-      "Snake Emergency"            // crossed out in Cat-II and handwritten under Cat-III on the sheet
+      "Snake Emergency",            // crossed out in Cat-II and handwritten under Cat-III on the sheet
+      "Epilepsy",
     ],
 
     "Non-emergency": [             // CATEGORY-IV
       "Drug Addiction",
       "Chronic Illness",
-      "Epilepsy",
       "Backache",
       "Joints Pain/Muscular Pain",
       "Minor Burn Case",
