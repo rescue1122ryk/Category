@@ -12,6 +12,7 @@
 <script>document.write('<script src="report-bike.js?v=' + Date.now() + '"><\/script>');</script>
 <script>document.write('<script src="report-delivery.js?v=' + Date.now() + '"><\/script>');</script>
 <script>document.write('<script src="report-long.js?v=' + Date.now() + '"><\/script>');</script>
+<script>document.write('<script src="report-longdist.js?v=' + Date.now() + '"><\/script>');</script>
 <script>document.write('<script src="report-staff.js?v=' + Date.now() + '"><\/script>');</script>
 <script>document.write('<script src="report-pin.js?v=' + Date.now() + '"><\/script>');</script>
 <script>document.write('<script src="report-late.js?v=' + Date.now() + '"><\/script>');</script>
@@ -104,6 +105,8 @@ button.p{background:linear-gradient(120deg,#0b7a43,#19a354);border:0;box-shadow:
 .tabs [data-tab=pin]::before{content:"\1F4CD"}.tabs [data-tab=late]::before{content:"\23F0"}.tabs [data-tab=crime]::before{content:"\1F6A8"}
 .tabs [data-tab=dead]::before{content:"\1F54A\FE0F"}.tabs [data-tab=jco]::before{content:"\1F4CA"}
 .tabs [data-tab=catcheck]::before{content:"\1F50E"}.tabs [data-tab=catcheck]{border-top-color:#7a3fc2}
+.tabs button small{font-size:12px;font-weight:600;color:var(--mu);margin-top:-3px}.tabs button.on small{color:#d7f5e1}
+.tabs [data-tab=longdist]::before{content:"\1F6E3\FE0F"}
 .tabs [data-tab=check]{border-top-color:#c2281c}.tabs [data-tab=vehicle]{border-top-color:#1f5eff}
 .stat,.s2{border-radius:16px}
 footer{text-align:center;color:var(--mu);padding:18px;font-size:13px}
@@ -185,7 +188,7 @@ footer{text-align:center;color:var(--mu);padding:18px;font-size:13px}
     </div>
   </div>
 </main>
-<footer>RESCUE 1122 RAHIM YAR KHAN &mdash; Reports Dashboard &bull; Data stays on your computer<br><small id="cfgStamp"></small><br><small>Page version: 09-10-2026 (Category Checker phone view)</small></footer>
+<footer>RESCUE 1122 RAHIM YAR KHAN &mdash; Reports Dashboard &bull; Data stays on your computer<br><small id="cfgStamp"></small><br><small>Page version: 09-10-2026 (Long Distance report)</small></footer>
 
 <script>
 // CORE START
@@ -353,6 +356,7 @@ function render() {
 const REPS = Object.entries(REPORTS).map(([k, r]) => [k, r.label]);   // tabs come from the report files that are loaded
 const X = {};
 const ALLREP = () => Object.assign({}, D ? D.reports : {}, X);
+const tabLabel = (k, l, n) => esc(l) + (n == null ? '' : ' (' + n + ')') + (REPORTS[k].sub ? `<small>${esc(REPORTS[k].sub)}</small>` : '');   // small second line under a tab name (sub in the report file)
 let curRep = REPS.length ? REPS[0][0] : '';
 const BD = 'border:1px solid #000;text-align:center;vertical-align:middle;font-family:Calibri,Arial;';
 const EC_RE = /^(ec|emergency)\s*(no|number)\.?$/i;
@@ -399,7 +403,7 @@ function renderAsk() {
 function afterLoad(t) {
   $('result').hidden = false; if (D) render();
   const R = ALLREP();
-  REPS.forEach(([k, l]) => { const b = $('tab_' + k); if (REPORTS[k].alwaysOn) { b.disabled = false; return; } b.textContent = l + (R[k] ? ' (' + R[k].count + ')' : ''); b.disabled = !R[k]; b.title = R[k] ? '' : 'Upload the ' + (HINT[k] || 'Emergency trips') + ' CSV first'; });
+  REPS.forEach(([k, l]) => { const b = $('tab_' + k); if (REPORTS[k].alwaysOn) { b.disabled = false; return; } b.innerHTML = tabLabel(k, l, R[k] ? R[k].count : null); b.disabled = !R[k]; b.title = R[k] ? '' : 'Upload the ' + (HINT[k] || 'Emergency trips') + ' CSV first'; });
   $('tab_check').disabled = !D; $('tab_vehicle').disabled = !D; showTab(t);
 }
 function processFile(kind, rows, name) {
@@ -461,7 +465,7 @@ $('dlAll').onclick = () => download('emergency_trips_checked.csv', toCSV(D.out))
 $('dlBad').onclick = () => download('emergency_trips_WRONG_only.csv', toCSV(D.out.filter(x => x.status === 'WRONG' || x.vstatus === 'WRONG')));
 
 /* ---- build the report tabs from the loaded report files ---- */
-$('tabsBar').insertAdjacentHTML('beforeend', REPS.map(([k, l]) => `<button data-tab="${k}" id="tab_${k}">${esc(l)}</button>`).join(''));
+$('tabsBar').insertAdjacentHTML('beforeend', REPS.map(([k, l]) => `<button data-tab="${k}" id="tab_${k}">${tabLabel(k, l)}</button>`).join(''));
 if (!REPORTS.jco) ['jcoBtns', 'slimMsg'].forEach(i => $(i).hidden = true);
 $('today').textContent = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
 Object.values(REPORTS).forEach(r => { if (r.init) r.init(); });

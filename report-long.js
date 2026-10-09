@@ -52,5 +52,5 @@
     };
   }
 
-  window.REPORTS.long = { label: 'Long Duration', input: 'trips', run: longDuration };
+  window.REPORTS.long = { label: 'Long Duration', sub: '(Above 2 Hours)', input: 'trips', run: longDuration };
 })();
