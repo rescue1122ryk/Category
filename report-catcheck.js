@@ -80,11 +80,20 @@
   }
 
   function render() {
-    const names = new Set(); Object.values(CFG.categories).forEach(l => l.forEach(x => names.add(x))); Object.keys(CFG.aliases || {}).forEach(x => names.add(x));
-    $('cc_list').innerHTML = [...names].sort().map(x => `<option value="${esc(x)}">`).join('');
     $('cc_to').innerHTML = Object.keys(CFG.categories).map(c => `<option>${esc(c)}</option>`).join('');
     update();
   }
+  /* drop-down list: every known name when empty, names starting with the typed letters first */
+  const allNames = () => { const s = new Set(); Object.values(CFG.categories).forEach(l => l.forEach(x => s.add(x))); Object.keys(CFG.aliases || {}).forEach(x => s.add(x)); return [...s].sort((a, b) => a.localeCompare(b)); };
+  let act = -1;
+  function showDD() {
+    const q = $('cc_in').value.trim().toLowerCase(), all = allNames();
+    const list = q ? [...all.filter(x => x.toLowerCase().startsWith(q)), ...all.filter(x => !x.toLowerCase().startsWith(q) && x.toLowerCase().includes(q))] : all;
+    act = -1;
+    $('cc_dd').innerHTML = list.map(x => `<div data-v="${esc(x)}"><span>${esc(x)}</span><small>${esc((find(x) || { cats: [] }).cats.join(' / '))}</small></div>`).join('');
+    $('cc_dd').hidden = !list.length;
+  }
+  function pick(v) { $('cc_in').value = v; $('cc_dd').hidden = true; update(); }
   function update() {
     const v = $('cc_in').value.trim(), r = find(v), box = $('cc_res');
     $('cc_chg').hidden = !v; $('cc_msg').textContent = '';
@@ -99,17 +108,27 @@
   function init() {
     const st = document.createElement('style');
     st.textContent = '.cc-b{color:#fff;padding:5px 14px;border-radius:20px;font-weight:700}#cc_res{font-size:18px;margin:16px 0;line-height:2}.cc-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:10px}.cc-row input,.cc-row select{padding:9px 12px;border:1px solid var(--bd);border-radius:10px;background:var(--card);color:inherit;font-size:15px}';
+    st.textContent += '.cc-wrap{position:relative;flex:1;min-width:300px}.cc-dd{position:absolute;left:0;right:0;top:100%;margin-top:4px;max-height:320px;overflow:auto;background:var(--card);border:1px solid var(--bd);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.18);z-index:30}.cc-dd div{padding:9px 14px;cursor:pointer;display:flex;justify-content:space-between;gap:12px}.cc-dd div small{color:var(--mu)}.cc-dd div:hover,.cc-dd div.act{background:rgba(25,163,84,.15)}';
     document.head.appendChild(st);
     const d = document.createElement('div'); d.id = 'panel_catcheck'; d.className = 'ownpanel card'; d.hidden = true;
     d.innerHTML = `<h3>Category Checker</h3><p class="mu">Choose a disease / subtype to see which category it belongs to.</p>
-      <div class="cc-row"><input id="cc_in" list="cc_list" placeholder="e.g. Blood in Stool" style="min-width:300px;flex:1" autocomplete="off"><datalist id="cc_list"></datalist></div>
+      <div class="cc-row"><div class="cc-wrap"><input id="cc_in" placeholder="Click here or type the first letter, e.g. B" style="width:100%;box-sizing:border-box" autocomplete="off"><div id="cc_dd" class="cc-dd" hidden></div></div></div>
       <div id="cc_res"></div>
       <div id="cc_chg" hidden><hr style="border:0;border-top:1px solid var(--bd)"><b>Change its category permanently</b>
         <div class="cc-row"><select id="cc_to"></select><input id="cc_pw" type="password" placeholder="Password" autocomplete="off"><button class="p" id="cc_go">Change category</button></div>
         <div id="cc_msg" class="mu" style="margin-top:10px"></div></div>`;
     $('tabCheck').insertAdjacentElement('beforebegin', d);
     $('tab_check').after($('tab_catcheck'));
-    $('cc_in').addEventListener('input', update);
+    $('cc_in').addEventListener('input', () => { showDD(); update(); });
+    $('cc_in').addEventListener('focus', showDD); $('cc_in').addEventListener('click', showDD);
+    $('cc_in').addEventListener('blur', () => setTimeout(() => $('cc_dd').hidden = true, 150));
+    $('cc_dd').addEventListener('mousedown', e => { const r = e.target.closest('[data-v]'); if (r) { e.preventDefault(); pick(r.dataset.v); } });
+    $('cc_in').addEventListener('keydown', e => {
+      const rows = [...$('cc_dd').children];
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); if ($('cc_dd').hidden) showDD(); act = Math.max(0, Math.min(rows.length - 1, act + (e.key === 'ArrowDown' ? 1 : -1))); rows.forEach((r, i) => r.classList.toggle('act', i === act)); if (rows[act]) rows[act].scrollIntoView({ block: 'nearest' }); }
+      else if (e.key === 'Enter' && act >= 0 && rows[act]) { e.preventDefault(); pick(rows[act].dataset.v); }
+      else if (e.key === 'Escape') $('cc_dd').hidden = true;
+    });
     $('cc_go').onclick = async () => {
       const name = $('cc_in').value.trim(), cat = $('cc_to').value, msg = $('cc_msg');
       if (h53($('cc_pw').value) !== CONFIG.passwordHash) { msg.style.color = '#c2281c'; msg.textContent = 'Wrong password. Nothing was changed.'; return; }
