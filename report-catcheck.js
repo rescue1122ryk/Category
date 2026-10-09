@@ -111,7 +111,8 @@
     st.textContent += '.cc-wrap{position:relative;flex:1;min-width:300px}.cc-dd{position:absolute;left:0;right:0;top:100%;margin-top:4px;max-height:320px;overflow:auto;background:var(--card);border:1px solid var(--bd);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.18);z-index:30}.cc-dd div{padding:9px 14px;cursor:pointer;display:flex;justify-content:space-between;gap:12px}.cc-dd div small{color:var(--mu)}.cc-dd div:hover,.cc-dd div.act{background:rgba(25,163,84,.15)}';
     document.head.appendChild(st);
     const d = document.createElement('div'); d.id = 'panel_catcheck'; d.className = 'ownpanel card'; d.hidden = true;
-    d.innerHTML = `<h3>Category Checker</h3><p class="mu">Choose a disease / subtype to see which category it belongs to.</p>
+    d.innerHTML = `<button class="cc-back" id="cc_back">&larr; Back to reports</button>
+      <h3>Category Checker</h3><p class="mu">Choose a disease / subtype to see which category it belongs to.</p>
       <div class="cc-row"><div class="cc-wrap"><input id="cc_in" placeholder="Click here or type the first letter, e.g. B" style="width:100%;box-sizing:border-box" autocomplete="off"><div id="cc_dd" class="cc-dd" hidden></div></div></div>
       <div id="cc_res"></div>
       <div id="cc_chg" hidden><hr style="border:0;border-top:1px solid var(--bd)"><b>Change its category permanently</b>
@@ -120,6 +121,7 @@
     $('tabCheck').insertAdjacentElement('beforebegin', d);
     $('tab_check').after($('tab_catcheck'));
     $('cc_in').addEventListener('input', () => { showDD(); update(); });
+    $('cc_back').onclick = () => { showTab(''); window.scrollTo(0, 0); };
     $('cc_in').addEventListener('focus', showDD); $('cc_in').addEventListener('click', showDD);
     $('cc_in').addEventListener('blur', () => setTimeout(() => $('cc_dd').hidden = true, 150));
     $('cc_dd').addEventListener('mousedown', e => { const r = e.target.closest('[data-v]'); if (r) { e.preventDefault(); pick(r.dataset.v); } });

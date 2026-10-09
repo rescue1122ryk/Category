@@ -109,6 +109,12 @@ button.p{background:linear-gradient(120deg,#0b7a43,#19a354);border:0;box-shadow:
 footer{text-align:center;color:var(--mu);padding:18px;font-size:13px}
 .ec{white-space:nowrap}.cp{opacity:0;cursor:pointer;margin-left:6px;font-size:12px;font-style:normal;user-select:none;transition:.15s}
 .ec:hover .cp,.cp.done{opacity:1}.cp:hover{transform:scale(1.25)}@media print{.cp{display:none}}
+.cc-back{display:none}
+@media(max-width:700px){
+  .cc-focus .steps,.cc-focus #drop,.cc-focus #ask,.cc-focus .tabs,.cc-focus .ttl p,.cc-focus .chipd{display:none!important}
+  .cc-focus header{padding:10px 12px 12px}.cc-focus .logo{height:44px}.cc-focus .ttl h1{font-size:15px;letter-spacing:.5px}
+  .cc-focus .cc-back{display:inline-block;margin-bottom:12px}
+}
 </style>
 </head>
 <body>
@@ -179,7 +185,7 @@ footer{text-align:center;color:var(--mu);padding:18px;font-size:13px}
     </div>
   </div>
 </main>
-<footer>RESCUE 1122 RAHIM YAR KHAN &mdash; Reports Dashboard &bull; Data stays on your computer<br><small id="cfgStamp"></small><br><small>Page version: 09-10-2026 (Category Checker tab)</small></footer>
+<footer>RESCUE 1122 RAHIM YAR KHAN &mdash; Reports Dashboard &bull; Data stays on your computer<br><small id="cfgStamp"></small><br><small>Page version: 09-10-2026 (Category Checker phone view)</small></footer>
 
 <script>
 // CORE START
@@ -371,6 +377,7 @@ function showTab(t) {
   if (t !== curTab) { curTab = t; resetFilters(); }   // filters only stay while you remain in the same report
   const ck = t === 'check' || t === 'vehicle';
   document.querySelectorAll('.ownpanel').forEach(e => e.hidden = e.id !== 'panel_' + t);
+  document.body.classList.toggle('cc-focus', t === 'catcheck'); if (t === 'catcheck') window.scrollTo(0, 0);   // on a phone only the Category Checker stays on screen
   $('tabCheck').hidden = !ck; $('tabBike').hidden = !t || ck || (REPORTS[t] || {}).own; $('tabJco').hidden = t !== 'jco';
   document.querySelectorAll('.cat-only').forEach(e => e.hidden = t === 'vehicle'); document.querySelectorAll('.veh-only').forEach(e => e.hidden = t === 'check');
   document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
