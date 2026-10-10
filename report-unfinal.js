@@ -14,6 +14,8 @@
    ===================================================================== */
 (function () {
   /* ---- Settings ------------------------------------------------------
+       finishedStatuses: only trips whose Emergency Status is one of these are counted
+                       (trips that are not finished yet are left out of both lists)
        deadlineHours : hours allowed to finalize a trip, counted from the first
                        time found in countFrom ("End Time", else "Start Time", ...)
        finalized     : CSV column and the value that means "finalized"
@@ -31,6 +33,7 @@
   const CONFIG = {
     title:         "Unfinalized Report",
     deadlineHours: 12,
+    finishedStatuses: ["Finished"],
     countFrom:     ["End Time", "Start Time", "Call Received at"],
     finalized:     { column: "Finalized", value: "Yes" },
     causeColumn:   "Cause Of Emergency",
@@ -70,7 +73,7 @@
     const R = CONFIG, { ix, get } = tripGetter(rows), now = new Date();
     const missing = [R.finalized.column, R.causeColumn].filter(h => ix(h) < 0);
     if (missing.length) throw new Error('columns not found in the trips CSV: ' + missing.join(', '));
-    const stop = new Set(R.stopWords), skip = (CFG.skipEmergencyTypes || []).map(norm), empty = new Set(R.emptyCause);
+    const fin = R.finishedStatuses.map(s => s.toLowerCase()), stop = new Set(R.stopWords), skip = (CFG.skipEmergencyTypes || []).map(norm), empty = new Set(R.emptyCause);
     const eq = {}; for (const k in R.equivalents) eq[norm(k)] = R.equivalents[k];
     const same = (sub, cause) => {
       const a = letters(sub), b = letters(cause); if (!a || !b) return false;
@@ -83,6 +86,7 @@
     const trips = new Map();
     for (const r of rows.slice(1)) {
       const ec = get(r, '@id'); if (!ec || skip.includes(norm(get(r, CFG.columns.type)))) continue;
+      if (!fin.includes(get(r, 'Emergency Status').toLowerCase())) continue;   // not finished yet: not counted
       if (!trips.has(ec)) trips.set(ec, { r, unfin: false, bad: null });
       const t = trips.get(ec);
       if (get(r, R.finalized.column).toLowerCase() !== R.finalized.value.toLowerCase()) t.unfin = true;
@@ -103,7 +107,7 @@
     const B = [...trips.entries()].filter(([, t]) => t.bad).map(([ec, t]) => ({ ec, t }));
     const over = A.filter(x => x.d && x.el >= dl).length;
 
-    const n = 10, H = ['Sr #', 'EC No', 'Tehsil', 'Agent', 'Emergency Subtype', 'Cause Of Emergency', 'Finalized', 'Trip End Time', 'Time Passed', 'Remarks'];
+    const n = 11, H = ['Sr #', 'EC No', 'Tehsil', 'Vehicle Call Sign', 'Agent', 'Emergency Subtype', 'Cause Of Emergency', 'Finalized', 'Trip End Time', 'Time Passed', 'Remarks'];
     const hd = H.map(h => cl(h, 'font-weight:bold;font-size:9pt;background:' + GREY + ';height:34px;', { cs: 1 }));
     const sec = txt => [cl(txt, 'font-weight:bold;font-size:11pt;text-align:left;padding:6px 10px;background:#e7e6e6;height:30px;', { cs: n })];
     const csv = [['List', ...H]], sheet = [];
@@ -113,8 +117,8 @@
       const r = x.t.r, late = x.d && x.el >= dl, left = dl - x.el;
       const rem = !x.d ? 'Time not found' : late ? 'DEADLINE PASSED - late by ' + hm(x.el - dl) : 'Within deadline - ' + hm(left) + ' left';
       const st = 'font-size:9pt;height:36px;background:' + (late || !x.d ? RED : YEL) + ';';
-      const vals = [i + 1, x.ec, get(r, 'Tehsil Name'), agent(r), get(r, CFG.columns.subtype), get(r, R.causeColumn), 'No', x.end, x.d ? hm(x.el) : '', rem];
-      sheet.push(vals.map((v, k) => cl(v, st + (k === 9 ? 'font-weight:bold;' : ''))));
+      const vals = [i + 1, x.ec, get(r, 'Tehsil Name'), get(r, 'Dispatched Vehicles'), agent(r), get(r, CFG.columns.subtype), get(r, R.causeColumn), 'No', x.end, x.d ? hm(x.el) : '', rem];
+      sheet.push(vals.map((v, k) => cl(v, st + (k === 10 ? 'font-weight:bold;' : ''))));
       csv.push(['Not finalized', ...vals.slice(1)]);
     });
     if (!A.length) sheet.push([cl('All trips are finalized.', 'height:30px;', { cs: n })]);
@@ -123,7 +127,7 @@
     sheet.push(sec('List 2 - Emergency Subtype and Cause Of Emergency do not match  (finalized trips included)'), hd.map(c => Object.assign({}, c)));
     B.forEach((x, i) => {
       const r = x.t.bad.r, st = 'font-size:9pt;height:36px;';
-      const vals = [i + 1, x.ec, get(r, 'Tehsil Name'), agent(r), get(r, CFG.columns.subtype), get(r, R.causeColumn), x.t.unfin ? 'No' : 'Yes', get(r, 'End Time'), '', x.t.bad.why];
+      const vals = [i + 1, x.ec, get(r, 'Tehsil Name'), get(r, 'Dispatched Vehicles'), agent(r), get(r, CFG.columns.subtype), get(r, R.causeColumn), x.t.unfin ? 'No' : 'Yes', get(r, 'End Time'), '', x.t.bad.why];
       sheet.push(vals.map(v => cl(v, st)));
       csv.push(['Subtype/Cause mismatch', ...vals.slice(1)]);
     });
@@ -134,9 +138,9 @@
     return {
       name: 'Unfinalized Report ' + date, count: A.length + B.length,
       cards: [['Not finalized', A.length], ['Deadline passed', over], ['Within deadline', A.length - over], ['Subtype / Cause mismatch', B.length]],
-      rule: 'Deadline ' + R.deadlineHours + ' hrs after trip end  |  Time passed counted up to ' + stamp + '  |  Mismatch listed even if finalized  |  PTS skipped',
+      rule: 'Deadline ' + R.deadlineHours + ' hrs after trip end  |  Time passed counted up to ' + stamp + '  |  Mismatch listed even if finalized  |  Only Finished trips are counted  |  PTS skipped',
       warn: '',
-      widths: [44, 66, 96, 170, 150, 230, 66, 150, 84, 230],
+      widths: [44, 66, 96, 130, 170, 150, 230, 66, 150, 84, 230],
       rows: [
         [cl(R.title, 'font-weight:bold;font-size:16pt;height:32px;', { cs: n })],
         [cl('Date: ' + date + '      Checked on: ' + stamp, 'font-weight:bold;font-size:11pt;height:26px;', { cs: n })],
