@@ -77,6 +77,7 @@ window.CATEGORY_CONFIG = {
       "Sports Injury",
       "Snake Emergency",            // crossed out in Cat-II and handwritten under Cat-III on the sheet
       "Epilepsy",
+      "Domestic Injuries",
     ],
 
     "Non-emergency": [             // CATEGORY-IV
@@ -119,7 +120,6 @@ window.CATEGORY_CONFIG = {
   ------------------------------------------------------------------ */
   aliases: {
     "Anxiety / Psychiatric Disorder":  "Anxiety",
-    "Domestic Injuries":               "Domestic Injury",
     "Animal/Bird Rescue":              "Animal Rescue",
     "Renal Disorders / Renal Colic":   "Renal Disorder",
     "Gynae Problem":                   "Gyne Problem",
