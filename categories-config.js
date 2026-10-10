@@ -76,7 +76,6 @@ window.CATEGORY_CONFIG = {
       "Scorpion Bite / Other Animal / Insect Bite",
       "Sports Injury",
       "Snake Emergency",            // crossed out in Cat-II and handwritten under Cat-III on the sheet
-      "Epilepsy",
       "Domestic Injuries",
     ],
 
@@ -91,7 +90,8 @@ window.CATEGORY_CONFIG = {
       "Mock Exercise",
       "Fallen Object",
       "Vehicle Extrication",
-      "General Weakness"
+      "General Weakness",
+      "Epilepsy",
     ]
   },
 
