@@ -8,6 +8,7 @@
 <script>document.write('<script src="categories-config.js?v=' + Date.now() + '"><\/script>');</script>
 <script>document.write('<script src="vehicles-config.js?v=' + Date.now() + '"><\/script>');</script>
 <script>document.write('<script src="report-helpers.js?v=' + Date.now() + '"><\/script>');</script>
+<script>document.write('<script src="report-xlsx.js?v=' + Date.now() + '"><\/script>');</script>
 <script>document.write('<script src="report-catcheck.js?v=' + Date.now() + '"><\/script>');</script>
 <script>document.write('<script src="report-bike.js?v=' + Date.now() + '"><\/script>');</script>
 <script>document.write('<script src="report-delivery.js?v=' + Date.now() + '"><\/script>');</script>
@@ -23,6 +24,7 @@
 <script>document.write('<script src="report-telecpr.js?v=' + Date.now() + '"><\/script>');</script>
 <script>document.write('<script src="report-dead.js?v=' + Date.now() + '"><\/script>');</script>
 <script>document.write('<script src="report-unfinal.js?v=' + Date.now() + '"><\/script>');</script>
+<script>document.write('<script src="report-pts.js?v=' + Date.now() + '"><\/script>');</script>
 <script>document.write('<script src="report-jco.js?v=' + Date.now() + '"><\/script>');</script>
 <style>
 :root{--bg:#f3f5f9;--card:#fff;--tx:#18202e;--mu:#6b7686;--bd:#e1e6ee;--ac:#1f5eff;--hd1:#0f2a5c;--hd2:#1f5eff;
@@ -128,6 +130,8 @@ footer{text-align:center;color:var(--mu);padding:18px;font-size:13px}
   .cc-focus header{padding:10px 12px 12px}.cc-focus .logo{height:44px}.cc-focus .ttl h1{font-size:15px;letter-spacing:.5px}
   .cc-focus .cc-back{display:inline-block;margin-bottom:12px}
 }
+.sheetname{font-weight:700;margin:18px 0 6px;color:var(--mu)}
+.tabs [data-tab=pts]::before{content:"\1F3E5"}
 </style>
 </head>
 <body>
@@ -145,12 +149,12 @@ footer{text-align:center;color:var(--mu);padding:18px;font-size:13px}
   </div>
 
   <div id="drop" class="card drop">
-    <p><b>Drop all your CSV files here</b> or <button class="p" id="pick">Choose files</button></p>
+    <p><b>Drop all your CSV / Excel (.xlsx) files here</b> or <button class="p" id="pick">Choose files</button></p>
     <p class="mu">Select several files at once. Each file is recognised by its columns.</p>
     <p class="mu">Emergency trips CSV: download it from the <a href="https://punjab.rescue1122.org/dashboard/report/detailed_emergency_statistics" target="_blank" rel="noopener" id="lnk">All-In-One Emergency Detailed Report</a></p>
     <p id="jcoBtns"><button id="openJco">Open JCO monthly report</button> <button id="slimBtn" title="Choose the full monthly CSV files. For each one a small CSV with only the JCO columns is downloaded.">Slim files for JCO</button></p>
     <p class="mu" id="slimMsg"></p>
-    <input type="file" id="file" accept=".csv,text/csv" multiple hidden>
+    <input type="file" id="file" accept=".csv,text/csv,.xlsx" multiple hidden>
     <div id="files" class="act" style="justify-content:center"></div>
   </div>
   <div id="ask"></div>
@@ -198,7 +202,7 @@ footer{text-align:center;color:var(--mu);padding:18px;font-size:13px}
     </div>
   </div>
 </main>
-<footer>RESCUE 1122 RAHIM YAR KHAN &mdash; Reports Dashboard &bull; Data stays on your computer<br><small id="cfgStamp"></small><br><small>Page version: 10-10-2026 (Unfinalized report)</small></footer>
+<footer>RESCUE 1122 RAHIM YAR KHAN &mdash; Reports Dashboard &bull; Data stays on your computer<br><small id="cfgStamp"></small><br><small>Page version: 15-10-2026 (PTS Report)</small></footer>
 
 <script>
 // CORE START
@@ -378,7 +382,8 @@ function renderReport(k) {
   $('bikeSum').innerHTML = sp.cards.map(([l, v], i) => `<div class="card s2" style="--c:${i ? 'var(--ac)' : 'var(--bad)'}"><b>${v}</b><span>${esc(l)}</span></div>`).join('');
   $('bikeWarn').innerHTML = sp.warn ? `<div class="note">${esc(sp.warn)}</div>` : '';
   $('bikeRule').textContent = sp.rule;
-  $('bikeSheet').innerHTML = sheetHTML(sp, true);
+  $('bikeSheet').innerHTML = sp.sheets ? sp.sheets.map((s, i) => `<div class="sheetname">Sheet ${i + 1}: ${esc(s.name)}</div>` + sheetHTML(s, true)).join('') : sheetHTML(sp, true);
+  $('bikeXls').textContent = sp.sheets ? 'Download Excel (.xlsx, ' + sp.sheets.length + ' sheets)' : 'Download Excel (.xls)'; $('bikeCsv').hidden = !!sp.sheets;
 }
 const bikeXLS = sp => '<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="utf-8"></head><body>' + sheetHTML(sp) + '</body></html>';
 function repCSV(sp) { const q = v => '"' + String(v).replace(/"/g, '""') + '"'; return '\ufeff' + sp.csv.map(r => r.map(q).join(',')).join('\r\n'); }
@@ -421,11 +426,21 @@ function processFile(kind, rows, name) {
     D = analyse(rows); Object.values(REPORTS).forEach(r => { if (r.onTrips) r.onTrips(rows, name); }); filter = 'ALL'; vf = 'ALL'; agentF = ''; sortK = null; $('q').value = '';
     const t = [...new Set(D.out.map(x => x.tehsil).filter(Boolean))].sort();
     $('teh').innerHTML = '<option value="">All tehsils</option>' + t.map(v => `<option>${esc(v)}</option>`).join('');
-  } else X[kind] = REPORTS[kind].run(rows);
-  FILES[kind] = name; renderFiles(); afterLoad(document.querySelector('.tabs button.on') ? document.querySelector('.tabs button.on').dataset.tab : '');
+  } else X[kind] = REPORTS[kind].run(rows, X[kind]);
+  FILES[kind] = REPORTS[kind] && REPORTS[kind].multi && FILES[kind] && FILES[kind] !== name && !FILES[kind].split(' + ').includes(name) ? FILES[kind] + ' + ' + name : name; renderFiles(); afterLoad(document.querySelector('.tabs button.on') ? document.querySelector('.tabs button.on').dataset.tab : '');
+}
+function loadRows(file, rows) {
+  if (!rows.length) throw new Error(file.name + ' is empty.');
+  const kind = detectKind(rows);
+  if (kind) processFile(kind, rows, file.name); else { ASKQ.push({ name: file.name, rows }); renderAsk(); }
 }
 function load(file) {
   $('msg').textContent = '';
+  if (/\.xlsx$/i.test(file.name)) {   // Excel files are opened by report-xlsx.js
+    if (!window.XLSX_IO) { $('msg').textContent = 'report-xlsx.js could not be loaded. Keep all files in the same folder.'; return; }
+    file.arrayBuffer().then(b => window.XLSX_IO.read(b)).then(rows => loadRows(file, rows)).catch(e => { $('msg').textContent = file.name + ': ' + e.message; });
+    return;
+  }
   const rd = new FileReader();
   rd.onload = () => {
     try {
@@ -467,7 +482,7 @@ $('result').addEventListener('click', e => {
   else if (st) { if (st.dataset.f !== undefined) filter = st.dataset.f; else vf = st.dataset.v; render(); }
   else if (th) { const k = th.dataset.k; sortDir = sortK === k ? -sortDir : 1; sortK = k; render(); }
 });
-$('bikeXls').onclick = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([bikeXLS(ALLREP()[curRep])], { type: 'application/vnd.ms-excel' })); a.download = ALLREP()[curRep].name + '.xls'; a.click(); };
+$('bikeXls').onclick = () => { const sp = ALLREP()[curRep]; if (sp.sheets) { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([window.XLSX_IO.write(sp.sheets)], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })); a.download = sp.name + '.xlsx'; a.click(); return; } const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([bikeXLS(ALLREP()[curRep])], { type: 'application/vnd.ms-excel' })); a.download = ALLREP()[curRep].name + '.xls'; a.click(); };
 $('bikeCsv').onclick = () => download(ALLREP()[curRep].name + '.csv', repCSV(ALLREP()[curRep]));
 $('bikePrint').onclick = () => window.print();
 $('q').oninput = render; $('teh').onchange = render;
