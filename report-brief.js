@@ -13,6 +13,7 @@
   const KINDNAME = { medical: 'Medical', rta: 'RTA', crime: 'Crime', bullet: 'Bullet_Injury' };
   const CAUSE = { medical: 'Medical?', rta: 'Road Traffic Crash', crime: 'Crime?', bullet: 'Bullet Injury?' };
   const items = [];            // every uploaded PDF
+  let lastDate = '';           // the letter date picked last, offered again on the next card
   let seq = 0;
 
   const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -27,13 +28,23 @@
     const out = [];
     for (let n = 1; n <= pdf.numPages; n++) {
       const tc = await (await pdf.getPage(n)).getTextContent();
-      const its = tc.items.filter(i => i.str !== '').map(i => ({ s: i.str, x: i.transform[4], y: i.transform[5], w: i.width }));
+      const its = tc.items.filter(i => i.str.trim() !== '').map(i => ({ s: i.str, x: i.transform[4], y: i.transform[5], w: i.width }));
       its.sort((a, b) => b.y - a.y || a.x - b.x);
       const lines = [];
       for (const it of its) { const L = lines.find(l => Math.abs(l.y - it.y) < 3); if (L) L.items.push(it); else lines.push({ y: it.y, items: [it] }); }
       lines.sort((a, b) => b.y - a.y);
+      lines.forEach(L => L.items.sort((a, b) => a.x - b.x));
+      /* a value that wraps (e.g. "Tehsil Head Quarter" / "Hospital Liaqatpur") continues on the next line, starting under its label: join it back */
+      for (let i = lines.length - 1; i > 0; i--) {
+        const L = lines[i], prev = lines[i - 1];
+        if (prev.y - L.y > 24 || L.items.some(it => /:\s*$/.test(it.s))) continue;
+        const labels = prev.items.map((it, k) => ({ it, k })).filter(o => /:\s*$/.test(o.it.s));
+        const col = labels.filter(o => Math.abs(o.it.x - L.items[0].x) <= 12).pop();
+        if (!col || !prev.items[col.k + 1]) continue;
+        prev.items[col.k + 1].s += ' ' + L.items.map(it => it.s.trim()).join(' ');
+        lines.splice(i, 1);
+      }
       for (const L of lines) {
-        L.items.sort((a, b) => a.x - b.x);
         let s = '', end = null;
         for (const it of L.items) {
           if (end !== null) { const gap = it.x - end; s += gap > 4 ? '   ' : (gap > 0.6 && !/\s$/.test(s) && !/^\s/.test(it.s) ? ' ' : ''); }
@@ -113,7 +124,7 @@
   const tidy1 = s => { s = String(s || '').trim(); return s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : ''; };
   function shifted(p) {
     const s = p.shifted;
-    if (s && s.toUpperCase() !== 'N/A') return /khan/i.test(s) ? s : s + ', Rahim Yar Khan';
+    if (s && s.toUpperCase() !== 'N/A') return /sheikh zayed/i.test(s) && !/khan/i.test(s) ? s + ', Rahim Yar Khan' : s;   // written exactly as in the PDF
     if (urduRefused(p.comments)) return 'No (Attendant refused to shift)';
     return 'No';
   }
@@ -150,6 +161,22 @@
   }
   function labelOf(doc, start) { const p = findPara(doc, start); return p ? /^\s*([^:\t]+)/.exec(paraText(p))[1].trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&') : start; }
 
+  /* diary number + date in the top-right box (all copies of the box) and the matching hidden lines in the body */
+  function setHeader(doc, diary, dateStr) {
+    const [y, m, dn] = dateStr.split('-').map(Number), yy = String(y).slice(-2);
+    const boxes = [...doc.getElementsByTagNameNS(W, 'txbxContent')].filter(b => /RYK\/DEO\/CRI\//.test(b.textContent));
+    const paras = boxes.flatMap(b => [...b.children].filter(e => e.localName === 'p')).concat(bodyParas(doc));
+    for (const p of paras) {
+      const rs = runsOf(p), tx = paraText(p);
+      rs.forEach(r => { const t = runText(r); if (/RESUCE/.test(t)) setRunText(doc, r, t.replace(/RESUCE/g, 'RESCUE')); });   // spelling slip that is inside the template
+      if (/RYK\/DEO\/CRI\/\d+\/\d+/.test(tx)) rs.forEach(r => { const t = runText(r); if (/RYK\/DEO\/CRI\/\d+\/\d+/.test(t)) setRunText(doc, r, t.replace(/(RYK\/DEO\/CRI\/)\d+\/\d+/, '$1' + diary + '/' + yy)); });
+      if (/^\s*\d{1,2}(st|nd|rd|th)\s+[A-Za-z]+,\s*\d{4}\.\s*$/.test(tx)) {
+        const s = rs.findIndex(r => /^(st|nd|rd|th)$/.test(runText(r)));
+        if (s > 0 && rs[s + 1]) { setRunText(doc, rs[s - 1], runText(rs[s - 1]).replace(/\d+/, String(dn))); setRunText(doc, rs[s], ordinal(dn)); setRunText(doc, rs[s + 1], ' ' + MONTHS[m - 1] + ', ' + y + '.'); }
+      }
+    }
+  }
+
   async function makeDocx(it) {
     const d = it.d, P = d.patients, kind = kindOf(d), multi = P.length > 1;
     const key = (kind === 'bullet' && multi) ? 'bullet' : multi ? 'crimeN' : kind === 'medical' ? 'medical' : kind === 'rta' ? 'rta' : 'crime1';
@@ -157,6 +184,7 @@
     const xml = await zip.file('word/document.xml').async('string');
     const doc = new DOMParser().parseFromString(xml, 'application/xml');
     const [yy, mo, dd] = d.callDate.split('/'), day = +dd, mon = +mo;
+    if (it.diary && it.date) setHeader(doc, it.diary, it.date);
     // sample-specific line in the Bullet template
     bodyParas(doc).filter(p => /^\s*\(Patients received from/i.test(paraText(p))).forEach(p => p.parentNode.removeChild(p));
     setValue(doc, 'Applicant Name', it.applicant || '____________________');
@@ -247,6 +275,8 @@
       ${miss.length ? `<div class="note">Not found in the PDF: ${esc(miss.join(', '))}. Check the Word file before using it.</div>` : ''}
       <table class="two" style="width:100%;margin-top:8px;border-collapse:collapse">${rows.map(([k, v]) => `<tr><td style="width:150px;color:var(--mu)">${k}</td><td style="text-align:left;font-weight:600">${esc(v)}</td></tr>`).join('')}</table>
       <div class="bar" style="margin-top:10px">
+        <label>Diary No. <input type="search" data-f="diary" value="${esc(it.diary)}" placeholder="e.g. 445" inputmode="numeric" style="min-width:80px;width:90px"></label>
+        <label>Letter date <input type="date" data-f="date" value="${esc(it.date)}" style="padding:7px 10px;border:1px solid var(--bd);border-radius:9px;background:var(--card);color:var(--tx);font:inherit"></label>
         <label>Applicant name <input type="search" data-f="applicant" value="${esc(it.applicant)}" placeholder="e.g. Abu Bakar Siddique S/o Muhammad Siddique" style="min-width:320px"></label>
         <label>Caller <select data-f="title"><option${it.title === 'Mr.' ? ' selected' : ''}>Mr.</option><option${it.title === 'Miss.' ? ' selected' : ''}>Miss.</option><option${it.title === 'Mrs.' ? ' selected' : ''}>Mrs.</option></select></label>
         <label>Distance (Km) <input type="search" data-f="distance" value="${esc(it.distance)}" style="min-width:70px;width:80px"></label>
@@ -259,8 +289,13 @@
   }
   function save(blob, name) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); }
   async function download(it) {
-    try { const r = await makeDocx(it); save(r.blob, r.name); $('briefMsg').textContent = ''; }
-    catch (e) { $('briefMsg').textContent = 'Could not build the Word file: ' + e.message; }
+    if (!it.diary || !it.date) {   // diary number and letter date are always asked, never guessed
+      $('briefMsg').textContent = 'EMDS-' + it.d.ec + ': enter the Diary No. and choose the letter date (calendar) first.';
+      const c = document.querySelector('[data-id="' + it.id + '"] [data-f="' + (it.diary ? 'date' : 'diary') + '"]'); if (c) { c.focus(); try { if (c.type === 'date') c.showPicker(); } catch (e) { } }
+      return false;
+    }
+    try { const r = await makeDocx(it); save(r.blob, r.name); $('briefMsg').textContent = ''; return true; }
+    catch (e) { $('briefMsg').textContent = 'Could not build the Word file: ' + e.message; return false; }
   }
 
   (window.REPORTS = window.REPORTS || {}).brief = {
@@ -268,20 +303,21 @@
     async addPdf(file) {
       const d = parse(await pdfText(await file.arrayBuffer()));
       const old = items.findIndex(x => x.d.ec === d.ec); if (old >= 0) items.splice(old, 1);   // same EC uploaded again replaces the old one
-      items.push({ id: ++seq, file: file.name, d, applicant: '', title: 'Mr.', distance: distanceDefault(d) });
+      items.push({ id: ++seq, file: file.name, d, applicant: '', title: 'Mr.', distance: distanceDefault(d), diary: '', date: lastDate });
       render();
     },
     init() {
       const host = document.getElementById('result'); if (!host) return;
       const pn = document.createElement('div'); pn.id = 'panel_brief'; pn.className = 'ownpanel'; pn.hidden = true;
-      pn.innerHTML = '<div class="bar"><b>Brief of the Incident</b><span class="mu">Upload the EMDS detail PDF. The matching Word letter is filled for you. The diary number box at the top right is not changed.</span><span style="flex:1"></span><button class="p" id="briefAll" hidden>Download all Word files</button></div><div id="briefMsg" style="color:var(--bad);font-weight:600"></div><div id="briefList"></div>';
+      pn.innerHTML = '<div class="bar"><b>Brief of the Incident</b><span class="mu">Upload the EMDS detail PDF. The matching Word letter is filled for you. Enter the Diary No. and pick the letter date for each letter; they go into the box at the top right.</span><span style="flex:1"></span><button class="p" id="briefAll" hidden>Download all Word files</button></div><div id="briefMsg" style="color:var(--bad);font-weight:600"></div><div id="briefList"></div>';
       host.appendChild(pn);
       pn.addEventListener('click', e => {
         const b = e.target.closest('[data-act]'); if (!b) return; const id = +b.closest('[data-id]').dataset.id, it = items.find(x => x.id === id);
         if (b.dataset.act === 'dl') download(it); else { items.splice(items.indexOf(it), 1); render(); }
       });
-      pn.addEventListener('input', e => { const f = e.target.dataset.f; if (!f) return; const it = items.find(x => x.id === +e.target.closest('[data-id]').dataset.id); if (it) it[f] = e.target.value.trim(); });
-      $('briefAll').onclick = async () => { for (const it of items) { await download(it); await new Promise(r => setTimeout(r, 600)); } };
+      pn.addEventListener('input', e => { const f = e.target.dataset.f; if (!f) return; const it = items.find(x => x.id === +e.target.closest('[data-id]').dataset.id); if (it) { it[f] = e.target.value.trim(); if (f === 'date') lastDate = it.date; } });
+      pn.addEventListener('click', e => { const dt = e.target.closest('input[type=date]'); if (dt) { try { dt.showPicker(); } catch (x) { } } });   // open the calendar on click
+      $('briefAll').onclick = async () => { for (const it of items) { if (!(await download(it))) break; await new Promise(r => setTimeout(r, 600)); } };
       render();
     },
     render() { render(); },
