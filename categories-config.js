@@ -34,6 +34,7 @@ window.CATEGORY_CONFIG = {
       "Delivery Case",
       "Gyne Problem",
       "Shock",
+       "Urinary Retention",
       "Domestic Injury",
       "Electric Shock",
       "Crime Case",
@@ -68,7 +69,7 @@ window.CATEGORY_CONFIG = {
       "Food Poisoning",
       "Headache",
       "High Fever",
-      "Urinary Retention",
+      
       "Vertigo/Dizziness",
       "Animal Rescue",
       "Hazmat",
