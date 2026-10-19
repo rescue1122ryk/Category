@@ -41,6 +41,7 @@ window.CATEGORY_CONFIG = {
       "Fire Case",
       "Fall",
       "Snake/Dog Bite",
+       "	Scorpion Bite/Other Animal/Insect Bite",
       "Work/Occupational Injury",
       "Manhole",
       "SOB/Respiratory Distress",
@@ -74,7 +75,7 @@ window.CATEGORY_CONFIG = {
       "Animal Rescue",
       "Hazmat",
       "Animal Hit",
-      "Scorpion Bite / Other Animal / Insect Bite",
+      
       "Sports Injury",
       "Snake Emergency",            // crossed out in Cat-II and handwritten under Cat-III on the sheet
       "Domestic Injuries",
