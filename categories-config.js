@@ -1,4 +1,3 @@
-```javascript
 /* =====================================================================
    categories-config.js — Standard Emergency Category list
    Open this file in Notepad / VS Code to change the rules.
@@ -159,4 +158,3 @@ window.CATEGORY_CONFIG = {
     correct: "Correct Category (Standard)"
   }
 };
-```
