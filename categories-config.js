@@ -20,7 +20,8 @@ window.CATEGORY_CONFIG = {
       // To use the normal list again, remove the "//" in front of the names:
       // "Cardiac Arrest",
       // "Unconscious",
-      // "Breathing Difficulty",
+      "Breathing Difficulty",
+      "SOB/Respiratory Distress",
       // "Severe Trauma",
       // "Severe Burn",
       // "Drowning Case"
@@ -44,8 +45,7 @@ window.CATEGORY_CONFIG = {
        "	Scorpion Bite/Other Animal/Insect Bite",
       "Work/Occupational Injury",
       "Manhole",
-      "SOB/Respiratory Distress",
-      "Deep Well",
+     "Deep Well",
       "Lift/Room Extrication",
       "Blood in Stool",
       "Blood in Vomit",
