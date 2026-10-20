@@ -273,13 +273,10 @@
       <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center"><b style="font-size:16px">EMDS-${esc(d.ec)} <span class="mu">${esc(it.file)}</span></b>
         <span><button class="p" data-act="dl">Download Word</button> <button data-act="rm">Remove</button></span></div>
       ${miss.length ? `<div class="note">Not found in the PDF: ${esc(miss.join(', '))}. Check the Word file before using it.</div>` : ''}
-      <div class="note" style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin-top:10px;font-size:15px;border:2px solid #e8b923">
-        <b>Fill before download:</b>
-        <label>Diary No. <input type="search" data-f="diary" value="${esc(it.diary)}" placeholder="e.g. 445" inputmode="numeric" style="min-width:110px;width:120px;font-size:16px"></label>
-        <label>Letter date (click to open calendar) <input type="date" data-f="date" value="${esc(it.date)}" style="padding:8px 10px;border:1px solid var(--bd);border-radius:9px;background:var(--card);color:var(--tx);font:inherit;font-size:16px"></label>
-      </div>
       <table class="two" style="width:100%;margin-top:8px;border-collapse:collapse">${rows.map(([k, v]) => `<tr><td style="width:150px;color:var(--mu)">${k}</td><td style="text-align:left;font-weight:600">${esc(v)}</td></tr>`).join('')}</table>
       <div class="bar" style="margin-top:10px">
+        <label>Diary No. <input type="search" data-f="diary" value="${esc(it.diary)}" placeholder="e.g. 445" inputmode="numeric" style="min-width:80px;width:90px"></label>
+        <label>Letter date <input type="date" data-f="date" value="${esc(it.date)}" style="padding:7px 10px;border:1px solid var(--bd);border-radius:9px;background:var(--card);color:var(--tx);font:inherit"></label>
         <label>Applicant name <input type="search" data-f="applicant" value="${esc(it.applicant)}" placeholder="e.g. Abu Bakar Siddique S/o Muhammad Siddique" style="min-width:320px"></label>
         <label>Caller <select data-f="title"><option${it.title === 'Mr.' ? ' selected' : ''}>Mr.</option><option${it.title === 'Miss.' ? ' selected' : ''}>Miss.</option><option${it.title === 'Mrs.' ? ' selected' : ''}>Mrs.</option></select></label>
         <label>Distance (Km) <input type="search" data-f="distance" value="${esc(it.distance)}" style="min-width:70px;width:80px"></label>
@@ -312,7 +309,7 @@
     init() {
       const host = document.getElementById('result'); if (!host) return;
       const pn = document.createElement('div'); pn.id = 'panel_brief'; pn.className = 'ownpanel'; pn.hidden = true;
-      pn.innerHTML = '<div class="bar"><b>Brief of the Incident</b> <small class="mu">(v2: diary no. + date)</small><span class="mu">Upload the EMDS detail PDF. The matching Word letter is filled for you. Enter the Diary No. and pick the letter date for each letter; they go into the box at the top right.</span><span style="flex:1"></span><button class="p" id="briefAll" hidden>Download all Word files</button></div><div id="briefMsg" style="color:var(--bad);font-weight:600"></div><div id="briefList"></div>';
+      pn.innerHTML = '<div class="bar"><b>Brief of the Incident</b><span class="mu">Upload the EMDS detail PDF. The matching Word letter is filled for you. Enter the Diary No. and pick the letter date for each letter; they go into the box at the top right.</span><span style="flex:1"></span><button class="p" id="briefAll" hidden>Download all Word files</button></div><div id="briefMsg" style="color:var(--bad);font-weight:600"></div><div id="briefList"></div>';
       host.appendChild(pn);
       pn.addEventListener('click', e => {
         const b = e.target.closest('[data-act]'); if (!b) return; const id = +b.closest('[data-id]').dataset.id, it = items.find(x => x.id === id);
