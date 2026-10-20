@@ -16,7 +16,8 @@ window.CATEGORY_CONFIG = {
   categories: {
 
     "Life Threatening": [          // CATEGORY-I
-      "SOB/Respiratory Distress"
+      "SOB/Respiratory Distress",
+      "unconscious",
 
       // Only trips where the patient is Dead also go to this category
       // according to the deadRule below.
