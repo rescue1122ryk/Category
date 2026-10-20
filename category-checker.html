@@ -3,35 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>RESCUE 1122 RAHIM YAR KHAN REPORTS DASHBOARD</title>
-<link rel="icon" type="image/jpeg" href="logo-rescue.jpg">
-<script>document.write('<script src="categories-config.js?v=' + Date.now() + '"><\/script>');</script>
-<script>document.write('<script src="vehicles-config.js?v=' + Date.now() + '"><\/script>');</script>
-<script>document.write('<script src="report-helpers.js?v=' + Date.now() + '"><\/script>');</script>
-<script>document.write('<script src="report-xlsx.js?v=' + Date.now() + '"><\/script>');</script>
-<script>document.write('<script src="report-catcheck.js?v=' + Date.now() + '"><\/script>');</script>
-<script>document.write('<script src="report-bike.js?v=' + Date.now() + '"><\/script>');</script>
-<script>document.write('<script src="report-delivery.js?v=' + Date.now() + '"><\/script>');</script>
-<script>document.write('<script src="report-long.js?v=' + Date.now() + '"><\/script>');</script>
-<script>document.write('<script src="report-longdist.js?v=' + Date.now() + '"><\/script>');</script>
-<script>document.write('<script src="report-staff.js?v=' + Date.now() + '"><\/script>');</script>
-<script>document.write('<script src="report-pin.js?v=' + Date.now() + '"><\/script>');</script>
-<script>document.write('<script src="report-late.js?v=' + Date.now() + '"><\/script>');</script>
-<script>document.write('<script src="report-crime.js?v=' + Date.now() + '"><\/script>');</script>
-<script>document.write('<script src="report-fire.js?v=' + Date.now() + '"><\/script>');</script>
-<script>document.write('<script src="report-misc.js?v=' + Date.now() + '"><\/script>');</script>
-<script>document.write('<script src="report-info.js?v=' + Date.now() + '"><\/script>');</script>
-<script>document.write('<script src="report-telecpr.js?v=' + Date.now() + '"><\/script>');</script>
-<script>document.write('<script src="report-dead.js?v=' + Date.now() + '"><\/script>');</script>
-<script>document.write('<script src="report-unfinal.js?v=' + Date.now() + '"><\/script>');</script>
-<script>document.write('<script src="report-pts.js?v=' + Date.now() + '"><\/script>');</script>
-<script>document.write('<script src="report-jco.js?v=' + Date.now() + '"><\/script>');</script>
-<script src="pdf.js"></script>
-<script src="pdf.worker.js"></script>
+<title>JINNAH STATIONARY  &amp;  FRIENDS BOOK SHOP</title>
+
 <script src="jszip.min.js"></script>
-<script>document.write('<script src="brief-templates.js?v=' + Date.now() + '"><\/script>');</script>
-<script>document.write('<script src="report-brief.js?v=' + Date.now() + '"><\/script>');</script>
 <script>document.write('<script src="report-cnic.js?v=' + Date.now() + '"><\/script>');</script>
+<script>document.write('<script src="report-passport.js?v=' + Date.now() + '"><\/script>');</script>
 <style>
 :root{--bg:#f3f5f9;--card:#fff;--tx:#18202e;--mu:#6b7686;--bd:#e1e6ee;--ac:#1f5eff;--hd1:#0f2a5c;--hd2:#1f5eff;
 --ok:#12803f;--okb:#e0f4e8;--bad:#c2281c;--badb:#fdecea;--warn:#8a5a00;--warnb:#fff1cf;--sk:#566;--skb:#eceff3}
@@ -138,381 +114,91 @@ footer{text-align:center;color:var(--mu);padding:18px;font-size:13px}
 }
 .sheetname{font-weight:700;margin:18px 0 6px;color:var(--mu)}
 .tabs [data-tab=pts]::before{content:"\1F3E5"}
-.tabs [data-tab=cnic]::before{content:"\1F194"}.tabs [data-tab=cnic]{border-top-color:#7a3fc2}
+.tabs [data-tab=cnic]::before{content:"\1F4B3"}.tabs [data-tab=cnic]{border-top-color:#1f5eff}
 .tabs [data-tab=brief]::before{content:"\1F4C4"}.tabs [data-tab=brief]{border-top-color:#e8b923}
+.tabs [data-tab=passport]::before{content:"\1F4F7"}.tabs [data-tab=passport]{border-top-color:#19a354}
+.tabs{grid-template-columns:repeat(auto-fill,minmax(230px,1fr))!important;max-width:620px}
+#msg:empty{display:none}
+
+/* ---- book shop theme ---- */
+:root{--ac:#8c1d2c}
+@media(prefers-color-scheme:dark){:root{--ac:#e0707f}}
+body{background:linear-gradient(180deg,#f3e9d6 0,var(--bg) 380px) fixed}
+@media(prefers-color-scheme:dark){body{background:var(--bg)}}
+header{position:relative;padding:26px 20px 78px;border-bottom:0;background:
+ radial-gradient(circle at 10% 15%,rgba(255,255,255,.10) 0,transparent 35%),
+ radial-gradient(circle at 90% 85%,rgba(232,185,35,.16) 0,transparent 38%),
+ repeating-linear-gradient(45deg,rgba(255,255,255,.035) 0 2px,transparent 2px 14px),
+ linear-gradient(115deg,#1c2a4a,#2a2f5e 45%,#6e1a2b)}
+.ttl h1{font-family:Georgia,"Times New Roman",serif;font-weight:700;letter-spacing:1.5px;line-height:1.3;font-size:30px;color:#fff3cf}
+.ttl h1::after{content:"";display:block;width:140px;height:3px;margin:10px auto 0;background:linear-gradient(90deg,transparent,#e8b923,transparent)}
+.ttl p{color:#e9e2d0}
+.chipd{background:rgba(232,185,35,.2)!important;border-color:rgba(232,185,35,.6)!important}
+.logo.bk{width:92px;height:92px;display:grid;place-items:center;background:#fff8e6;border:3px solid #e8b923;border-radius:50%;padding:0;animation:none}
+.logo.bk svg{width:64px;height:64px}
+.shelf{position:absolute;left:0;right:0;bottom:0;height:52px;background:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22520%22%20height%3D%2252%22%20viewBox%3D%220%200%20520%2052%22%3E%3Crect%20x%3D%220%22%20y%3D%2216%22%20width%3D%2219%22%20height%3D%2230%22%20rx%3D%222%22%20fill%3D%22%23234%22/%3E%3Crect%20x%3D%223%22%20y%3D%2221%22%20width%3D%2213%22%20height%3D%223%22%20fill%3D%22%23ffffff%22%20opacity%3D%22.35%22/%3E%3Crect%20x%3D%223%22%20y%3D%2227%22%20width%3D%2213%22%20height%3D%222%22%20fill%3D%22%23ffffff%22%20opacity%3D%22.25%22/%3E%3Crect%20x%3D%2223%22%20y%3D%2216%22%20width%3D%2219%22%20height%3D%2230%22%20rx%3D%222%22%20fill%3D%22%233a7ca5%22%20transform%3D%22rotate%2812%2023%2046%29%22/%3E%3Crect%20x%3D%2250%22%20y%3D%229%22%20width%3D%2215%22%20height%3D%2237%22%20rx%3D%222%22%20fill%3D%22%237a4b2a%22/%3E%3Crect%20x%3D%2253%22%20y%3D%2214%22%20width%3D%229%22%20height%3D%223%22%20fill%3D%22%23ffffff%22%20opacity%3D%22.35%22/%3E%3Crect%20x%3D%2253%22%20y%3D%2220%22%20width%3D%229%22%20height%3D%222%22%20fill%3D%22%23ffffff%22%20opacity%3D%22.25%22/%3E%3Crect%20x%3D%2265%22%20y%3D%2219%22%20width%3D%2217%22%20height%3D%2227%22%20rx%3D%222%22%20fill%3D%22%231f4e8c%22/%3E%3Crect%20x%3D%2268%22%20y%3D%2224%22%20width%3D%2211%22%20height%3D%223%22%20fill%3D%22%23ffffff%22%20opacity%3D%22.35%22/%3E%3Crect%20x%3D%2268%22%20y%3D%2230%22%20width%3D%2211%22%20height%3D%222%22%20fill%3D%22%23ffffff%22%20opacity%3D%22.25%22/%3E%3Crect%20x%3D%2283%22%20y%3D%2218%22%20width%3D%2217%22%20height%3D%2228%22%20rx%3D%222%22%20fill%3D%22%233a7ca5%22/%3E%3Crect%20x%3D%2286%22%20y%3D%2223%22%20width%3D%2211%22%20height%3D%223%22%20fill%3D%22%23ffffff%22%20opacity%3D%22.35%22/%3E%3Crect%20x%3D%2286%22%20y%3D%2229%22%20width%3D%2211%22%20height%3D%222%22%20fill%3D%22%23ffffff%22%20opacity%3D%22.25%22/%3E%3Crect%20x%3D%22103%22%20y%3D%2218%22%20width%3D%2217%22%20height%3D%2228%22%20rx%3D%222%22%20fill%3D%22%237a4b2a%22%20transform%3D%22rotate%2812%20103%2046%29%22/%3E%3Crect%20x%3D%22128%22%20y%3D%2213%22%20width%3D%2215%22%20height%3D%2233%22%20rx%3D%222%22%20fill%3D%22%237a4b2a%22/%3E%3Crect%20x%3D%22131%22%20y%3D%2218%22%20width%3D%229%22%20height%3D%223%22%20fill%3D%22%23ffffff%22%20opacity%3D%22.35%22/%3E%3Crect%20x%3D%22131%22%20y%3D%2224%22%20width%3D%229%22%20height%3D%222%22%20fill%3D%22%23ffffff%22%20opacity%3D%22.25%22/%3E%3Crect%20x%3D%22143%22%20y%3D%2219%22%20width%3D%2220%22%20height%3D%2227%22%20rx%3D%222%22%20fill%3D%22%232e6b4a%22/%3E%3Crect%20x%3D%22146%22%20y%3D%2224%22%20width%3D%2214%22%20height%3D%223%22%20fill%3D%22%23ffffff%22%20opacity%3D%22.35%22/%3E%3Crect%20x%3D%22146%22%20y%3D%2230%22%20width%3D%2214%22%20height%3D%222%22%20fill%3D%22%23ffffff%22%20opacity%3D%22.25%22/%3E%3Crect%20x%3D%22163%22%20y%3D%2211%22%20width%3D%2216%22%20height%3D%2235%22%20rx%3D%222%22%20fill%3D%22%23234%22/%3E%3Crect%20x%3D%22166%22%20y%3D%2216%22%20width%3D%2210%22%20height%3D%223%22%20fill%3D%22%23ffffff%22%20opacity%3D%22.35%22/%3E%3Crect%20x%3D%22166%22%20y%3D%2222%22%20width%3D%2210%22%20height%3D%222%22%20fill%3D%22%23ffffff%22%20opacity%3D%22.25%22/%3E%3Crect%20x%3D%22179%22%20y%3D%2211%22%20width%3D%2223%22%20height%3D%2235%22%20rx%3D%222%22%20fill%3D%22%233a7ca5%22/%3E%3Crect%20x%3D%22182%22%20y%3D%2216%22%20width%3D%2217%22%20height%3D%223%22%20fill%3D%22%23ffffff%22%20opacity%3D%22.35%22/%3E%3Crect%20x%3D%22182%22%20y%3D%2222%22%20width%3D%2217%22%20height%3D%222%22%20fill%3D%22%23ffffff%22%20opacity%3D%22.25%22/%3E%3Crect%20x%3D%22204%22%20y%3D%2214%22%20width%3D%2223%22%20height%3D%2232%22%20rx%3D%222%22%20fill%3D%22%23d9822b%22/%3E%3Crect%20x%3D%22207%22%20y%3D%2219%22%20width%3D%2217%22%20height%3D%223%22%20fill%3D%22%23ffffff%22%20opacity%3D%22.35%22/%3E%3Crect%20x%3D%22207%22%20y%3D%2225%22%20width%3D%2217%22%20height%3D%222%22%20fill%3D%22%23ffffff%22%20opacity%3D%22.25%22/%3E%3Crect%20x%3D%22227%22%20y%3D%2219%22%20width%3D%2215%22%20height%3D%2227%22%20rx%3D%222%22%20fill%3D%22%237a4b2a%22/%3E%3Crect%20x%3D%22230%22%20y%3D%2224%22%20width%3D%229%22%20height%3D%223%22%20fill%3D%22%23ffffff%22%20opacity%3D%22.35%22/%3E%3Crect%20x%3D%22230%22%20y%3D%2230%22%20width%3D%229%22%20height%3D%222%22%20fill%3D%22%23ffffff%22%20opacity%3D%22.25%22/%3E%3Crect%20x%3D%22242%22%20y%3D%227%22%20width%3D%2222%22%20height%3D%2239%22%20rx%3D%222%22%20fill%3D%22%23d9822b%22/%3E%3Crect%20x%3D%22245%22%20y%3D%2212%22%20width%3D%2216%22%20height%3D%223%22%20fill%3D%22%23ffffff%22%20opacity%3D%22.35%22/%3E%3Crect%20x%3D%22245%22%20y%3D%2218%22%20width%3D%2216%22%20height%3D%222%22%20fill%3D%22%23ffffff%22%20opacity%3D%22.25%22/%3E%3Crect%20x%3D%22265%22%20y%3D%229%22%20width%3D%2221%22%20height%3D%2237%22%20rx%3D%222%22%20fill%3D%22%235b2a86%22/%3E%3Crect%20x%3D%22268%22%20y%3D%2214%22%20width%3D%2215%22%20height%3D%223%22%20fill%3D%22%23ffffff%22%20opacity%3D%22.35%22/%3E%3Crect%20x%3D%22268%22%20y%3D%2220%22%20width%3D%2215%22%20height%3D%222%22%20fill%3D%22%23ffffff%22%20opacity%3D%22.25%22/%3E%3Crect%20x%3D%22286%22%20y%3D%2213%22%20width%3D%2225%22%20height%3D%2233%22%20rx%3D%222%22%20fill%3D%22%231f4e8c%22/%3E%3Crect%20x%3D%22289%22%20y%3D%2218%22%20width%3D%2219%22%20height%3D%223%22%20fill%3D%22%23ffffff%22%20opacity%3D%22.35%22/%3E%3Crect%20x%3D%22289%22%20y%3D%2224%22%20width%3D%2219%22%20height%3D%222%22%20fill%3D%22%23ffffff%22%20opacity%3D%22.25%22/%3E%3Crect%20x%3D%22313%22%20y%3D%2210%22%20width%3D%2221%22%20height%3D%2236%22%20rx%3D%222%22%20fill%3D%22%23a33%22/%3E%3Crect%20x%3D%22316%22%20y%3D%2215%22%20width%3D%2215%22%20height%3D%223%22%20fill%3D%22%23ffffff%22%20opacity%3D%22.35%22/%3E%3Crect%20x%3D%22316%22%20y%3D%2221%22%20width%3D%2215%22%20height%3D%222%22%20fill%3D%22%23ffffff%22%20opacity%3D%22.25%22/%3E%3Crect%20x%3D%22335%22%20y%3D%2217%22%20width%3D%2215%22%20height%3D%2229%22%20rx%3D%222%22%20fill%3D%22%233a7ca5%22/%3E%3Crect%20x%3D%22338%22%20y%3D%2222%22%20width%3D%229%22%20height%3D%223%22%20fill%3D%22%23ffffff%22%20opacity%3D%22.35%22/%3E%3Crect%20x%3D%22338%22%20y%3D%2228%22%20width%3D%229%22%20height%3D%222%22%20fill%3D%22%23ffffff%22%20opacity%3D%22.25%22/%3E%3Crect%20x%3D%22351%22%20y%3D%2216%22%20width%3D%2219%22%20height%3D%2230%22%20rx%3D%222%22%20fill%3D%22%23a33%22/%3E%3Crect%20x%3D%22354%22%20y%3D%2221%22%20width%3D%2213%22%20height%3D%223%22%20fill%3D%22%23ffffff%22%20opacity%3D%22.35%22/%3E%3Crect%20x%3D%22354%22%20y%3D%2227%22%20width%3D%2213%22%20height%3D%222%22%20fill%3D%22%23ffffff%22%20opacity%3D%22.25%22/%3E%3Crect%20x%3D%22373%22%20y%3D%2216%22%20width%3D%2219%22%20height%3D%2230%22%20rx%3D%222%22%20fill%3D%22%231f4e8c%22%20transform%3D%22rotate%2812%20373%2046%29%22/%3E%3Crect%20x%3D%22400%22%20y%3D%2210%22%20width%3D%2226%22%20height%3D%2236%22%20rx%3D%222%22%20fill%3D%22%23d9822b%22/%3E%3Crect%20x%3D%22403%22%20y%3D%2215%22%20width%3D%2220%22%20height%3D%223%22%20fill%3D%22%23ffffff%22%20opacity%3D%22.35%22/%3E%3Crect%20x%3D%22403%22%20y%3D%2221%22%20width%3D%2220%22%20height%3D%222%22%20fill%3D%22%23ffffff%22%20opacity%3D%22.25%22/%3E%3Crect%20x%3D%22428%22%20y%3D%226%22%20width%3D%2221%22%20height%3D%2240%22%20rx%3D%222%22%20fill%3D%22%231f4e8c%22/%3E%3Crect%20x%3D%22431%22%20y%3D%2211%22%20width%3D%2215%22%20height%3D%223%22%20fill%3D%22%23ffffff%22%20opacity%3D%22.35%22/%3E%3Crect%20x%3D%22431%22%20y%3D%2217%22%20width%3D%2215%22%20height%3D%222%22%20fill%3D%22%23ffffff%22%20opacity%3D%22.25%22/%3E%3Crect%20x%3D%22449%22%20y%3D%2218%22%20width%3D%2221%22%20height%3D%2228%22%20rx%3D%222%22%20fill%3D%22%238c1d2c%22/%3E%3Crect%20x%3D%22452%22%20y%3D%2223%22%20width%3D%2215%22%20height%3D%223%22%20fill%3D%22%23ffffff%22%20opacity%3D%22.35%22/%3E%3Crect%20x%3D%22452%22%20y%3D%2229%22%20width%3D%2215%22%20height%3D%222%22%20fill%3D%22%23ffffff%22%20opacity%3D%22.25%22/%3E%3Crect%20x%3D%22472%22%20y%3D%226%22%20width%3D%2224%22%20height%3D%2240%22%20rx%3D%222%22%20fill%3D%22%235b2a86%22/%3E%3Crect%20x%3D%22475%22%20y%3D%2211%22%20width%3D%2218%22%20height%3D%223%22%20fill%3D%22%23ffffff%22%20opacity%3D%22.35%22/%3E%3Crect%20x%3D%22475%22%20y%3D%2217%22%20width%3D%2218%22%20height%3D%222%22%20fill%3D%22%23ffffff%22%20opacity%3D%22.25%22/%3E%3Crect%20x%3D%22498%22%20y%3D%229%22%20width%3D%2224%22%20height%3D%2237%22%20rx%3D%222%22%20fill%3D%22%238c1d2c%22/%3E%3Crect%20x%3D%22501%22%20y%3D%2214%22%20width%3D%2218%22%20height%3D%223%22%20fill%3D%22%23ffffff%22%20opacity%3D%22.35%22/%3E%3Crect%20x%3D%22501%22%20y%3D%2220%22%20width%3D%2218%22%20height%3D%222%22%20fill%3D%22%23ffffff%22%20opacity%3D%22.25%22/%3E%3Crect%20x%3D%220%22%20y%3D%2245%22%20width%3D%22520%22%20height%3D%227%22%20fill%3D%22%236b4423%22/%3E%3Crect%20x%3D%220%22%20y%3D%2245%22%20width%3D%22520%22%20height%3D%222%22%20fill%3D%22%23a9743f%22/%3E%3C/svg%3E") repeat-x left bottom;background-size:auto 52px}
+button.p{background:linear-gradient(120deg,#6e1a2b,#a8323f)}
+.step i{background:linear-gradient(135deg,#6e1a2b,#a8323f)}
+.drop{border-color:#b08a3e;background:linear-gradient(135deg,rgba(232,185,35,.12),rgba(140,29,44,.05))}
+.drop:hover{background:rgba(232,185,35,.2)}
+.tabs button{border-top-color:#b08a3e!important}
+.tabs button.on{background:linear-gradient(135deg,#1c2a4a,#6e1a2b)!important;border-top-color:#e8b923!important}
+.card{box-shadow:0 4px 16px rgba(80,50,20,.10)}
+@media(max-width:700px){.logo.bk{width:64px;height:64px}.logo.bk svg{width:44px;height:44px}.ttl h1{font-size:19px}}
 </style>
 </head>
 <body>
 <header><div class="in hd">
-  <img class="logo" src="logo-punjab.jpg" alt="Government of Punjab" onerror="this.style.visibility='hidden'">
-  <div class="ttl"><h1>RESCUE 1122 RAHIM YAR KHAN<br>REPORTS DASHBOARD</h1><p>Upload your CSV files once, then click a report to open it.</p><span class="chipd" id="today"></span></div>
-  <img class="logo" src="logo-rescue.jpg" alt="Rescue 1122" onerror="this.style.visibility='hidden'">
-</div></header>
+  <div class="logo bk"><svg viewBox="0 0 64 64" width="64" height="64"><rect x="8" y="40" width="48" height="10" rx="2" fill="#8c1d2c"/><rect x="12" y="29" width="42" height="10" rx="2" fill="#1f4e8c"/><rect x="9" y="18" width="46" height="10" rx="2" fill="#c9a227"/><rect x="14" y="9" width="36" height="8" rx="2" fill="#2e6b4a"/><rect x="12" y="43" width="40" height="2" fill="#fff" opacity=".5"/><rect x="16" y="32" width="34" height="2" fill="#fff" opacity=".5"/><rect x="13" y="21" width="38" height="2" fill="#fff" opacity=".5"/></svg></div>
+  <div class="ttl"><h1>JINNAH STATIONARY&nbsp;&nbsp;&amp;&nbsp;&nbsp;FRIENDS BOOK SHOP<br>JINNAH PARK RAHIM YAR KHAN</h1><p>Open a tab, upload the picture, then download or print.</p><span class="chipd" id="today"></span></div>
+  <div class="logo bk"><svg viewBox="0 0 64 64" width="64" height="64"><g transform="rotate(40 32 32)"><rect x="26" y="4" width="12" height="46" fill="#f2b632"/><rect x="26" y="4" width="12" height="7" fill="#e86a7a"/><rect x="24" y="9" width="16" height="4" fill="#bbb"/><polygon points="26,50 38,50 32,62" fill="#f3d9a8"/><polygon points="29.5,57 34.5,57 32,62" fill="#333"/></g><rect x="6" y="48" width="40" height="9" rx="1" fill="#e8d9a8" stroke="#8a7a3a"/><g stroke="#8a7a3a"><path d="M12 48v5M18 48v3M24 48v5M30 48v3M36 48v5"/></g></svg></div>
+</div><div class="shelf"></div></header>
 <main>
   <div id="msg"></div>
-  <div class="steps">
-    <div class="card step"><i>1</i><div><b>Get the report</b><span>Open the <a href="https://punjab.rescue1122.org/dashboard/report/detailed_emergency_statistics" target="_blank" rel="noopener">All-In-One Emergency Detailed Report</a> and download the CSV.</span></div></div>
-    <div class="card step"><i>2</i><div><b>Upload your CSV files</b><span>Select all files in one go: trips, Staff App, Pin Emergencies, Late Accept. Nothing leaves your computer.</span></div></div>
-    <div class="card step"><i>3</i><div><b>Review &amp; export</b><span>Wrong categories are highlighted with the correct one. Download the fixed CSV.</span></div></div>
-  </div>
-
   <div id="drop" class="card drop">
-    <p><b>Drop all your CSV / Excel (.xlsx) / PDF / picture files here</b> or <button class="p" id="pick">Choose files</button></p>
-    <p class="mu">Select several files at once. Each file is recognised by its columns. A PDF goes to <b>Brief of the Incident</b>; two pictures (front, back) go to <b>CNIC Print A4</b>.</p>
-    <p class="mu">Emergency trips CSV: download it from the <a href="https://punjab.rescue1122.org/dashboard/report/detailed_emergency_statistics" target="_blank" rel="noopener" id="lnk">All-In-One Emergency Detailed Report</a></p>
-    <p id="jcoBtns"><button id="openJco">Open JCO monthly report</button> <button id="slimBtn" title="Choose the full monthly CSV files. For each one a small CSV with only the JCO columns is downloaded.">Slim files for JCO</button></p>
-    <p class="mu" id="slimMsg"></p>
-    <input type="file" id="file" accept=".csv,text/csv,.xlsx,.pdf,application/pdf,image/*" multiple hidden>
-    <div id="files" class="act" style="justify-content:center"></div>
+    <p><b>Drop your picture (JPG / PNG) here</b> or <button class="p" id="pick">Choose files</button></p>
+    <p class="mu" id="dropHint"></p>
+    <input type="file" id="file" accept=".jpg,.jpeg,.png,image/jpeg,image/png" multiple hidden>
   </div>
-  <div id="ask"></div>
-  <input type="file" id="slimFile" accept=".csv,text/csv" multiple hidden>
-
   <div id="result">
-    <div class="tabs" id="tabsBar"><button data-tab="check" id="tab_check">Wrong Category</button><button data-tab="vehicle" id="tab_vehicle">Vehicle Check</button></div>
-    <div id="tabCheck">
-    <div class="sub cat-only">Category check</div><div class="grid cat-only" id="stats"></div>
-    <div class="sub veh-only">Vehicle &amp; tehsil check</div><div class="grid veh-only" id="vstats"></div><div id="vnote" class="veh-only"></div>
-    <div class="card acc cat-only"><div class="t"><b>Category accuracy</b><span id="accTxt"></span></div><div class="meter" id="meter"></div></div>
-    <div class="two">
-      <div class="card"><h3>Mistakes by agent (click a name to filter)</h3><table id="agents"></table></div>
-      <div class="card cat-only"><h3>Most common mistakes (selected &rarr; correct)</h3><table id="pairs"></table></div>
-      <div class="card cat-only"><h3>Subtypes not found in the standard list</h3><table id="unmapped"></table></div>
-      <div class="card veh-only"><h3>Vehicles in the wrong tehsil (vehicle &rarr; correct tehsil)</h3><table id="vwrong"></table></div>
-      <div class="card veh-only"><h3>Vehicles not found in vehicles-config.js</h3><table id="vunk"></table></div>
-    </div>
-    <div class="bar">
-      <select id="teh"></select>
-      <input type="search" id="q" placeholder="Search EC No, subtype, agent...">
-      <button class="p" id="dlAll">Download full CSV</button>
-      <button id="dlBad">Download wrong only</button>
-    </div>
-    <div class="act" id="act"></div>
-    <div class="wrap"><table id="tbl"></table></div>
-    </div>
-    <div id="tabJco" hidden>
-      <div class="bar">
-        <select id="jMonth" title="Month"></select><select id="jAgent" title="Call agent" style="min-width:240px"></select>
-        <span style="flex:1"></span>
-        <button id="jRef">Refresh list</button><button id="jCsv">Download CSV</button>
-      </div>
-      <div id="jMsg" class="mu"></div>
-      <div class="grid" id="jSum"></div>
-      <div class="two"><div class="card"><h3>Calendar (number = emergencies of that day)</h3><div id="jCal"></div></div>
-        <div class="card"><h3 id="jDayT">Click a date to see its emergencies</h3><div class="wrap" style="max-height:60vh" id="jDay"></div></div></div>
-    </div>
-    <div id="tabBike" hidden>
-      <div class="grid" id="bikeSum"></div>
-      <div id="bikeWarn"></div>
-      <div class="bar"><span class="mu" id="bikeRule"></span><span style="flex:1"></span>
-        <button class="p" id="bikeXls">Download Excel (.xls)</button><button id="bikeCsv">Download CSV</button><button id="bikePrint">Print</button></div>
-      <div class="wrap" id="bikeSheet"></div>
-    </div>
+    <div class="tabs" id="tabsBar"></div>
   </div>
 </main>
-<footer>RESCUE 1122 RAHIM YAR KHAN &mdash; Reports Dashboard &bull; Data stays on your computer<br><small id="cfgStamp"></small><br><small>Page version: 20-10-2026 (CNIC Print A4)</small></footer>
-
+<footer>All rights reserved &mdash; Shahid Jamil, Rescue 1122 RYK &mdash; 03017631541</footer>
 <script>
-// CORE START
-const REPORTS = window.REPORTS;
-
-function parseCSV(t) {
-  if (t.charCodeAt(0) === 0xFEFF) t = t.slice(1);
-  const rows = []; let r = [], f = '', q = false;
-  for (let i = 0; i < t.length; i++) {
-    const c = t[i];
-    if (q) { if (c === '"') { if (t[i + 1] === '"') { f += '"'; i++; } else q = false; } else f += c; }
-    else if (c === '"') q = true;
-    else if (c === ',') { r.push(f); f = ''; }
-    else if (c === '\n' || c === '\r') { if (c === '\r' && t[i + 1] === '\n') i++; r.push(f); f = ''; rows.push(r); r = []; }
-    else f += c;
-  }
-  if (f !== '' || r.length) { r.push(f); rows.push(r); }
-  return rows.filter(x => x.length > 1 || (x[0] || '').trim() !== '');
-}
-
-function buildLookup() {
-  const std = {}, ali = {};
-  for (const [cat, items] of Object.entries(CFG.categories))
-    for (const it of items) { const k = norm(it); (std[k] = std[k] || { name: it, cats: [] }).cats.push(cat); }
-  for (const [k, v] of Object.entries(CFG.aliases || {})) ali[norm(k)] = norm(v);
-  return k => std[k] || std[ali[k]];
-}
-
-/* Runs every report that reads the trips CSV. A mistake inside one report file only breaks that report's tab. */
-function runTripReports(rows) {
-  const out = {};
-  for (const [k, r] of Object.entries(window.REPORTS)) {
-    if (r.input !== 'trips') continue;
-    try { out[k] = r.run(rows); }
-    catch (e) { out[k] = { name: r.label, count: 0, cards: [['Error in this report', 0]], warn: 'This report could not be built: ' + e.message + '  (check report-' + k + '.js)', rule: '', widths: [400], rows: [[cl('Error: ' + e.message, '')]], csv: [['Error'], [e.message]] }; }
-  }
-  return out;
-}
-function detectKind(rows) {
-  const H = (rows[0] || []).map(h => String(h).trim().toLowerCase());
-  for (const [k, r] of Object.entries(window.REPORTS)) if (r.detect && r.detect(rows, H)) return k;
-  if (H.includes('emergency category') && H.includes('emergency subtype')) return 'trips';
-  return '';
-}
-
-
-const VOUT = () => Object.assign({ status: 'Vehicle Check', correct: 'Correct Tehsil (Vehicle)' }, (window.VEHICLE_CONFIG || {}).outputColumns || {});
-
-function buildVehicles() {
-  const map = {}; let total = 0;
-  for (const [t, list] of Object.entries((window.VEHICLE_CONFIG || {}).tehsils || {}))
-    for (const v of list) { const k = norm(v); map[k] = map[k] || []; if (!map[k].includes(t)) map[k].push(t); total++; }
-  const check = (txt, tehsil) => {
-    const vs = String(txt || '').split(/[,;|]+/).map(s => s.trim()).filter(s => s && norm(s) !== 'na');
-    const res = { vstatus: 'SKIP', vfix: '', vehicles: vs.join(', '), vbad: [], vunk: [] };
-    if (!total || !vs.length) return res;
-    for (const v of vs) {
-      const ts = map[norm(v)];
-      if (!ts) res.vunk.push(v); else if (!ts.some(t => norm(t) === norm(tehsil))) res.vbad.push(v + ' \u2192 ' + ts.join(' / '));
-    }
-    res.vstatus = res.vbad.length ? 'WRONG' : res.vunk.length ? 'NOTLIST' : 'OK';
-    res.vfix = res.vbad.join('; ');
-    return res;
-  };
-  return { check, total };
-}
-
-function analyse(rows) {
-  const C = CFG.columns, O = CFG.outputColumns, head = rows[0].map(h => h.trim());
-  const ix = n => head.indexOf(n);
-  const iSub = ix(C.subtype), iCat = ix(C.category);
-  if (iSub < 0 || iCat < 0) throw new Error('Columns "' + C.subtype + '" and/or "' + C.category + '" were not found in this CSV.');
-  const find = buildLookup(), skipT = CFG.skipEmergencyTypes.map(norm), skipC = CFG.skipCategories.map(norm);
-  const get = (r, n) => { const i = ix(n); return i < 0 ? '' : (r[i] || '').trim(); };
-  const DR = Object.assign({ enabled: false, fateColumn: 'Fate Of Patient', fateWords: ['dead', 'expired'], category: 'Life Threatening', statusColumn: 'Emergency Status', ignoreStatus: ['discarded'] }, CFG.deadRule || {});
-  const isDead = r => DR.enabled && (f => DR.fateWords.some(w => f.includes(String(w).toLowerCase())))(get(r, DR.fateColumn).toLowerCase()) &&
-    !DR.ignoreStatus.map(s => String(s).toLowerCase()).includes(get(r, DR.statusColumn).toLowerCase());
-  const out = [], VCk = buildVehicles(), VCol = ((window.VEHICLE_CONFIG || {}).columns || {}).vehicle || 'Vehicle Reg No';
-  for (const r of rows.slice(1)) {
-    const sub = (r[iSub] || '').trim(), cat = (r[iCat] || '').trim();
-    let status, correct = '';
-    if (skipT.includes(norm(get(r, C.type))) || skipC.includes(norm(cat))) status = 'SKIP';
-    else if (isDead(r)) {
-      if (norm(cat) === norm(DR.category)) status = 'OK'; else { status = 'WRONG'; correct = DR.category; }
-    }
-    else {
-      const hit = find(norm(sub));
-      if (!hit) status = 'NOTLIST';
-      else if (hit.cats.map(norm).includes(norm(cat))) status = 'OK';
-      else { status = 'WRONG'; correct = hit.cats.join(' / '); }
-    }
-    const tehsil = get(r, C.tehsil);
-    out.push({ r, sub, cat, status, correct, id: get(r, C.id), type: get(r, C.type), agent: get(r, C.agent),
-      agentId: get(r, C.agentId), tehsil, recv: get(r, C.received), ...VCk.check(get(r, VCol), tehsil) });
-  }
-  return { head, out, O, VO: VOUT(), vTotal: VCk.total, reports: runTripReports(rows) };
-}
-
-// CORE END
-
-const LABEL = { OK: 'Correct', WRONG: 'Wrong', NOTLIST: 'Not in list', SKIP: 'Skipped (PTS)' };
-const VLABEL = { OK: 'Correct', WRONG: 'Wrong tehsil', NOTLIST: 'Not in list', SKIP: 'Not checked' };
-const COL = { OK: 'var(--ok)', WRONG: 'var(--bad)', NOTLIST: 'var(--warn)', SKIP: 'var(--mu)' };
+const REPORTS = window.REPORTS || {};
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-let D = null, filter = 'ALL', vf = 'ALL', agentF = '', sortK = null, sortDir = 1;
-const akey = x => x.agent + '|' + x.agentId;
-
-function toCSV(items) {
-  const { head, O, VO } = D, q = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
-  const lines = [[...head, O.status, O.correct, VO.status, VO.correct].map(q).join(',')];
-  for (const x of items) lines.push([...head.map((_, i) => x.r[i] || ''), LABEL[x.status], x.correct, VLABEL[x.vstatus], x.vfix].map(q).join(','));
-  return '\ufeff' + lines.join('\r\n');
-}
-function download(name, text) {
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([text], { type: 'text/csv;charset=utf-8' }));
-  a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-}
-function tally(items, key) {
-  const m = {}; items.forEach(x => { const k = key(x); m[k] = (m[k] || 0) + 1; });
-  return Object.entries(m).sort((a, b) => b[1] - a[1]);
-}
-const rowsHTML = l => l.length ? l.map(([k, v]) => `<tr><td>${esc(k)}</td><td>${v}</td></tr>`).join('') : '<tr><td class="mu">None</td></tr>';
-const statCard = (attr, key, label, v, on, c) => `<div class="card stat ${on ? 'on' : ''}" data-${attr}="${key}" style="--c:${c}"><b>${v}</b><span>${label}</span></div>`;
-
-function render() {
-  const { out } = D, cn = s => out.filter(x => x.status === s).length, vn = s => out.filter(x => x.vstatus === s).length;
-  const checked = out.length - cn('SKIP'), pct = checked ? Math.round(cn('OK') / checked * 1000) / 10 : 0;
-  $('stats').innerHTML = statCard('f', 'ALL', 'Total trips', out.length, filter === 'ALL', 'var(--ac)') +
-    ['OK', 'WRONG', 'NOTLIST', 'SKIP'].map(s => statCard('f', s, LABEL[s], cn(s), filter === s, COL[s])).join('');
-  $('vstats').innerHTML = statCard('v', 'ALL', 'Total trips', out.length, vf === 'ALL', 'var(--ac)') +
-    ['OK', 'WRONG', 'NOTLIST', 'SKIP'].map(s => statCard('v', s, VLABEL[s], vn(s), vf === s, COL[s])).join('');
-  $('vnote').innerHTML = D.vTotal ? '' : '<div class="note">No vehicles added yet. Add them to <b>vehicles-config.js</b> to enable the vehicle and tehsil check.</div>';
-  $('accTxt').textContent = pct + '% correct (' + cn('OK') + ' of ' + checked + ' checked)';
-  $('meter').innerHTML = ['OK', 'NOTLIST', 'WRONG'].map(s => `<div style="width:${checked ? cn(s) / checked * 100 : 0}%;background:${COL[s]}"></div>`).join('');
-
-  const wr = out.filter(x => x.status === 'WRONG');
-  $('agents').innerHTML = (t => t.length ? t.map(([k, v]) => `<tr><td><a class="lnk" data-agent="${esc(k)}">${esc(k.replace(/\|$/, '').replace('|', ' ('))}${k.endsWith('|') ? '' : ')'}</a></td><td>${v}</td></tr>`).join('') : '<tr><td class="mu">None</td></tr>')
-    (tally(out.filter(x => curTab === 'vehicle' ? x.vstatus === 'WRONG' : x.status === 'WRONG'), akey).slice(0, 10));   // Wrong Category tab counts category mistakes only, Vehicle Check tab counts vehicle mistakes only
-  $('pairs').innerHTML = rowsHTML(tally(wr, x => x.sub + ': ' + x.cat + ' \u2192 ' + x.correct).slice(0, 10));
-  $('unmapped').innerHTML = rowsHTML(tally(out.filter(x => x.status === 'NOTLIST'), x => x.sub || '(empty)'));
-  $('vwrong').innerHTML = rowsHTML(tally(out.flatMap(x => x.vbad), x => x).slice(0, 15));
-  $('vunk').innerHTML = rowsHTML(tally(out.flatMap(x => x.vunk), x => x).slice(0, 15));
-
-  const term = $('q').value.trim().toLowerCase(), teh = $('teh').value;
-  const act = [];
-  if (agentF) act.push(['agent', 'Agent: ' + agentF.replace('|', ' ')]);
-  if (filter !== 'ALL') act.push(['f', 'Category: ' + LABEL[filter]]);
-  if (vf !== 'ALL') act.push(['v', 'Vehicle: ' + VLABEL[vf]]);
-  $('act').innerHTML = act.map(([k, l]) => `<span class="pill" data-clear="${k}">${esc(l)} \u2715</span>`).join('') + (act.length ? '<span class="mu">Click a tag to remove the filter</span>' : '');
-  let list = out.filter(x => (filter === 'ALL' || x.status === filter) && (vf === 'ALL' || x.vstatus === vf) && (!agentF || akey(x) === agentF) && (!teh || x.tehsil === teh) &&
-    (!term || [x.id, x.sub, x.cat, x.agent, x.agentId, x.tehsil, x.correct, x.vehicles, x.vfix].join(' ').toLowerCase().includes(term)));
-  if (sortK) list = [...list].sort((a, b) => String(a[sortK]).localeCompare(String(b[sortK]), undefined, { numeric: true }) * sortDir);
-  const H = [['id', 'EC No'], ['tehsil', 'Tehsil'], ['sub', 'Subtype'], ['cat', 'Selected category'], ['correct', 'Correct category'], ['status', 'Category result'],
-    ['vehicles', 'Vehicle'], ['vstatus', 'Vehicle result'], ['vfix', 'Correct tehsil (vehicle)'], ['agent', 'Agent'], ['recv', 'Call received']];
-  $('tbl').innerHTML = '<thead><tr><th>#</th>' + H.map(([k, l]) => `<th data-k="${k}">${l}${sortK === k ? (sortDir > 0 ? ' \u25B2' : ' \u25BC') : ''}</th>`).join('') + '</tr></thead><tbody>' +
-    list.map((x, i) => `<tr class="${x.status === 'WRONG' || x.vstatus === 'WRONG' ? 'WRONG' : ''}"><td class="mu">${i + 1}</td><td>${ecHTML(x.id)}</td><td>${esc(x.tehsil)}</td><td>${esc(x.sub)}</td><td>${esc(x.cat)}</td>
-    <td class="fix">${esc(x.correct)}</td><td><span class="tag ${x.status}">${LABEL[x.status]}</span></td>
-    <td>${esc(x.vehicles)}</td><td><span class="tag ${x.vstatus}">${VLABEL[x.vstatus]}</span></td><td class="fix">${esc(x.vfix)}</td>
-    <td><a class="lnk" data-agent="${esc(akey(x))}">${esc(x.agent)}</a> <span class="mu">${esc(x.agentId)}</span></td><td class="mu">${esc(x.recv)}</td></tr>`).join('') +
-    (list.length ? '' : '<tr><td colspan="12" class="mu">No matching records.</td></tr>') + '</tbody>';
-}
-
-const REPS = Object.entries(REPORTS).map(([k, r]) => [k, r.label]);   // tabs come from the report files that are loaded
-const X = {};
-const ALLREP = () => Object.assign({}, D ? D.reports : {}, X);
-const tabLabel = (k, l, n) => esc(l) + (n == null ? '' : ' (' + n + ')') + (REPORTS[k].sub ? `<small>${esc(REPORTS[k].sub)}</small>` : '');   // small second line under a tab name (sub in the report file)
-let curRep = REPS.length ? REPS[0][0] : '';
-const BD = 'border:1px solid #000;text-align:center;vertical-align:middle;font-family:Calibri,Arial;';
-const EC_RE = /^(ec|emergency)\s*(no|number)\.?$/i;
-const ecHTML = v => String(v || '').trim() ? `<span class="ec">${esc(v)}<span class="cp" data-copy="${esc(v)}" title="Copy EC No">\u{1F4CB}</span></span>` : '';
-const cellHTML = (c, ec) => `<td${c.cs ? ` colspan="${c.cs}"` : ''}${c.rs ? ` rowspan="${c.rs}"` : ''} style="${BD}${c.s}">${c.h ? c.h : c.rot ? `<span class="rot">${esc(c.v)}</span>` : ec ? ecHTML(c.v) : esc(c.v)}</td>`;
-const sheetHTML = (sp, ui) => { let ei = -1; const busy = []; return   /* busy = columns still covered by a merged (rowspan) cell from a row above, so the EC No column is found correctly */ `<table class="xl" style="border-collapse:collapse"><colgroup>${sp.widths.map(w => `<col style="width:${w}px">`).join('')}</colgroup>${sp.rows.map(r => { let col = 0; const pos = r.map(c => { while (busy[col] > 0) col++; const p = col; col += c.cs || 1; return p; }); busy.forEach((b, k) => { if (b > 0) busy[k] = b - 1; }); r.forEach((c, i) => { if (c.rs > 1) for (let k = 0; k < (c.cs || 1); k++) busy[pos[i] + k] = c.rs - 1; }); const hi = r.findIndex(c => EC_RE.test(String(c.v).trim())); const isH = ui && ei < 0 && hi >= 0; if (isH) ei = pos[hi]; return '<tr>' + r.map((c, i) => cellHTML(c, ui && ei >= 0 && !isH && pos[i] === ei && !c.cs)).join('') + '</tr>'; }).join('')}</table>`; };
-function renderReport(k) {
-  curRep = k; const sp = ALLREP()[k];
-  $('bikeSum').innerHTML = sp.cards.map(([l, v], i) => `<div class="card s2" style="--c:${i ? 'var(--ac)' : 'var(--bad)'}"><b>${v}</b><span>${esc(l)}</span></div>`).join('');
-  $('bikeWarn').innerHTML = sp.warn ? `<div class="note">${esc(sp.warn)}</div>` : '';
-  $('bikeRule').textContent = sp.rule;
-  $('bikeSheet').innerHTML = sp.sheets ? sp.sheets.map((s, i) => `<div class="sheetname">Sheet ${i + 1}: ${esc(s.name)}</div>` + sheetHTML(s, true)).join('') : sheetHTML(sp, true);
-  $('bikeXls').textContent = sp.sheets ? 'Download Excel (.xlsx, ' + sp.sheets.length + ' sheets)' : 'Download Excel (.xls)'; $('bikeCsv').hidden = !!sp.sheets;
-}
-const bikeXLS = sp => '<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="utf-8"></head><body>' + sheetHTML(sp) + '</body></html>';
-function repCSV(sp) { const q = v => '"' + String(v).replace(/"/g, '""') + '"'; return '\ufeff' + sp.csv.map(r => r.map(q).join(',')).join('\r\n'); }
+const HINTS = { cnic: 'CNIC tab: upload the front and the back picture of the card (2 pictures).', passport: 'Passport tab: upload ONE photo. The 6 x 4 sheet is made from it.' };
 let curTab = '';
-function resetFilters() {
-  filter = 'ALL'; vf = 'ALL'; agentF = ''; sortK = null; sortDir = 1; $('q').value = ''; $('teh').value = '';
-  Object.values(REPORTS).forEach(r => { if (r.reset) r.reset(); });
-}
+
 function showTab(t) {
-  if (t !== curTab) { curTab = t; resetFilters(); }   // filters only stay while you remain in the same report
-  const ck = t === 'check' || t === 'vehicle';
+  curTab = t;
   document.querySelectorAll('.ownpanel').forEach(e => e.hidden = e.id !== 'panel_' + t);
-  document.body.classList.toggle('cc-focus', t === 'catcheck'); if (t === 'catcheck') window.scrollTo(0, 0);   // on a phone only the Category Checker stays on screen
-  $('tabCheck').hidden = !ck; $('tabBike').hidden = !t || ck || (REPORTS[t] || {}).own; $('tabJco').hidden = t !== 'jco';
-  document.querySelectorAll('.cat-only').forEach(e => e.hidden = t === 'vehicle'); document.querySelectorAll('.veh-only').forEach(e => e.hidden = t === 'check');
   document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
-  if (t !== 'check' && REPORTS[t] && REPORTS[t].own) REPORTS[t].render(); else if (t && !ck) renderReport(t);
-  if (ck && D) render();
-}
-
-
-const FILEREP = Object.entries(REPORTS).filter(([, r]) => r.detect);   // reports that read their own CSV file
-const KINDS = Object.assign({ trips: 'Emergency trips' }, Object.fromEntries(FILEREP.map(([k, r]) => [k, r.fileLabel || r.label]))), FILES = {}, ASKQ = [];
-const HINT = Object.fromEntries(FILEREP.map(([k, r]) => [k, r.hint || r.label]));
-function renderFiles() {
-  $('files').innerHTML = Object.entries(KINDS).map(([k, l]) => FILES[k] ? `<span class="pill" style="background:var(--ok);color:#fff;cursor:default">\u2713 ${l}: ${esc(FILES[k])}</span>` : `<span class="mu">${l}: not uploaded</span>`).join(' ');
-}
-function renderAsk() {
-  const a = ASKQ[0];
-  $('ask').innerHTML = a ? `<div class="note">"${esc(a.name)}" was not recognised. What kind of file is it? ${Object.entries(KINDS).map(([k, l]) => `<button data-kind="${k}">${l}</button>`).join(' ')} <button data-kind="skip">Ignore</button></div>` : '';
-}
-function afterLoad(t) {
-  $('result').hidden = false; if (D) render();
-  const R = ALLREP();
-  REPS.forEach(([k, l]) => { const b = $('tab_' + k); if (REPORTS[k].alwaysOn) { b.disabled = false; return; } b.innerHTML = tabLabel(k, l, R[k] ? R[k].count : null); b.disabled = !R[k]; b.title = R[k] ? '' : 'Upload the ' + (HINT[k] || 'Emergency trips') + ' CSV first'; });
-  $('tab_check').disabled = !D; $('tab_vehicle').disabled = !D; showTab(t);
-}
-function processFile(kind, rows, name) {
-  if (kind === 'trips') {
-    D = analyse(rows); Object.values(REPORTS).forEach(r => { if (r.onTrips) r.onTrips(rows, name); }); filter = 'ALL'; vf = 'ALL'; agentF = ''; sortK = null; $('q').value = '';
-    const t = [...new Set(D.out.map(x => x.tehsil).filter(Boolean))].sort();
-    $('teh').innerHTML = '<option value="">All tehsils</option>' + t.map(v => `<option>${esc(v)}</option>`).join('');
-  } else X[kind] = REPORTS[kind].run(rows, X[kind]);
-  FILES[kind] = REPORTS[kind] && REPORTS[kind].multi && FILES[kind] && FILES[kind] !== name && !FILES[kind].split(' + ').includes(name) ? FILES[kind] + ' + ' + name : name; renderFiles(); afterLoad(document.querySelector('.tabs button.on') ? document.querySelector('.tabs button.on').dataset.tab : '');
-}
-function loadRows(file, rows) {
-  if (!rows.length) throw new Error(file.name + ' is empty.');
-  const kind = detectKind(rows);
-  if (kind) processFile(kind, rows, file.name); else { ASKQ.push({ name: file.name, rows }); renderAsk(); }
+  $('dropHint').textContent = HINTS[t] || '';
+  if (REPORTS[t] && REPORTS[t].render) REPORTS[t].render();
 }
 function load(file) {
   $('msg').textContent = '';
-  if (/\.(jpe?g|png|webp|bmp|gif)$/i.test(file.name) || /^image\//.test(file.type)) {   // CNIC pictures are handled by report-cnic.js
-    if (!REPORTS.cnic || !REPORTS.cnic.addImage) { $('msg').textContent = 'report-cnic.js could not be loaded. Keep all files in the same folder.'; return; }
-    REPORTS.cnic.addImage(file).then(() => afterLoad('cnic')).catch(e => { $('msg').textContent = file.name + ': ' + e.message; });
-    return;
-  }
-  if (/\.pdf$/i.test(file.name)) {   // EMDS detail PDFs are read by report-brief.js
-    if (!REPORTS.brief || !REPORTS.brief.addPdf) { $('msg').textContent = 'report-brief.js could not be loaded. Keep all files in the same folder.'; return; }
-    REPORTS.brief.addPdf(file).then(() => afterLoad('brief')).catch(e => { console.error(e); $('msg').textContent = file.name + ': ' + e.message; });
-    return;
-  }
-  if (/\.xlsx$/i.test(file.name)) {   // Excel files are opened by report-xlsx.js
-    if (!window.XLSX_IO) { $('msg').textContent = 'report-xlsx.js could not be loaded. Keep all files in the same folder.'; return; }
-    file.arrayBuffer().then(b => window.XLSX_IO.read(b)).then(rows => loadRows(file, rows)).catch(e => { $('msg').textContent = file.name + ': ' + e.message; });
-    return;
-  }
-  const rd = new FileReader();
-  rd.onload = () => {
-    try {
-      const rows = parseCSV(rd.result); if (!rows.length) throw new Error(file.name + ' is empty.');
-      const kind = detectKind(rows);
-      if (kind) processFile(kind, rows, file.name); else { ASKQ.push({ name: file.name, rows }); renderAsk(); }
-    } catch (e) { $('msg').textContent = e.message; }
-  };
-  rd.readAsText(file, 'utf-8');
+  if (!/\.(jpe?g|png)$/i.test(file.name)) { $('msg').textContent = file.name + ': only JPG or PNG pictures are supported.'; return; }
+  const r = REPORTS[curTab];
+  if (!r || !r.addImage) { $('msg').textContent = 'Open the CNIC or Passport tab first.'; return; }
+  r.addImage(file);
 }
-$('ask').onclick = e => {
-  const b = e.target.closest('[data-kind]'); if (!b) return; const a = ASKQ.shift();
-  try { if (b.dataset.kind !== 'skip') processFile(b.dataset.kind, a.rows, a.name); } catch (err) { $('msg').textContent = err.message; }
-  renderAsk();
-};
-renderFiles();
-document.addEventListener('click', e => {
-  const b = e.target.closest('.cp'); if (!b) return; e.stopPropagation();
-  const v = b.dataset.copy, ok = () => { b.textContent = '\u2714'; b.classList.add('done'); setTimeout(() => { b.textContent = '\u{1F4CB}'; b.classList.remove('done'); }, 1200); };
-  const fb = () => { const t = document.createElement('textarea'); t.value = v; document.body.appendChild(t); t.select(); try { document.execCommand('copy'); ok(); } catch (x) { } t.remove(); };
-  if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(v).then(ok, fb); else fb();
-}, true);
-
-if (CFG) $('cfgStamp').textContent = 'Category list loaded \u2192 ' + Object.entries(CFG.categories).map(([k, v]) => k + ': ' + v.length).join('  |  ');
-if (!CFG) $('msg').textContent = 'categories-config.js could not be loaded. Keep all files in the same folder.';
+$('tabsBar').innerHTML = Object.entries(REPORTS).map(([k, r]) => `<button data-tab="${k}" id="tab_${k}">${esc(r.label)}${r.sub ? `<small>${esc(r.sub)}</small>` : ''}</button>`).join('');
+$('tabsBar').addEventListener('click', e => { const b = e.target.closest('[data-tab]'); if (b) showTab(b.dataset.tab); });
+$('today').textContent = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
+Object.values(REPORTS).forEach(r => { if (r.init) r.init(); });
+if (!REPORTS.cnic) $('msg').textContent = 'report-cnic.js could not be loaded. Keep all files in the same folder.';
+if (!REPORTS.passport) $('msg').textContent = 'report-passport.js could not be loaded. Keep all files in the same folder.';
 $('pick').onclick = e => { e.stopPropagation(); $('file').click(); };
-$('lnk').onclick = e => e.stopPropagation();
 $('drop').onclick = () => $('file').click();
-$('file').onchange = e => [...e.target.files].forEach(load);
+$('file').onchange = e => { [...e.target.files].forEach(load); e.target.value = ''; };
 ['dragover', 'dragenter'].forEach(ev => $('drop').addEventListener(ev, e => { e.preventDefault(); $('drop').classList.add('over'); }));
 ['dragleave', 'drop'].forEach(ev => $('drop').addEventListener(ev, e => { e.preventDefault(); $('drop').classList.remove('over'); }));
 $('drop').addEventListener('drop', e => [...e.dataTransfer.files].forEach(load));
-$('result').addEventListener('click', e => {
-  const t = e.target, tb = t.closest('[data-tab]');
-  if (tb) return showTab(tb.dataset.tab);
-  const ag = t.closest('[data-agent]'), st = t.closest('.stat'), cl = t.closest('[data-clear]'), th = t.closest('th[data-k]');
-  if (ag) { agentF = ag.dataset.agent; render(); $('act').scrollIntoView({ behavior: 'smooth', block: 'center' }); }
-  else if (cl) { const k = cl.dataset.clear; if (k === 'agent') agentF = ''; else if (k === 'f') filter = 'ALL'; else vf = 'ALL'; render(); }
-  else if (st) { if (st.dataset.f !== undefined) filter = st.dataset.f; else vf = st.dataset.v; render(); }
-  else if (th) { const k = th.dataset.k; sortDir = sortK === k ? -sortDir : 1; sortK = k; render(); }
-});
-$('bikeXls').onclick = () => { const sp = ALLREP()[curRep]; if (sp.sheets) { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([window.XLSX_IO.write(sp.sheets)], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })); a.download = sp.name + '.xlsx'; a.click(); return; } const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([bikeXLS(ALLREP()[curRep])], { type: 'application/vnd.ms-excel' })); a.download = ALLREP()[curRep].name + '.xls'; a.click(); };
-$('bikeCsv').onclick = () => download(ALLREP()[curRep].name + '.csv', repCSV(ALLREP()[curRep]));
-$('bikePrint').onclick = () => window.print();
-$('q').oninput = render; $('teh').onchange = render;
-$('dlAll').onclick = () => download('emergency_trips_checked.csv', toCSV(D.out));
-$('dlBad').onclick = () => download('emergency_trips_WRONG_only.csv', toCSV(D.out.filter(x => x.status === 'WRONG' || x.vstatus === 'WRONG')));
-
-/* ---- build the report tabs from the loaded report files ---- */
-$('tabsBar').insertAdjacentHTML('beforeend', REPS.map(([k, l]) => `<button data-tab="${k}" id="tab_${k}">${tabLabel(k, l)}</button>`).join(''));
-if (!REPORTS.jco) ['jcoBtns', 'slimMsg'].forEach(i => $(i).hidden = true);
-$('today').textContent = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
-Object.values(REPORTS).forEach(r => { if (r.init) r.init(); });
-['check', 'vehicle', ...REPS.filter(([k]) => !REPORTS[k].alwaysOn).map(([k]) => k)].forEach(k => $('tab_' + k).disabled = true);
+showTab(REPORTS.cnic ? 'cnic' : Object.keys(REPORTS)[0]);
 </script>
 </body>
 </html>
