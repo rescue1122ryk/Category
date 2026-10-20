@@ -147,5 +147,5 @@
     return zip(files);
   }
 
-  window.XLSX_IO = { read, write };
+  window.XLSX_IO = { read, write, zip };
 })();
