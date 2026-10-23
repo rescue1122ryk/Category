@@ -4,6 +4,7 @@
    The report reads it and fills the matching Word letter (Medical / RTA / Crime / Bullet Injury, one or many patients).
    Only the body of the letter is edited. The top-right box (diary number, office, date) is never touched.
    Needs: pdf.js, pdf.worker.js, jszip.min.js, brief-templates.js (all in the same folder).
+   Tehsil letters (Sadiqabad / Khanpur / Liaquatpur): brief-tehsils.js. Without it only the Rahim Yar Khan letter is made.
 --------------------------------------------------------------------------- */
 (function () {
   const W = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
@@ -15,6 +16,7 @@
   const items = [];            // every uploaded PDF
   let lastDate = '';           // the letter date picked last, offered again on the next card
   let seq = 0;
+  let lastTehsil = 'ryk';      // the tehsil picked last, offered again on the next card (needs brief-tehsils.js)
 
   const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const pad2 = n => String(n).padStart(2, '0');
@@ -185,6 +187,8 @@
     const doc = new DOMParser().parseFromString(xml, 'application/xml');
     const [yy, mo, dd] = d.callDate.split('/'), day = +dd, mon = +mo;
     if (it.diary && it.date) setHeader(doc, it.diary, it.date);
+    const TH = window.BRIEF_TEHSILS, tk = (TH && it.tehsil) || 'ryk';      // Sadiqabad / Khanpur / Liaquatpur: own top-right box, signature boxes and footer
+    if (TH && tk !== 'ryk') { TH.header(doc, tk); TH.signatures(doc, tk); }
     // sample-specific line in the Bullet template
     bodyParas(doc).filter(p => /^\s*\(Patients received from/i.test(paraText(p))).forEach(p => p.parentNode.removeChild(p));
     setValue(doc, 'Applicant Name', it.applicant || '____________________');
@@ -250,15 +254,20 @@
         setRunText(doc, runsOf(src)[0], want[0]);
       });
     }
+    if (TH && tk !== 'ryk') await TH.footer(zip, tk);
     zip.file('word/document.xml', new XMLSerializer().serializeToString(doc));
     const blob = await zip.generateAsync({ type: 'blob', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', compression: 'DEFLATE' });
     const rel = relText(p0);
     const nm = tidy(p0.name).replace(/\./g, '').replace(/ /g, '_') + (rel && !multi ? '_' + rel.replace(/\./g, '').replace('W/o', 'W.O').replace('S/o', 'S.O').replace('D/o', 'D.O').replace(/ /g, '_') : '');
-    return { blob, name: 'EMDS-' + d.ec + '_' + KINDNAME[kind] + '_' + nm + '_' + pad2(day) + '-' + pad2(mon) + '-' + yy + '_RYK.docx' };
+    return { blob, name: 'EMDS-' + d.ec + '_' + KINDNAME[kind] + '_' + nm + '_' + pad2(day) + '-' + pad2(mon) + '-' + yy + '_' + ((TH && TH[tk] && TH[tk].code) || 'RYK') + '.docx' };
   }
 
   /* ---------- screen ---------- */
   const $ = id => document.getElementById(id);
+  function tehsilBoxes(it) {      // exactly one tehsil is ticked
+    const TH = window.BRIEF_TEHSILS; if (!TH) return '';
+    return '<span><b>Tehsil:</b> ' + TH.order.map(k => `<label style="margin-left:10px"><input type="checkbox" data-tehsil="${k}"${(it.tehsil || 'ryk') === k ? ' checked' : ''}> ${esc(TH[k].name)}</label>`).join('') + '</span>';
+  }
   function card(it) {
     const d = it.d, P = d.patients, kind = kindOf(d);
     const miss = [];
@@ -273,10 +282,14 @@
       <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center"><b style="font-size:16px">EMDS-${esc(d.ec)} <span class="mu">${esc(it.file)}</span></b>
         <span><button class="p" data-act="dl">Download Word</button> <button data-act="rm">Remove</button></span></div>
       ${miss.length ? `<div class="note">Not found in the PDF: ${esc(miss.join(', '))}. Check the Word file before using it.</div>` : ''}
+      <div class="note" style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin-top:10px;font-size:15px;border:2px solid #e8b923">
+        <b>Fill before download:</b>
+        <label>Diary No. <input type="search" data-f="diary" value="${esc(it.diary)}" placeholder="e.g. 445" inputmode="numeric" style="min-width:110px;width:120px;font-size:16px"></label>
+        ${tehsilBoxes(it)}
+        <label>Letter date (click to open calendar) <input type="date" data-f="date" value="${esc(it.date)}" style="padding:8px 10px;border:1px solid var(--bd);border-radius:9px;background:var(--card);color:var(--tx);font:inherit;font-size:16px"></label>
+      </div>
       <table class="two" style="width:100%;margin-top:8px;border-collapse:collapse">${rows.map(([k, v]) => `<tr><td style="width:150px;color:var(--mu)">${k}</td><td style="text-align:left;font-weight:600">${esc(v)}</td></tr>`).join('')}</table>
       <div class="bar" style="margin-top:10px">
-        <label>Diary No. <input type="search" data-f="diary" value="${esc(it.diary)}" placeholder="e.g. 445" inputmode="numeric" style="min-width:80px;width:90px"></label>
-        <label>Letter date <input type="date" data-f="date" value="${esc(it.date)}" style="padding:7px 10px;border:1px solid var(--bd);border-radius:9px;background:var(--card);color:var(--tx);font:inherit"></label>
         <label>Applicant name <input type="search" data-f="applicant" value="${esc(it.applicant)}" placeholder="e.g. Abu Bakar Siddique S/o Muhammad Siddique" style="min-width:320px"></label>
         <label>Caller <select data-f="title"><option${it.title === 'Mr.' ? ' selected' : ''}>Mr.</option><option${it.title === 'Miss.' ? ' selected' : ''}>Miss.</option><option${it.title === 'Mrs.' ? ' selected' : ''}>Mrs.</option></select></label>
         <label>Distance (Km) <input type="search" data-f="distance" value="${esc(it.distance)}" style="min-width:70px;width:80px"></label>
@@ -303,19 +316,24 @@
     async addPdf(file) {
       const d = parse(await pdfText(await file.arrayBuffer()));
       const old = items.findIndex(x => x.d.ec === d.ec); if (old >= 0) items.splice(old, 1);   // same EC uploaded again replaces the old one
-      items.push({ id: ++seq, file: file.name, d, applicant: '', title: 'Mr.', distance: distanceDefault(d), diary: '', date: lastDate });
+      items.push({ id: ++seq, file: file.name, d, applicant: '', title: 'Mr.', distance: distanceDefault(d), diary: '', date: lastDate, tehsil: lastTehsil });
       render();
     },
     init() {
       const host = document.getElementById('result'); if (!host) return;
       const pn = document.createElement('div'); pn.id = 'panel_brief'; pn.className = 'ownpanel'; pn.hidden = true;
-      pn.innerHTML = '<div class="bar"><b>Brief of the Incident</b><span class="mu">Upload the EMDS detail PDF. The matching Word letter is filled for you. Enter the Diary No. and pick the letter date for each letter; they go into the box at the top right.</span><span style="flex:1"></span><button class="p" id="briefAll" hidden>Download all Word files</button></div><div id="briefMsg" style="color:var(--bad);font-weight:600"></div><div id="briefList"></div>';
+      pn.innerHTML = '<div class="bar"><b>Brief of the Incident</b> <small class="mu">(v2: diary no. + date)</small><span class="mu">Upload the EMDS detail PDF. The matching Word letter is filled for you. Enter the Diary No. and pick the letter date for each letter; they go into the box at the top right.</span><span style="flex:1"></span><button class="p" id="briefAll" hidden>Download all Word files</button></div><div id="briefMsg" style="color:var(--bad);font-weight:600"></div><div id="briefList"></div>';
       host.appendChild(pn);
       pn.addEventListener('click', e => {
         const b = e.target.closest('[data-act]'); if (!b) return; const id = +b.closest('[data-id]').dataset.id, it = items.find(x => x.id === id);
         if (b.dataset.act === 'dl') download(it); else { items.splice(items.indexOf(it), 1); render(); }
       });
       pn.addEventListener('input', e => { const f = e.target.dataset.f; if (!f) return; const it = items.find(x => x.id === +e.target.closest('[data-id]').dataset.id); if (it) { it[f] = e.target.value.trim(); if (f === 'date') lastDate = it.date; } });
+      pn.addEventListener('change', e => {      // tehsil tick boxes: only one can be ticked
+        const k = e.target.dataset && e.target.dataset.tehsil; if (!k) return;
+        const cd = e.target.closest('[data-id]'), it = items.find(x => x.id === +cd.dataset.id); if (!it) return;
+        it.tehsil = k; lastTehsil = k; cd.querySelectorAll('[data-tehsil]').forEach(c => { c.checked = c.dataset.tehsil === k; });
+      });
       pn.addEventListener('click', e => { const dt = e.target.closest('input[type=date]'); if (dt) { try { dt.showPicker(); } catch (x) { } } });   // open the calendar on click
       $('briefAll').onclick = async () => { for (const it of items) { if (!(await download(it))) break; await new Promise(r => setTimeout(r, 600)); } };
       render();
