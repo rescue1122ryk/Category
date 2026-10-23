@@ -7,6 +7,10 @@
    Layout is the same as the sheet made by hand: District Info and Station
    (call sign + address) are merged cells, a station without any qualifying
    vehicle shows "Nill" across the row.
+
+   Order: station (tehsil) wise. Inside each station the Ambulances come
+   first (RYA-01, RYA-02 ...), then the Bikes (RYB-01, RYB-02 ...).
+   The order of the types follows CONFIG.vehicleTypes.
    ===================================================================== */
 (function () {
   /* ---- Settings ------------------------------------------------------
@@ -27,7 +31,7 @@
     subtitle:     "Staff App is out of sync (1 hrs)   Rahim Yar Khan",
     reason:       "Staff App is out of sync",
     reasonMatch:  "exact",                    // "exact" or "contains"
-    vehicleTypes: ["Ambulance", "Bike"],
+    vehicleTypes: ["Ambulance", "Bike"],      // this order is also the order in the report
     status:       "Not Available",
     district:     "Rahim Yar Khan",
     stations: {
@@ -61,14 +65,20 @@
     for (const r of data) if (qual(r)) { const m = fmtDT(g(r, 'from')).match(/^(\d{2})\/(\d{2})\/(\d{4})/); if (m) { date = m[1] + '-' + m[2] + '-' + m[3]; break; } }
     date = date || csvDate(rows);
 
-    // 1) rows of each station
+    // order inside a station: vehicle type first (Ambulance, then Bike), then registration number (RYA-01, RYA-02 ... RYB-01 ...)
+    const typeOrd = r => { const i = types.indexOf(up(g(r, 'type'))); return i < 0 ? 99 : i; };
+    const byVehicle = (a, b) => typeOrd(a) - typeOrd(b) ||
+      g(a, 'veh').localeCompare(g(b, 'veh'), undefined, { numeric: true, sensitivity: 'base' });
+
+    // 1) rows of each station (tehsil wise)
     const blocks = Object.entries(R.stations).map(([st, a0]) => {
-      const list = data.filter(r => up(g(r, 'station')) === up(st) && qual(r));
+      const list = data.filter(r => up(g(r, 'station')) === up(st) && qual(r)).sort(byVehicle);
       const addr = list.length && c.addr >= 0 && g(list[0], 'addr') ? g(list[0], 'addr') : a0;
       const dist = list.length && c.dist >= 0 && g(list[0], 'dist') ? g(list[0], 'dist') : R.district;
       return { st, addr, dist, list };
     });
     const total = blocks.reduce((a, b) => a + b.list.length, 0), lines = blocks.reduce((a, b) => a + Math.max(b.list.length, 1), 0);
+    const perType = R.vehicleTypes.map(t => [t + ' records', blocks.reduce((a, b) => a + b.list.filter(r => up(g(r, 'type')) === up(t)).length, 0)]);
 
     // 2) build the sheet (District Info and Station cells are merged)
     const BD = 'font-size:8pt;', BT = 'font-weight:bold;font-size:9pt;';
@@ -93,8 +103,8 @@
     }
     const HD = ['District Info', 'Station Call', 'Location Data (Station)', 'Vehicle', 'Vehicle Type', 'Location Data (GPS)', 'From Date', 'To Date', 'Duration', 'Reasons', 'Emergency Status', 'Remarks'];
     return {
-      name: 'Staff App Out of Sync ' + date, count: total, cards: [['Out-of-sync records', total], ...per], warn: '',
-      rule: R.vehicleTypes.join(' + ') + '  |  ' + R.status + '  |  Reason ' + (R.reasonMatch === 'contains' ? 'contains' : 'is exactly') + ' "' + R.reason + '"  |  Duration >= ' + R.minHours + ' hr',
+      name: 'Staff App Out of Sync ' + date, count: total, cards: [['Out-of-sync records', total], ...perType, ...per], warn: '',
+      rule: R.vehicleTypes.join(' + ') + '  |  ' + R.status + '  |  Reason ' + (R.reasonMatch === 'contains' ? 'contains' : 'is exactly') + ' "' + R.reason + '"  |  Duration >= ' + R.minHours + ' hr  |  Order: station wise, ' + R.vehicleTypes.join(' then '),
       widths: [78, 62, 150, 62, 80, 92, 112, 112, 78, 140, 84, 62],
       rows: [
         [cl('', 'border:0;', { cs: 2, rs: 2 }), cl(R.title + ', Dated ' + date, 'font-weight:bold;font-size:14pt;height:28px;', { cs: 10 })],
