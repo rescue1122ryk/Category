@@ -34,7 +34,10 @@
   const ORDER = ['ryk', 'sdk', 'khp', 'lqp'];
   /* the Rahim Yar Khan wording that is replaced */
   const RYK_FOOTER = { address: 'Behind Allama Iqbal Library, WAPDA Colony Road, Rahim Yar Khan', phone: '068-9230011, 9230183', email: 'rescue1122ryk@yahoo.com' };
-  const LIFT_PARAS = 4;              // empty lines removed above the signature boxes, so the three signature boxes fit above the footer
+  /* Room for signing: the signature boxes start below the call details. The more empty lines are removed in front of
+     them the closer they come to the text (less room to sign) but the more room is left above the footer.
+     A letter with a patient table is longer, so it needs one line more than a plain letter. 0 = keep all the room. */
+  const LIFT_PLAIN = 0, LIFT_TABLE = 3;
   const SIGNATURE_GAP = 800000;      // how far (EMU, 360000 = 1 cm) the District Emergency Officer box sits below the first signature row
 
   /* ---------- small helpers (text can be split over several runs, so replace across runs) ---------- */
@@ -110,7 +113,8 @@
     // lift the signature boxes: take away empty lines in front of them
     const pOf = r => { let a = r; while (a && a.localName !== 'p') a = a.parentNode; return a; };
     const first = (pOf(criRun).compareDocumentPosition(pOf(deoRun)) & 4) ? pOf(criRun) : pOf(deoRun);
-    for (let n = LIFT_PARAS, prev = first.previousSibling; n > 0 && prev; ) {
+    const lift = doc.getElementsByTagNameNS(W, 'tbl').length ? LIFT_TABLE : LIFT_PLAIN;
+    for (let n = lift, prev = first.previousSibling; n > 0 && prev; ) {
       const cur = prev; prev = prev.previousSibling;
       if (cur.nodeType !== 1) continue;
       const blank = cur.localName === 'p' && !cur.textContent.trim() && !cur.getElementsByTagNameNS(W, 'sectPr').length && !cur.getElementsByTagName('*').length === false && ![...cur.getElementsByTagName('*')].some(e => ['drawing', 'pict', 'AlternateContent', 'sectPr'].includes(e.localName));
