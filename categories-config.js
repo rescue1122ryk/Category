@@ -37,6 +37,7 @@ window.CATEGORY_CONFIG = {
       "Gyne Problem",
       "Shock",
       "Urinary Retention",
+       "Fall From Tree",
       "Domestic Injury",
       "Electric Shock",
       "Crime Case",
