@@ -37,7 +37,7 @@ window.VEHICLE_CONFIG = {
     ],
     "Liaqatpur": [
       "RYA-10", "RYA-21", "RYA-22", "RYA-36", "RYA-30", "LPA-06", "RYA-32", "LPA-08",
-      "RYA-33", "RYA-29", "LPF-01", "LPR-01"
+      "RYA-33", "RYA-29", "LPF-01", "LPR-01", "RYA-31"
     ]
   },
 
