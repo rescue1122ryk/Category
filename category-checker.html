@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>NIGHT REPORTS DASHBOARD</title>
+<title>RESCUE 1122 RAHIM YAR KHAN REPORTS DASHBOARD</title>
 <link rel="icon" type="image/jpeg" href="logo-rescue.jpg">
 <script>document.write('<script src="categories-config.js?v=' + Date.now() + '"><\/script>');</script>
 <script>document.write('<script src="vehicles-config.js?v=' + Date.now() + '"><\/script>');</script>
@@ -26,12 +26,6 @@
 <script>document.write('<script src="report-unfinal.js?v=' + Date.now() + '"><\/script>');</script>
 <script>document.write('<script src="report-pts.js?v=' + Date.now() + '"><\/script>');</script>
 <script>document.write('<script src="report-jco.js?v=' + Date.now() + '"><\/script>');</script>
-<script src="pdf.js"></script>
-<script src="pdf.worker.js"></script>
-<script src="jszip.min.js"></script>
-<script>document.write('<script src="brief-templates.js?v=' + Date.now() + '"><\/script>');</script>
-<script>document.write('<script src="brief-tehsils.js?v=' + Date.now() + '"><\/script>');</script>
-<script>document.write('<script src="report-brief.js?v=' + Date.now() + '"><\/script>');</script>
 <script>document.write('<script src="report-cnic.js?v=' + Date.now() + '"><\/script>');</script>
 <style>
 :root{--bg:#f3f5f9;--card:#fff;--tx:#18202e;--mu:#6b7686;--bd:#e1e6ee;--ac:#1f5eff;--hd1:#0f2a5c;--hd2:#1f5eff;
@@ -140,7 +134,6 @@ footer{text-align:center;color:var(--mu);padding:18px;font-size:13px}
 .sheetname{font-weight:700;margin:18px 0 6px;color:var(--mu)}
 .tabs [data-tab=pts]::before{content:"\1F3E5"}
 .tabs [data-tab=cnic]::before{content:"\1F194"}.tabs [data-tab=cnic]{border-top-color:#7a3fc2}
-.tabs [data-tab=brief]::before{content:"\1F4C4"}.tabs [data-tab=brief]{border-top-color:#e8b923}
 </style>
 </head>
 <body>
@@ -158,12 +151,12 @@ footer{text-align:center;color:var(--mu);padding:18px;font-size:13px}
   </div>
 
   <div id="drop" class="card drop">
-    <p><b>Drop all your CSV / Excel (.xlsx) / PDF / picture files here</b> or <button class="p" id="pick">Choose files</button></p>
-    <p class="mu">Select several files at once. Each file is recognised by its columns. A PDF goes to <b>Brief of the Incident</b>; two pictures (front, back) go to <b>CNIC Print A4</b>.</p>
+    <p><b>Drop all your CSV / Excel (.xlsx) / picture files here</b> or <button class="p" id="pick">Choose files</button></p>
+    <p class="mu">Select several files at once. Each file is recognised by its columns. Two pictures (front, back) go to <b>CNIC Print A4</b>. <b>Brief of the Incident</b> has its own page: <a href="brief-of-the-incident.html" target="_blank">open it</a>.</p>
     <p class="mu">Emergency trips CSV: download it from the <a href="https://punjab.rescue1122.org/dashboard/report/detailed_emergency_statistics" target="_blank" rel="noopener" id="lnk">All-In-One Emergency Detailed Report</a></p>
     <p id="jcoBtns"><button id="openJco">Open JCO monthly report</button> <button id="slimBtn" title="Choose the full monthly CSV files. For each one a small CSV with only the JCO columns is downloaded.">Slim files for JCO</button></p>
     <p class="mu" id="slimMsg"></p>
-    <input type="file" id="file" accept=".csv,text/csv,.xlsx,.pdf,application/pdf,image/*" multiple hidden>
+    <input type="file" id="file" accept=".csv,text/csv,.xlsx,image/*" multiple hidden>
     <div id="files" class="act" style="justify-content:center"></div>
   </div>
   <div id="ask"></div>
@@ -211,7 +204,7 @@ footer{text-align:center;color:var(--mu);padding:18px;font-size:13px}
     </div>
   </div>
 </main>
-<footer>RESCUE 1122 RAHIM YAR KHAN &mdash; Reports Dashboard &bull; Data stays on your computer<br><small id="cfgStamp"></small><br><small>Page version: 21-10-2026 (Brief tehsil letters)</small></footer>
+<footer>RESCUE 1122 RAHIM YAR KHAN &mdash; Reports Dashboard &bull; Data stays on your computer<br><small id="cfgStamp"></small><br><small>Page version: 22-10-2026 (Brief of the Incident moved to its own page)</small></footer>
 
 <script>
 // CORE START
@@ -450,11 +443,7 @@ function load(file) {
     REPORTS.cnic.addImage(file).then(() => afterLoad('cnic')).catch(e => { $('msg').textContent = file.name + ': ' + e.message; });
     return;
   }
-  if (/\.pdf$/i.test(file.name)) {   // EMDS detail PDFs are read by report-brief.js
-    if (!REPORTS.brief || !REPORTS.brief.addPdf) { $('msg').textContent = 'report-brief.js could not be loaded. Keep all files in the same folder.'; return; }
-    REPORTS.brief.addPdf(file).then(() => afterLoad('brief')).catch(e => { console.error(e); $('msg').textContent = file.name + ': ' + e.message; });
-    return;
-  }
+  if (/\.pdf$/i.test(file.name)) { $('msg').innerHTML = esc(file.name) + ': PDF files are read on the <a href="brief-of-the-incident.html" target="_blank">Brief of the Incident</a> page.'; return; }
   if (/\.xlsx$/i.test(file.name)) {   // Excel files are opened by report-xlsx.js
     if (!window.XLSX_IO) { $('msg').textContent = 'report-xlsx.js could not be loaded. Keep all files in the same folder.'; return; }
     file.arrayBuffer().then(b => window.XLSX_IO.read(b)).then(rows => loadRows(file, rows)).catch(e => { $('msg').textContent = file.name + ': ' + e.message; });
