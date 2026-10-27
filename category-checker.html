@@ -134,6 +134,9 @@ footer{text-align:center;color:var(--mu);padding:18px;font-size:13px}
 .sheetname{font-weight:700;margin:18px 0 6px;color:var(--mu)}
 .tabs [data-tab=pts]::before{content:"\1F3E5"}
 .tabs [data-tab=cnic]::before{content:"\1F194"}.tabs [data-tab=cnic]{border-top-color:#7a3fc2}
+.ec.done{background:#ffe066;color:#000;border-radius:6px;padding:0 5px;font-weight:700}
+tr.mk td{background:#fff3b0!important;color:#000}
+#clrMarks{position:fixed;right:14px;bottom:14px;z-index:50;background:#ffe066;color:#000;border:0;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.35)}
 </style>
 </head>
 <body>
@@ -180,6 +183,7 @@ footer{text-align:center;color:var(--mu);padding:18px;font-size:13px}
       <input type="search" id="q" placeholder="Search EC No, subtype, agent...">
       <button class="p" id="dlAll">Download full CSV</button>
       <button id="dlBad">Download wrong only</button>
+      <button id="cpTbl" title="Copy the table you see now, ready to paste into Excel">Copy table</button>
     </div>
     <div class="act" id="act"></div>
     <div class="wrap"><table id="tbl"></table></div>
@@ -188,7 +192,7 @@ footer{text-align:center;color:var(--mu);padding:18px;font-size:13px}
       <div class="bar">
         <select id="jMonth" title="Month"></select><select id="jAgent" title="Call agent" style="min-width:240px"></select>
         <span style="flex:1"></span>
-        <button id="jRef">Refresh list</button><button id="jCsv">Download CSV</button>
+        <button id="jRef">Refresh list</button><button id="jCsv">Download CSV</button><button id="jCopy" title="Copy the list, ready to paste into Excel">Copy</button>
       </div>
       <div id="jMsg" class="mu"></div>
       <div class="grid" id="jSum"></div>
@@ -199,12 +203,13 @@ footer{text-align:center;color:var(--mu);padding:18px;font-size:13px}
       <div class="grid" id="bikeSum"></div>
       <div id="bikeWarn"></div>
       <div class="bar"><span class="mu" id="bikeRule"></span><span style="flex:1"></span>
-        <button class="p" id="bikeXls">Download Excel (.xls)</button><button id="bikeCsv">Download CSV</button><button id="bikePrint">Print</button></div>
+        <button class="p" id="bikeXls">Download Excel (.xls)</button><button id="bikeCopy" title="Copy the report with its format, ready to paste into Excel">Copy</button><button id="bikeCsv">Download CSV</button><button id="bikePrint">Print</button></div>
       <div class="wrap" id="bikeSheet"></div>
     </div>
   </div>
 </main>
-<footer>RESCUE 1122 RAHIM YAR KHAN &mdash; Reports Dashboard &bull; Data stays on your computer<br><small id="cfgStamp"></small><br><small>Page version: 22-10-2026 (Brief of the Incident moved to its own page)</small></footer>
+<button id="clrMarks" hidden title="Remove the yellow marks from the EC numbers you have copied">Clear EC marks</button>
+<footer>RESCUE 1122 RAHIM YAR KHAN &mdash; Reports Dashboard &bull; Data stays on your computer<br><small id="cfgStamp"></small><br><small>Page version: 27-10-2026 (Copy buttons, EC marks, Misc)</small></footer>
 
 <script>
 // CORE START
@@ -465,9 +470,48 @@ $('ask').onclick = e => {
   renderAsk();
 };
 renderFiles();
+/* ---- Copy buttons: the table is copied with its format (paste it in Excel / Word) and as plain tab separated text ---- */
+async function copyRich(html, text, btn) {
+  const done = ok => { if (!btn) return; const t = btn.dataset.t || btn.textContent; btn.dataset.t = t; btn.textContent = ok ? 'Copied \u2714' : 'Could not copy'; setTimeout(() => { btn.textContent = t; }, 1600); };
+  try {
+    if (navigator.clipboard && window.ClipboardItem && window.isSecureContext) {
+      await navigator.clipboard.write([new ClipboardItem({ 'text/html': new Blob([html], { type: 'text/html' }), 'text/plain': new Blob([text], { type: 'text/plain' }) })]); return done(true);
+    }
+  } catch (e) { }
+  const d = document.createElement('div'); d.contentEditable = 'true'; d.style.cssText = 'position:fixed;left:-9999px;top:0;background:#fff;color:#000'; d.innerHTML = html; document.body.appendChild(d);
+  const r = document.createRange(); r.selectNodeContents(d); const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+  let ok = false; try { ok = document.execCommand('copy'); } catch (e) { } s.removeAllRanges(); d.remove(); done(ok);
+}
+const tsv = rows => rows.map(r => r.map(v => String(v == null ? '' : v).replace(/[\t\r\n]+/g, ' ')).join('\t')).join('\n');
+function copyTable(rows, btn) {      // rows: array of arrays, the first row is the heading
+  const html = '<table border="1" style="border-collapse:collapse;font-family:Calibri,Arial,sans-serif;font-size:11pt">' + rows.map((r, i) => '<tr>' + r.map(v => (i ? '<td>' : '<th style="background:#d9d9d9">') + esc(v == null ? '' : v) + (i ? '</td>' : '</th>')).join('') + '</tr>').join('') + '</table>';
+  return copyRich(html, tsv(rows), btn);
+}
+const sheetTSV = s => tsv(s.rows.map(r => r.map(c => c.v)));
+$('bikeCopy').onclick = () => {
+  const sp = ALLREP()[curRep]; if (!sp) return;
+  const html = sp.sheets ? sp.sheets.map(s => '<p><b>' + esc(s.name) + '</b></p>' + sheetHTML(s, false)).join('<br>') : sheetHTML(sp, false);
+  copyRich(html, sp.sheets ? sp.sheets.map(s => s.name + '\n' + sheetTSV(s)).join('\n\n') : sheetTSV(sp), $('bikeCopy'));
+};
+$('cpTbl').onclick = () => {
+  const t = $('tbl').cloneNode(true); t.querySelectorAll('.cp').forEach(x => x.remove());
+  copyTable([...t.rows].map(r => [...r.cells].map(c => c.textContent.replace(/\s+/g, ' ').trim())), $('cpTbl'));
+};
+
+/* ---- an EC number you have copied is marked (yellow) so you can see how far the work has gone ---- */
+const MARKS = new Set(); try { JSON.parse(sessionStorage.getItem('ecMarks') || '[]').forEach(x => MARKS.add(x)); } catch (e) { }
+function applyMarks() {
+  document.querySelectorAll('.ec').forEach(s => { const c = s.querySelector('.cp'); s.classList.toggle('done', !!c && MARKS.has(c.dataset.copy)); });
+  document.querySelectorAll('tr').forEach(tr => tr.classList.toggle('mk', !!tr.querySelector('.ec.done')));
+  const b = $('clrMarks'), lab = 'Clear EC marks (' + MARKS.size + ')'; b.hidden = !MARKS.size; if (b.textContent !== lab) b.textContent = lab;   // only touch the text when it changes, otherwise the observer below would loop
+}
+$('clrMarks').onclick = () => { MARKS.clear(); try { sessionStorage.removeItem('ecMarks'); } catch (e) { } applyMarks(); };
+let markTimer = 0; new MutationObserver(() => { clearTimeout(markTimer); markTimer = setTimeout(applyMarks, 40); }).observe(document.body, { childList: true, subtree: true });
+applyMarks();
+
 document.addEventListener('click', e => {
   const b = e.target.closest('.cp'); if (!b) return; e.stopPropagation();
-  const v = b.dataset.copy, ok = () => { b.textContent = '\u2714'; b.classList.add('done'); setTimeout(() => { b.textContent = '\u{1F4CB}'; b.classList.remove('done'); }, 1200); };
+  const v = b.dataset.copy, ok = () => { MARKS.add(v); try { sessionStorage.setItem('ecMarks', JSON.stringify([...MARKS])); } catch (x) { } applyMarks(); b.textContent = '\u2714'; b.classList.add('done'); setTimeout(() => { b.textContent = '\u{1F4CB}'; b.classList.remove('done'); }, 1200); };
   const fb = () => { const t = document.createElement('textarea'); t.value = v; document.body.appendChild(t); t.select(); try { document.execCommand('copy'); ok(); } catch (x) { } t.remove(); };
   if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(v).then(ok, fb); else fb();
 }, true);

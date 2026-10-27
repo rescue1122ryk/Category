@@ -1,5 +1,5 @@
 /* =====================================================================
-   report-misc.js  -  Misc Emergencies Breakup (Fall, Animal, Hazmat, Snake, Electric Shock, Delivery)
+   report-misc.js  -  Misc Emergencies Breakup (Fall, Animal, Hazmat, Snake, Electric Shock, Mass Event Coverage, Vehicle Extrication, Delivery)
    Edit the settings (CONFIG) below, or the rules inside miscReport().
    This file is independent: changing it does not affect the other reports.
    Needs report-helpers.js (loaded before it in category-checker.html).
@@ -30,8 +30,8 @@
     title:        "Misc Emergencies Breakup of District {district}",
     district:     "Rahim Yar Khan",
     delivery:     "Delivery Case",
-    totalGroups:  [["Fall From Wall", "Fall From Roof"], ["Animal/Bird Rescue"], ["Hazmat"], ["Snake Emergency"], ["Electric Shock"]],
-    patientGroups: [["Fall From Wall", "Fall From Roof"], ["Animal/Bird Rescue", "Hazmat", "Snake Emergency"], ["Electric Shock"]],
+    totalGroups:  [["Fall From Wall", "Fall From Roof"], ["Animal/Bird Rescue"], ["Hazmat"], ["Snake Emergency"], ["Electric Shock"], ["Mass Event Coverage"], ["Vehicle Extrication"]],
+    patientGroups: [["Fall From Wall", "Fall From Roof"], ["Animal/Bird Rescue", "Hazmat", "Snake Emergency"], ["Electric Shock"], ["Mass Event Coverage"], ["Vehicle Extrication"]],
     ageBrackets:  [{ label: "15 Y to 20 Y", max: 20 }, { label: "21 Y to 30 Y", max: 30 }, { label: "31 Y to 40 Y", max: 40 }, { label: "41 Y to 50 Y", max: 50 }, { label: "51 Y & above", max: 999 }],
     watchTypes:   ["Fall", "Rescue Operations"],   // a subtype of these Emergency Types that is not listed above gets a warning
     ignoreRemarks: ["n/a", "na", "ok", "nil", "nill", "none", "no", "-", "good", "complete", "completed", "finished", "done"]
@@ -140,7 +140,7 @@
     csv.push([], [R.delivery, 'Total', delivery.length, 'Total Patient', dv.length], ['Age group', ...R.ageBrackets.map(b => b.label)], ['Patients', ...counts.map(dash)]);
     return {
       name: 'Misc Emergencies ' + date, count: items.length + delivery.length,
-      cards, rule: 'Emergency Subtypes: Fall, Animal/Bird Rescue, Hazmat, Snake, Electric Shock, Delivery  |  Discarded trips excluded  |  Anything not in the CSV is left empty',
+      cards, rule: 'Emergency Subtypes: Fall, Animal/Bird Rescue, Hazmat, Snake, Electric Shock, Mass Event Coverage, Vehicle Extrication, Delivery  |  Discarded trips excluded  |  Anything not in the CSV is left empty',
       warn, widths: [124, 56, 66, 72, 78, 78, 86, 220, 380],
       rows: [
         [cl(R.title.replace('{district}', R.district), 'font-weight:bold;font-size:20pt;height:44px;', { cs: n })],

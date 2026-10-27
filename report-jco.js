@@ -165,6 +165,10 @@
       const rs = jcoRows(), q = ['EC No', 'Date', 'Time', 'Emergency Type', 'Emergency Subtype', 'Call Type', 'Tehsil', 'Call Agent'];
       download('JCO ' + (JC.agent || 'All agents') + ' ' + (JC.data ? JC.data.month : '') + '.csv', repCSV({ csv: [q, ...rs.map(r => [r.ec, ymd(r.date), r.time, r.type, r.sub, r.call, r.teh, r.agent])] }));
     };
+    if ($('jCopy')) $('jCopy').onclick = () => {
+      const rs = jcoRows(), q = ['EC No', 'Date', 'Time', 'Emergency Type', 'Emergency Subtype', 'Call Type', 'Tehsil', 'Call Agent'];
+      copyTable([q, ...rs.map(r => [r.ec, ymd(r.date), r.time, r.type, r.sub, r.call, r.teh, r.agent])], $('jCopy'));
+    };
     $('tabJco').addEventListener('click', e => { const b = e.target.closest('.cd[data-d]'); if (b) { JC.day = b.dataset.d; jcoDraw(); } });
     $('openJco').onclick = e => { e.stopPropagation(); afterLoad('jco'); };
     $('slimBtn').onclick = e => { e.stopPropagation(); $('slimFile').click(); };
