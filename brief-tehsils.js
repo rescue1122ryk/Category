@@ -143,5 +143,14 @@
     }
   }
 
-  window.BRIEF_TEHSILS = Object.assign({ order: ORDER, header, signatures, footer }, TEHSILS);
+  /* the wording of the letter's fixed parts, for the on-screen preview (the Word file takes them from the template) */
+  function describe(key) {
+    const T = TEHSILS[key] || TEHSILS.ryk, F = T.footer;
+    const f = F ? { l1: 'Rescue 1122 Station, ' + F.address, label: F.phoneLabel || 'Ph:', phone: F.phone, email: F.email }
+                : { l1: 'Rescue 1122 Station, ' + RYK_FOOTER.address, label: 'Ph:', phone: RYK_FOOTER.phone, email: RYK_FOOTER.email };
+    if (key === 'ryk' || !T.diary) return { diary: (n, yy) => 'RYK/DEO/CRI/' + n + '/' + yy + ' (PESD)', office: 'District Emergency Officer', place: 'RAHIM YAR KHAN', sig: null, footer: f };
+    return { diary: T.diary, office: T.office, place: T.place, sig: T.sign, footer: f };
+  }
+
+  window.BRIEF_TEHSILS = Object.assign({ order: ORDER, header, signatures, footer, describe }, TEHSILS);
 })();

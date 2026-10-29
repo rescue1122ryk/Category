@@ -179,6 +179,39 @@
     }
   }
 
+  /* All the wording of the letter in one place. The preview shows these values and lets you change them;
+     it.ov holds your changes, and the Word file is written from the same values. */
+  function fieldsOf(it) {
+    const d = it.d, P = d.patients, kind = kindOf(d), multi = P.length > 1, ov = it.ov || {}, p0 = P[0] || {};
+    const pick = (k, v) => ov[k] !== undefined ? ov[k] : v, [yy, mo, dd] = d.callDate.split('/'), day = +dd, mon = +mo;
+    const addr = d.address.charAt(0).toUpperCase() + d.address.slice(1);
+    const F = {
+      applicant: it.applicant || '',
+      victim: pick('victim', (tidy(p0.name) + ' ' + relText(p0)).trim()),
+      approx: pick('approx', p0.age ? p0.age + ' Years' : ''),
+      ec: pick('ec', 'EMDS-' + d.ec),
+      dateInc: pick('dateInc', pad2(day) + '-' + pad2(mon) + '-' + yy),
+      callTime: pick('callTime', d.callTime),
+      cause: pick('cause', CAUSE[kind]),
+      place: pick('place', addr.replace(/,?\s*Rahim yar khan/i, ', Rahim Yar Khan')),
+      vehLabel: pick('vehLabel', (kind === 'bullet' || multi) ? 'Ambulances:' : 'Ambulance:'),
+      vehNo: pick('vehNo', d.vehicle),
+      staff: pick('staff', tidy(d.emt) + ' (EMT), ' + tidy(d.driver) + ' (Driver)'),
+      response: pick('response', pad2(+d.responseMin || 0) + ' Minutes'),
+      distance: pick('distance', (it.distance || distanceDefault(d)) + ' Km'),
+      total: pick('total', pad2(P.length)),
+      cond: pick('cond', multi ? '' : condition(p0)),
+      shifted: pick('shifted', multi ? '' : shifted(p0)),
+      phone: pick('phone', phone(d.callerNo)),
+      noteDate: pick('noteDate', pad2(day) + ordinal(day) + ' ' + MONTHS[mon - 1] + ' ' + yy),
+      rowTime: pick('rowTime', pick('callTime', d.callTime)),
+      caller: pick('caller', (it.title || 'Mr.') + ' ' + tidy(d.caller)),
+      nature: pick('nature', 'Emergency Call (Ambulance Responded)'),
+      patients: P.map((p, i) => { const o = (ov.p || {})[i] || {}; return { name: o.name !== undefined ? o.name : tidy(p.name), relname: o.relname !== undefined ? o.relname : tidy(p.relname), age: o.age !== undefined ? o.age : (p.age ? p.age + ' Y' : ''), cond: o.cond !== undefined ? o.cond : condition(p), shifted: o.shifted !== undefined ? o.shifted : shifted(p) }; })
+    };
+    return F;
+  }
+
   async function makeDocx(it) {
     const d = it.d, P = d.patients, kind = kindOf(d), multi = P.length > 1;
     const key = (kind === 'bullet' && multi) ? 'bullet' : multi ? 'crimeN' : kind === 'medical' ? 'medical' : kind === 'rta' ? 'rta' : 'crime1';
@@ -191,29 +224,31 @@
     if (TH && tk !== 'ryk') { TH.header(doc, tk); TH.signatures(doc, tk); }
     // sample-specific line in the Bullet template
     bodyParas(doc).filter(p => /^\s*\(Patients received from/i.test(paraText(p))).forEach(p => p.parentNode.removeChild(p));
-    setValue(doc, 'Applicant Name', it.applicant || '____________________');
+    const F = fieldsOf(it), ov = it.ov || {};
+    setValue(doc, 'Applicant Name', F.applicant || '____________________');
     const p0 = P[0], pv = findPara(doc, 'Victim');
     if (!multi && pv) {
       const runs = runsOf(pv), pre = /^(.*?:[ \t]*)/.exec(paraText(pv))[1];
-      setRunText(doc, runs[0], pre + (tidy(p0.name) + ' ' + relText(p0)).trim() + ' ');
-      if (runs[1]) setRunText(doc, runs[1], p0.age ? '    (Approx. ' + p0.age + ' Years)' : '');
+      setRunText(doc, runs[0], pre + F.victim + ' ');
+      if (runs[1]) setRunText(doc, runs[1], F.approx ? '    (Approx. ' + F.approx + ')' : '');
       runs.slice(2).forEach(r => setRunText(doc, r, ''));
     }
-    setValue(doc, 'Emergency No', 'EMDS-' + d.ec + '\t\t');
-    setValue(doc, 'Date of Incident', pad2(day) + '-' + pad2(mon) + '-' + yy);
-    setValue(doc, 'Call Time', d.callTime);
-    setValue(doc, 'Probable cause of Emergency', CAUSE[kind] + '\t');
-    const addr = d.address.charAt(0).toUpperCase() + d.address.slice(1);
-    setValue(doc, 'Place of Incident', addr.replace(/,?\s*Rahim yar khan/i, ', Rahim Yar Khan'));
-    setValue(doc, 'Vehicle Attended', (kind === 'bullet' || multi) && /Ambulances:/.test(paraText(findPara(doc, 'Vehicle Attended'))) ? 'Ambulances:\t' + d.vehicle : 'Ambulance:  \t' + d.vehicle);
-    setValue(doc, 'Staff who dealt this emergency', tidy(d.emt) + ' (EMT), ' + tidy(d.driver) + ' (Driver)');
-    setValue(doc, 'Response Time', pad2(+d.responseMin || 0) + ' Minutes');
-    setValue(doc, 'Distance', (it.distance || distanceDefault(d)) + ' Km');
-    setValue(doc, labelOf(doc, 'Total No. of'), pad2(P.length));
-    if (!multi) { setValue(doc, 'Patient Condition', condition(p0)); setValue(doc, 'Shifted to hospital', shifted(p0)); }
+    setValue(doc, 'Emergency No', F.ec + '\t\t');
+    setValue(doc, 'Date of Incident', F.dateInc);
+    setValue(doc, 'Call Time', F.callTime);
+    setValue(doc, 'Probable cause of Emergency', F.cause + '\t');
+    setValue(doc, 'Place of Incident', F.place);
+    setValue(doc, 'Vehicle Attended', (ov.vehLabel !== undefined ? F.vehLabel + '\t' : ((kind === 'bullet' || multi) && /Ambulances:/.test(paraText(findPara(doc, 'Vehicle Attended'))) ? 'Ambulances:\t' : 'Ambulance:  \t')) + F.vehNo);
+    setValue(doc, 'Staff who dealt this emergency', F.staff);
+    setValue(doc, 'Response Time', F.response);
+    setValue(doc, 'Distance', F.distance);
+    setValue(doc, labelOf(doc, 'Total No. of'), F.total);
+    if (!multi) { setValue(doc, 'Patient Condition', F.cond); setValue(doc, 'Shifted to hospital', F.shifted); }
     // NOTE line (keeps the small raised "th")
     const pn = bodyParas(doc).find(p => /^Rescue 1122 Control Room received/.test(paraText(p)));
-    if (pn) {
+    if (pn && (ov.phone !== undefined || ov.noteDate !== undefined)) {      // edited in the preview: written as plain text
+      const rs = runsOf(pn); setRunText(doc, rs[0], 'Rescue 1122 Control Room received a call from ' + F.phone + ', ' + F.noteDate + '.'); rs.slice(1).forEach(r => setRunText(doc, r, ''));
+    } else if (pn) {
       const rs = runsOf(pn), s = rs.findIndex(r => /^(st|nd|rd|th)$/.test(runText(r)));
       if (s > 0) {
         setRunText(doc, rs[s - 1], 'Rescue 1122 Control Room received a call from ' + phone(d.callerNo) + ', ' + pad2(day));
@@ -223,7 +258,8 @@
     }
     // call detail row
     const re = /(\d\d:\d\d)(\s+)((?:Mr|Miss|Mrs)\.\s[^\t]*?)(\s{2,}|\t|$)/;
-    for (const p of bodyParas(doc)) for (const r of runsOf(p)) { const tx = runText(r); if (re.test(tx)) setRunText(doc, r, tx.replace(re, (m, a, g, n, e) => d.callTime + g + (it.title || 'Mr.') + ' ' + tidy(d.caller) + e)); }
+    for (const p of bodyParas(doc)) for (const r of runsOf(p)) { const tx = runText(r); if (re.test(tx)) setRunText(doc, r, tx.replace(re, (m, a, g, n, e) => F.rowTime + g + F.caller + e)); }
+    if (ov.nature !== undefined) for (const p of bodyParas(doc)) { const rs = runsOf(p), tx = paraText(p), m = /Emergency Call \([^)]*\)/.exec(tx); if (!m) continue; let pos = 0, done = false; rs.forEach(r => { const t = runText(r), a = pos, b = pos + t.length; pos = b; if (b > m.index && a < m.index + m[0].length) { const from = Math.max(m.index, a) - a, to = Math.min(m.index + m[0].length, b) - a; setRunText(doc, r, t.slice(0, from) + (done ? '' : F.nature) + t.slice(to)); done = true; } }); }
     // patients table
     const tbl = doc.getElementsByTagNameNS(W, 'tbl')[0];
     if (multi && tbl) {
@@ -231,7 +267,7 @@
       while (rows().length - 1 < P.length) tbl.appendChild(rows().slice(-1)[0].cloneNode(true));
       while (rows().length - 1 > P.length) tbl.removeChild(rows().slice(-1)[0]);
       P.forEach((p, i) => {
-        const vals = [pad2(i + 1), tidy(p.name), tidy(p.relname), p.age ? p.age + ' Y' : '', condition(p), shifted(p)];
+        const q = F.patients[i], vals = [pad2(i + 1), q.name, q.relname, q.age, q.cond, q.shifted];
         [...rows()[i + 1].children].filter(e => e.localName === 'tc').forEach((tc, c) => {
           const para = [...tc.children].find(e => e.localName === 'p'), rs = runsOf(para);
           if (rs.length) { setRunText(doc, rs[0], vals[c] || ''); rs.slice(1).forEach(r => setRunText(doc, r, '')); }
@@ -242,7 +278,7 @@
     if (multi && tbl) {   // the template merges the Condition / Shifted cells down the table; if patients differ, un-merge so each row shows its own value
       const trs = [...tbl.children].filter(e => e.localName === 'tr').slice(1), tcs = i => trs.map(r => [...r.children].filter(e => e.localName === 'tc')[i]);
       [4, 5].forEach(ci => {
-        const want = P.map(p => ci === 4 ? condition(p) : shifted(p));
+        const want = F.patients.map(q => ci === 4 ? q.cond : q.shifted);
         if (new Set(want).size < 2) return;
         const cells = tcs(ci), src = [...cells[0].children].find(e => e.localName === 'p');
         cells.forEach((tc, i) => {
@@ -293,12 +329,52 @@
         <label>Applicant name <input type="search" data-f="applicant" value="${esc(it.applicant)}" placeholder="e.g. Abu Bakar Siddique S/o Muhammad Siddique" style="min-width:320px"></label>
         <label>Caller <select data-f="title"><option${it.title === 'Mr.' ? ' selected' : ''}>Mr.</option><option${it.title === 'Miss.' ? ' selected' : ''}>Miss.</option><option${it.title === 'Mrs.' ? ' selected' : ''}>Mrs.</option></select></label>
         <label>Distance (Km) <input type="search" data-f="distance" value="${esc(it.distance)}" style="min-width:70px;width:80px"></label>
-      </div></div>`;
+      </div>
+      <details class="bprevwrap" open><summary><b>Preview of the letter</b> <span class="mu">&mdash; click any text in the letter to change it. The Word file is made from what you see here.</span> <button type="button" data-act="reset" class="rs"${it.ov && Object.keys(it.ov).length ? '' : ' hidden'}>Undo my edits</button></summary><div class="bprev" data-pv="${it.id}"></div></details></div>`;
+  }
+  /* ---------- preview: the letter on screen, every value can be edited ---------- */
+  function previewHTML(it) {
+    const d = it.d, F = fieldsOf(it), D0 = fieldsOf(Object.assign({}, it, { ov: {} })), multi = d.patients.length > 1, TH = window.BRIEF_TEHSILS, tk = (TH && it.tehsil) || 'ryk';
+    const H = TH && TH.describe ? TH.describe(tk) : { diary: (n, y) => 'RYK/DEO/CRI/' + n + '/' + y + ' (PESD)', office: 'District Emergency Officer', place: 'RAHIM YAR KHAN', sig: null, footer: { l1: 'Rescue 1122 Station, Behind Allama Iqbal Library, WAPDA Colony Road, Rahim Yar Khan', label: 'Ph:', phone: '068-9230011, 9230183', email: 'rescue1122ryk@yahoo.com' } };
+    const ed = (k, v) => `<span class="ed${it.ov && it.ov[k] !== undefined && it.ov[k] !== D0[k] ? ' chg' : ''}" contenteditable="true" spellcheck="false" data-k="${k}">${esc(v)}</span>`;
+    const row = (label, inner) => `<div class="pr"><span class="pl">${label}</span><span>${inner}</span></div>`;
+    const [yy, mo, dn] = it.date ? it.date.split('-').map(Number) : [0, 0, 0];
+    const diaryLine = 'No. ' + H.diary(esc(it.diary) || '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;', it.date ? String(yy).slice(-2) : '__');
+    const dateLine = it.date ? dn + '<sup>' + ordinal(dn) + '</sup> ' + MONTHS[mo - 1] + ', ' + yy + '.' : '<i>(choose the letter date)</i>';
+    const pc = (i, k, v, all) => { const o = (it.ov && it.ov.p && it.ov.p[i]) || {}, dflt = (fieldsOf(Object.assign({}, it, { ov: {} })).patients[i] || {})[k]; return `<span class="ed${o[k] !== undefined && o[k] !== dflt ? ' chg' : ''}" contenteditable="true" spellcheck="false" data-pi="${i}" data-pk="${k}"${all ? ' data-all="1"' : ''}>${esc(v)}</span>`; };
+    let body = row('Applicant Name:', ed('applicant', F.applicant));
+    if (!multi) body += row('Victim&rsquo;s Name:', ed('victim', F.victim) + ' &nbsp; (Approx. ' + ed('approx', F.approx) + ')');
+    body += row('Emergency No:', ed('ec', F.ec)) + row('Date of Incident:', ed('dateInc', F.dateInc)) + row('Call Time:', ed('callTime', F.callTime)) +
+      row('Probable cause of Emergency:', ed('cause', F.cause)) + row('Place of Incident:', ed('place', F.place)) +
+      row('Vehicle Attended:', ed('vehLabel', F.vehLabel) + ' &nbsp;' + ed('vehNo', F.vehNo)) + row('Staff who dealt this emergency:', ed('staff', F.staff)) +
+      row('Response Time:', ed('response', F.response)) + row('Distance', ed('distance', F.distance)) + row('Total No. of Victims:', ed('total', F.total));
+    if (!multi) body += row('Patient Condition:', ed('cond', F.cond)) + row('Shifted to hospital:', ed('shifted', F.shifted));
+    else {
+      const P = F.patients, one = new Set(P.map(q => q.cond)).size === 1, ones = new Set(P.map(q => q.shifted)).size === 1;
+      body += '<table class="pt"><tr><th>Sr.#</th><th>Patient Name</th><th>Father name</th><th>Approx. Age</th><th>Patient Condition &amp; Activity</th><th>Shifted</th></tr>' +
+        P.map((q, i) => `<tr><td>${pad2(i + 1)}</td><td>${pc(i, 'name', q.name)}</td><td>${pc(i, 'relname', q.relname)}</td><td>${pc(i, 'age', q.age)}</td>` +
+          (one ? (i === 0 ? `<td rowspan="${P.length}">${pc(0, 'cond', q.cond, true)}</td>` : '') : `<td>${pc(i, 'cond', q.cond)}</td>`) +
+          (ones ? (i === 0 ? `<td rowspan="${P.length}">${pc(0, 'shifted', q.shifted, true)}</td>` : '') : `<td>${pc(i, 'shifted', q.shifted)}</td>`) + '</tr>').join('') + '</table>';
+    }
+    const sign = H.sig ? `<div class="sg"><div><b>RESCUE &amp; SAFETY OFFICER</b><br>${esc(H.sig)}</div><div><b>CONTROL ROOM INCHARGE</b><br>RAHIM YAR KHAN</div></div><div class="sg"><div><b>DISTRICT EMERGENCY OFFICER</b><br>RAHIM YAR KHAN</div></div>`
+      : '<div class="sg"><div><b>CONTROL ROOM INCHARGE</b><br>RAHIM YAR KHAN</div><div><b>DISTRICT EMERGENCY OFFICER</b><br>RAHIM YAR KHAN</div></div>';
+    return `<div class="paper"><div class="ptop"><img src="logo-rescue.jpg" alt="" onerror="this.style.visibility='hidden'"><div class="ptr"><div>${diaryLine}</div><div>${esc(H.office)}</div><div>(RESCUE 1122)</div><div>${esc(H.place)}</div><div>${dateLine}</div></div></div>
+      <h2>Brief of the Incident</h2><div class="psub">(As per the official record, brief of the incident is as under)</div>${body}
+      <div class="pnote"><b><u>NOTE:</u></b></div><div>Rescue 1122 Control Room received a call from ${ed('phone', F.phone)}, ${ed('noteDate', F.noteDate)}.</div>
+      <div style="margin-top:10px">Detail of the call is as under:</div>
+      <table class="pt call"><tr><th>Sr. #</th><th>Call Time</th><th>Caller Name</th><th>Nature of Call</th></tr><tr><td>1.</td><td>${ed('rowTime', F.rowTime)}</td><td>${ed('caller', F.caller)}</td><td>${ed('nature', F.nature)}</td></tr></table>
+      ${sign}<div class="pfoot">${esc(H.footer.l1)}<br><u>${esc(H.footer.label)}</u> ${esc(H.footer.phone)} &nbsp;&nbsp; <u>E-mail:</u> ${esc(H.footer.email)}</div></div>`;
+  }
+  function drawPreview(it) {
+    const el = document.querySelector('[data-pv="' + it.id + '"]'); if (!el) return;
+    el.innerHTML = previewHTML(it);
+    const rs = el.closest('[data-id]').querySelector('[data-act="reset"]'); if (rs) rs.hidden = !(it.ov && Object.keys(it.ov).length);
   }
   function render() {
     const el = $('briefList'); if (!el) return;
     el.innerHTML = items.length ? items.map(card).join('') : '<p class="mu">No PDF yet. Drop the EMDS detail PDF(s) in the box at the top of the page (or use Choose files).</p>';
     $('briefAll').hidden = items.length < 2;
+    items.forEach(drawPreview);
   }
   function save(blob, name) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); }
   async function download(it) {
@@ -316,7 +392,7 @@
     async addPdf(file) {
       const d = parse(await pdfText(await file.arrayBuffer()));
       const old = items.findIndex(x => x.d.ec === d.ec); if (old >= 0) items.splice(old, 1);   // same EC uploaded again replaces the old one
-      items.push({ id: ++seq, file: file.name, d, applicant: '', title: 'Mr.', distance: distanceDefault(d), diary: '', date: lastDate, tehsil: lastTehsil });
+      items.push({ id: ++seq, file: file.name, d, applicant: '', title: 'Mr.', distance: distanceDefault(d), diary: '', date: lastDate, tehsil: lastTehsil, ov: {} });
       render();
     },
     init() {
@@ -326,15 +402,30 @@
       host.appendChild(pn);
       pn.addEventListener('click', e => {
         const b = e.target.closest('[data-act]'); if (!b) return; const id = +b.closest('[data-id]').dataset.id, it = items.find(x => x.id === id);
-        if (b.dataset.act === 'dl') download(it); else { items.splice(items.indexOf(it), 1); render(); }
+        if (b.dataset.act === 'dl') download(it); else if (b.dataset.act === 'reset') { it.ov = {}; drawPreview(it); } else { items.splice(items.indexOf(it), 1); render(); }
       });
-      pn.addEventListener('input', e => { const f = e.target.dataset.f; if (!f) return; const it = items.find(x => x.id === +e.target.closest('[data-id]').dataset.id); if (it) { it[f] = e.target.value.trim(); if (f === 'date') lastDate = it.date; } });
+      pn.addEventListener('input', e => { const f = e.target.dataset.f; if (!f) return; const it = items.find(x => x.id === +e.target.closest('[data-id]').dataset.id); if (it) { it[f] = e.target.value.trim(); if (f === 'date') lastDate = it.date; if (f === 'distance' && it.ov) delete it.ov.distance; drawPreview(it); } });
       pn.addEventListener('change', e => {      // tehsil tick boxes: only one can be ticked
         const k = e.target.dataset && e.target.dataset.tehsil; if (!k) return;
         const cd = e.target.closest('[data-id]'), it = items.find(x => x.id === +cd.dataset.id); if (!it) return;
-        it.tehsil = k; lastTehsil = k; cd.querySelectorAll('[data-tehsil]').forEach(c => { c.checked = c.dataset.tehsil === k; });
+        it.tehsil = k; lastTehsil = k; cd.querySelectorAll('[data-tehsil]').forEach(c => { c.checked = c.dataset.tehsil === k; }); drawPreview(it);
       });
       pn.addEventListener('click', e => { const dt = e.target.closest('input[type=date]'); if (dt) { try { dt.showPicker(); } catch (x) { } } });   // open the calendar on click
+      const st = document.createElement('style');
+      st.textContent = '.bprevwrap{margin-top:12px}.bprevwrap summary{cursor:pointer;padding:6px 0}.bprevwrap .rs{margin-left:10px;font-size:12px;padding:3px 9px}.paper{background:#fff;color:#000;width:100%;max-width:794px;margin:8px auto;border:1px solid var(--bd);box-shadow:0 2px 12px rgba(0,0,0,.2);padding:20px 38px 14px;font:13px/1.55 Arial,Helvetica,sans-serif}.ptop{display:flex;justify-content:space-between;align-items:flex-start}.ptop img{height:74px}.ptr{text-align:center;font-weight:bold;min-width:250px}.paper h2{text-align:center;text-decoration:underline;font-size:17px;margin:16px 0 2px}.psub{text-align:center;font-weight:bold;margin-bottom:12px;font-size:12px}.pr{display:flex;padding:1px 0}.pl{width:215px;flex:none}.pnote{margin-top:12px}.paper .ed{outline:none;border-bottom:1px dashed #19a354;border-radius:3px;padding:0 2px;cursor:text}.paper .ed:hover{background:#e9f8ef}.paper .ed:focus{background:#fff6c8;border-bottom-color:#e8b923}.paper .ed.chg{background:#ffe9b8}.paper .ed:empty::before{content:"________";color:#999}table.pt{border-collapse:collapse;width:100%;margin:8px 0}table.pt th,table.pt td{border:1px solid #000;padding:3px 6px;text-align:center}table.pt th{font-weight:bold}.sg{display:flex;justify-content:space-around;text-align:center;margin-top:30px}.pfoot{border-top:3px solid #8cc63f;margin-top:22px;padding-top:4px;text-align:center;font-style:italic;font-size:11.5px}@media(max-width:700px){.paper{padding:14px 12px}.pl{width:120px}}';
+      document.head.appendChild(st);
+      pn.addEventListener('input', e => {        // typing inside the preview
+        const el = e.target.closest && e.target.closest('.ed'); if (!el) return;
+        const cd = el.closest('[data-id]'), it = items.find(x => x.id === +cd.dataset.id); if (!it) return;
+        const txt = el.textContent.replace(/[\r\n]+/g, ' '), k = el.dataset.k;
+        if (k === 'applicant') { it.applicant = txt.trim(); const inp = cd.querySelector('[data-f="applicant"]'); if (inp) inp.value = it.applicant; }
+        else if (el.dataset.pi !== undefined) { it.ov = it.ov || {}; it.ov.p = it.ov.p || {}; (el.dataset.all ? it.d.patients.map((_, i) => i) : [+el.dataset.pi]).forEach(i => { (it.ov.p[i] = it.ov.p[i] || {})[el.dataset.pk] = txt; }); }
+        else if (k) { (it.ov = it.ov || {})[k] = txt; }
+        if (k !== 'applicant') el.classList.add('chg');
+        const rs = cd.querySelector('[data-act="reset"]'); if (rs) rs.hidden = !(it.ov && Object.keys(it.ov).length);
+      });
+      pn.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.closest && e.target.closest('.ed')) { e.preventDefault(); e.target.blur(); } });
+      pn.addEventListener('paste', e => { if (!(e.target.closest && e.target.closest('.ed'))) return; e.preventDefault(); const t = ((e.clipboardData || window.clipboardData).getData('text') || '').replace(/[\r\n\t]+/g, ' '); document.execCommand('insertText', false, t); });
       $('briefAll').onclick = async () => { for (const it of items) { if (!(await download(it))) break; await new Promise(r => setTimeout(r, 600)); } };
       render();
     },
