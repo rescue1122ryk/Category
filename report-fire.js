@@ -8,6 +8,7 @@
      1) Sr No | District | Cell # | Vehicle | Call Time | Distance from Nearby station (Km's) |
         Response Time (Minutes) | Fire Fighting Duration | Injured /Dead | Staff | Save | Loss
      2) Tehsil | Brief | Class | Address       (one line per fire, same Sr No)
+   The EC No of every fire is written in the last cell of both lines.
    Anything that is not in the trips CSV is left empty to be filled in by hand:
    Fire Fighting Duration, Staff, Save, Loss and Class.
    ===================================================================== */
@@ -50,14 +51,14 @@
     for (const r of rows.slice(1)) {
       const ec = get(r, '@id'); if (!ec || norm(get(r, CFG.columns.type)) !== want) continue;
       if (get(r, 'Emergency Status').toLowerCase() === 'discarded') continue;
-      if (!trips.has(ec)) trips.set(ec, { r, inj: 0, dead: 0, seen: new Set() });
+      if (!trips.has(ec)) trips.set(ec, { r, ec, inj: 0, dead: 0, seen: new Set() });
       const t = trips.get(ec), name = get(r, 'Victim Name');
       if (/^yes$/i.test(get(r, 'Has Victims')) && name && !/^n\/a$/i.test(name)) {
         const key = name + '|' + get(r, 'Age'); if (t.seen.has(key)) continue; t.seen.add(key);
         if (/dead/i.test(get(r, 'Fate Of Patient'))) t.dead++; else t.inj++;
       }
     }
-    const date = csvDate(rows, ['Call Received at', 'Start Time']), n = 12, list = [...trips.values()];
+    const date = csvDate(rows, ['Call Received at', 'Start Time']), n = 13, list = [...trips.values()];      // 13 columns: the 12 of the hand-made sheet + EC No at the end
     const body1 = [], body2 = [], csv = [], per = {};
     const IC = 'font-size:10pt;height:62px;';
     list.forEach((t, i) => {
@@ -74,24 +75,24 @@
       const brief = remarks.sort((a, b) => b.length - a.length)[0] || '';
       const dist0 = get(r, 'District Name'), teh = get(r, 'Tehsil Name'), addr = get(r, 'Emergency Address');
       const district = R.districtShort[dist0] || dist0, tehsil = R.tehsilShort[teh] || teh, cls = R.classBySubtype[get(r, CFG.columns.subtype)] || '';
-      body1.push([cl(sr, IC), cl(district, IC), cl(get(r, 'Caller Number'), IC), cl(names.join(' '), IC), cl(callT, IC), cl(dist, IC), cl(resp, IC), cl('', IC), cl(inj, IC), cl('', IC + 'text-align:left;'), cl('', IC), cl('', IC)]);
-      body2.push([cl(sr, 'height:44px;'), cl(tehsil, 'height:44px;'), cl(brief, 'height:44px;', { cs: 6 }), cl(cls, 'height:44px;'), cl(addr, 'height:44px;', { cs: 3 })]);
-      csv.push([sr, district, get(r, 'Caller Number'), names.join(' '), callT, dist, resp, '', inj, '', '', '', tehsil, brief, cls, addr]);
+      body1.push([cl(sr, IC), cl(district, IC), cl(get(r, 'Caller Number'), IC), cl(names.join(' '), IC), cl(callT, IC), cl(dist, IC), cl(resp, IC), cl('', IC), cl(inj, IC), cl('', IC + 'text-align:left;'), cl('', IC), cl('', IC), cl(t.ec, IC)]);
+      body2.push([cl(sr, 'height:44px;'), cl(tehsil, 'height:44px;'), cl(brief, 'height:44px;', { cs: 6 }), cl(cls, 'height:44px;'), cl(addr, 'height:44px;', { cs: 3 }), cl(t.ec, 'height:44px;')]);
+      csv.push([sr, district, get(r, 'Caller Number'), names.join(' '), callT, dist, resp, '', inj, '', '', '', t.ec, tehsil, brief, cls, addr]);
       per[tehsil] = (per[tehsil] || 0) + 1;
     });
-    const H1 = ['Sr No', 'District', 'Cell #', 'Vehicle', 'Call Time', "Distance from Nearby station (Km's)", 'Response Time (Minutes)', 'Fire Fighting Duration', 'Injured /Dead', 'Staff', 'Save', 'Loss'];
+    const H1 = ['Sr No', 'District', 'Cell #', 'Vehicle', 'Call Time', "Distance from Nearby station (Km's)", 'Response Time (Minutes)', 'Fire Fighting Duration', 'Injured /Dead', 'Staff', 'Save', 'Loss', 'EC No'];
     const hs1 = 'font-weight:bold;font-size:10pt;height:84px;', hs2 = 'font-weight:bold;font-size:9pt;background:#e7e6e6;height:30px;';
     return {
       name: 'Fire Report ' + date, count: list.length,
       cards: [['Fire cases', list.length], ...Object.entries(per)],
       rule: 'Emergency Type: ' + R.emergencyType + '  |  Discarded trips excluded  |  Fire Fighting Duration, Staff, Save, Loss and Class are not in the CSV and are left empty',
       warn: '',
-      widths: [38, 56, 92, 112, 64, 86, 86, 84, 72, 200, 58, 58],
+      widths: [38, 56, 92, 112, 64, 86, 86, 84, 72, 200, 58, 58, 82],
       rows: [
         [cl(R.title.replace('{date}', date), 'font-weight:bold;font-size:14pt;height:28px;', { cs: n })],
         H1.map(h => cl(h, hs1)),
         ...(list.length ? body1 : [[cl('No matching records found.', '', { cs: n })]]),
-        [cl('', hs2), cl('Tehsil', hs2), cl('Brief', hs2, { cs: 6 }), cl('Class', hs2), cl('Address', hs2, { cs: 3 })],
+        [cl('', hs2), cl('Tehsil', hs2), cl('Brief', hs2, { cs: 6 }), cl('Class', hs2), cl('Address', hs2, { cs: 3 }), cl('EC No', hs2, { cs: 1 })],
         ...body2
       ],
       csv: [[...H1, 'Tehsil', 'Brief', 'Class', 'Address'], ...csv]
