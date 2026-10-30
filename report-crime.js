@@ -16,7 +16,9 @@
        emergencyType : Emergency Type that is reported
        statuses      : [] = all statuses, or e.g. ["Finished", "Called Back"]
        cleanCause    : true = remove English words written before the Urdu text in
-                       Cause Of Emergency (e.g. "Violence Case بقول ..."), as in the hand-made sheet
+                       the cause (e.g. "Violence Case بقول ..."); false = write the text as typed
+       fields.cause  : the CSV column the cause is taken from (now "Suggestion & Comments";
+                       it used to be "Cause Of Emergency")
        headers       : the 9 column titles shown on the sheet
        fields        : the CSV column used for each value
        The sheet date is the date of the trips in the CSV.
@@ -25,7 +27,7 @@
     title:         "Crime Emergencies Breakup of District Rahim Yar Khan",
     emergencyType: "Crime",
     statuses:      [],
-    cleanCause:    true,
+    cleanCause:    false,
     headers: ["Nature of Emg", "Total Emg.", "Total Patient", "R.Time", "Age", "Gender", "F/A Shifted/ Dead", "Location", "Cause Of Emergency"],
     fields: {
       nature:   "Emergency Subtype",
@@ -35,7 +37,7 @@
       gender:   "Gender",
       fate:     "Fate Of Patient",
       location: "Emergency Address",
-      cause:    "Cause Of Emergency"
+      cause:    "Suggestion & Comments"      // the text of the "Cause Of Emergency" column of the sheet is taken from this CSV column
     }
   };
 
